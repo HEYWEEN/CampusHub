@@ -1,0 +1,58 @@
+# =============================================================================
+# OS and System Files
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =============================================================================
+# Frontend (React + Vite)
+# =============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# Log files
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Editor directories and files
+frontend/.vscode/
+frontend/.idea/
+
+# =============================================================================
+# Backend (Java + Spring Boot + Maven)
+# =============================================================================
+backend/target/
+backend/pom.xml.tag
+backend/pom.xml.releaseBackup
+backend/pom.xml.backup
+backend/pom.xml.branch
+backend/release.properties
+
+# Spring Boot default log file
+backend/*.log
+
+# Maven wrapper (Optionally ignore the jar if you don't want it in git)
+# !backend/.mvn/wrapper/maven-wrapper.jar
+
+# =============================================================================
+# IDEs and Editors (Generic)
+# =============================================================================
+.idea/
+*.iml
+*.iws
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.classpath
+.project
+.settings/
+.factorypath
