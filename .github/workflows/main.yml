@@ -48,6 +48,6 @@ jobs:
         run: chmod +x mvnw
         working-directory: ./backend # 赋予 Linux 下 mvnw 的执行权限
 
-      - name: Build with Maven
-        run: ./mvnw clean compile
-        working-directory: ./backend # 编译后端代码，检查是否有语法或依赖错误
+      - name: Build and Test with Maven
+        run: ./mvnw clean install
+        working-directory: ./backend # 编译并运行测试，确保后端代码质量
