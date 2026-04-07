@@ -38,3 +38,4 @@ CampusHub/
 └── README.md          # 项目简介与开发指南
 ```
 
+[![Star History Chart](https://api.star-history.com/svg?repos=HEYWEEN/CampusHub&type=Date)](https://star-history.com/#HEYWEEN/CampusHub&type=Date)
