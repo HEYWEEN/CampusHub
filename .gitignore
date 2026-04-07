@@ -27,9 +27,6 @@ frontend/pnpm-debug.log*
 frontend/.vscode/
 frontend/.idea/
 
-# Root-level accidental npm lock file
-/package-lock.json
-
 # =============================================================================
 # Backend (Java + Spring Boot + Maven)
 # =============================================================================
