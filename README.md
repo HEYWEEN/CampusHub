@@ -5,9 +5,9 @@
 
 ## 技术栈
 
-前端： React + TypeScript +Vite
+前端： React + TypeScript + Vite
 
-后端：java + MySQL
+后端：Java + MySQL
 
 
 
