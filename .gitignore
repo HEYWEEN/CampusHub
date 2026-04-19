@@ -1,58 +1,100 @@
 # =============================================================================
-# OS and System Files
+# CampusHub · 根级 .gitignore
+# 子模块（backend/.gitignore、frontend/.gitignore）仍保留其语言专用规则，
+# 本文件负责覆盖跨目录/OS/编辑器/秘密文件等共享场景。
 # =============================================================================
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# =============================================================================
-# Frontend (React + Vite)
-# =============================================================================
+# -----------------------------------------------------------------------------
+# 1. 操作系统生成的文件（递归匹配任何目录）
+# -----------------------------------------------------------------------------
+**/.DS_Store
+**/.DS_Store?
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
+**/desktop.ini
+
+# -----------------------------------------------------------------------------
+# 2. 编辑器 / IDE（全局，跨 frontend & backend）
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.classpath
+.project
+.settings/
+.factorypath
+nbproject/private/
+
+# -----------------------------------------------------------------------------
+# 3. 机密与本地配置（严禁入库）
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.*.example
+secrets.*
+*.pem
+*.key
+*.p12
+*.pfx
+backend/src/main/resources/application-local.*
+backend/src/main/resources/application-secret.*
+
+# -----------------------------------------------------------------------------
+# 4. 前端（React + Vite）
+# -----------------------------------------------------------------------------
 frontend/node_modules/
 frontend/dist/
 frontend/dist-ssr/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
 frontend/*.local
-
-# Log files
+frontend/stats.html
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/pnpm-debug.log*
+frontend/.eslintcache
 
-# Editor directories and files
-frontend/.vscode/
-frontend/.idea/
-
-# =============================================================================
-# Backend (Java + Spring Boot + Maven)
-# =============================================================================
+# -----------------------------------------------------------------------------
+# 5. 后端（Spring Boot + Maven）
+# -----------------------------------------------------------------------------
 backend/target/
+backend/out/
+backend/build/
+backend/logs/
+backend/*.log
+backend/hs_err_pid*.log
 backend/pom.xml.tag
 backend/pom.xml.releaseBackup
 backend/pom.xml.backup
 backend/pom.xml.branch
 backend/release.properties
+backend/dependency-reduced-pom.xml
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
 
-# Spring Boot default log file
-backend/*.log
-
-# Maven wrapper (Optionally ignore the jar if you don't want it in git)
-# !backend/.mvn/wrapper/maven-wrapper.jar
-
-# =============================================================================
-# IDEs and Editors (Generic)
-# =============================================================================
-.idea/
-*.iml
-*.iws
-.vscode/
-*.sublime-project
-*.sublime-workspace
-.classpath
-.project
-.settings/
-.factorypath
+# -----------------------------------------------------------------------------
+# 6. 文档临时文件
+# -----------------------------------------------------------------------------
+# Word / WPS 打开时产生的锁文件
+~$*.doc
+~$*.docx
+~$*.xls
+~$*.xlsx
+~$*.ppt
+~$*.pptx
+# Keynote / Pages 临时副本
+*.~vsdx
+# Markdown 编辑器（Typora、Obsidian 等）缓存
+.obsidian/
+**/.trash/
