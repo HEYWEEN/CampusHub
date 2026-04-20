@@ -10,9 +10,9 @@
 
 | 序号 | Prompt 文件                                                  | 作者 | 对应交付物                        | 使用模型              |
 | ---- | ------------------------------------------------------------ | ---- | --------------------------------- | --------------------- |
-| 1    | [`P1_czh_需求分析.md`](../AI-Prompt/P1_czh_需求分析.md)      | czh  | "AI 需求盲区挑战"对比分析初稿 SRS | Gemini + ChatGPT      |
-| 2    | [`P1_lcy_需求规格说明书.md`](../AI-Prompt/P1_lcy_需求规格说明书.md) | lcy  | 最终《软件需求规格说明书》        | Deepseek-r1           |
-| 3    | [`P1_hyw_用户故事.md`](../AI-Prompt/P1_hyw_用户故事.md)      | hyw  | 用户故事 + 3.3 问题反向审查       | Claude Opus + ChatGPT |
+| 1    | [`P1_czh_需求分析.md`](./AI-Prompt/P1_czh_需求分析.md)       | czh  | "AI 需求盲区挑战"对比分析初稿 SRS | Gemini + ChatGPT      |
+| 2    | [`P1_lcy_需求规格说明书.md`](./AI-Prompt/P1_lcy_需求规格说明书.md) | lcy  | 最终《软件需求规格说明书》        | Deepseek-r1           |
+| 3    | [`P1_hyw_用户故事.md`](./AI-Prompt/P1_hyw_用户故事.md)       | hyw  | 用户故事 + 3.3 问题反向审查       | Claude Opus + ChatGPT |
 
 > 组员 a/b/c 的 Prompt 已按命名规范归档；若后续新增，请同步更新本索引。
 
