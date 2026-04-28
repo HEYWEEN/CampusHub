@@ -48,6 +48,10 @@ secrets.*
 backend/src/main/resources/application-local.*
 backend/src/main/resources/application-secret.*
 
+# start.sh 运行时产物
+.run-logs/
+.run-pids/
+
 # -----------------------------------------------------------------------------
 # 4. 前端（React + Vite）
 # -----------------------------------------------------------------------------
