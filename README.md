@@ -40,6 +40,31 @@ npm run lint       # ESLint 检查
 
 ### 2.3 启动后端
 
+**第一次运行需先完成数据库初始化（一次性操作）：**
+
+```bash
+# 1. 启动本地 MySQL（使用 Homebrew 安装时）
+brew services start mysql
+
+# 2. 登录并创建数据库
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE campushub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EXIT;
+```
+
+```bash
+# 3. 复制本地配置模板
+cd backend/src/main/resources
+cp application-local.properties.example application-local.properties
+
+# 4. 编辑 application-local.properties，填入你的 MySQL 密码
+```
+
+**之后每次启动：**
+
 ```bash
 cd backend
 ./mvnw spring-boot:run                 # macOS / Linux
@@ -47,7 +72,7 @@ mvnw.cmd spring-boot:run               # Windows
 ./mvnw test                            # 运行单测
 ```
 
-> 本地敏感配置请写入 `backend/src/main/resources/application-local.yml`，该文件已在 `.gitignore` 中忽略。
+> `application-local.properties` 含本地密码，已在 `.gitignore` 中忽略，**不要提交**。团队成员各自维护自己的副本。
 
 ---
 

@@ -30,3 +30,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local config (sensitive, never commit) ###
+src/main/resources/application-local.properties
