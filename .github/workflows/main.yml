@@ -33,6 +33,23 @@ jobs:
   # 任务二：检查后端代码
   backend-check:
     runs-on: ubuntu-latest
+
+    # 为后端测试启动一个 MySQL 8 service container
+    # GitHub Actions 会等 health check 通过后再进入 steps
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: campushub
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,5 +66,8 @@ jobs:
         working-directory: ./backend # 赋予 Linux 下 mvnw 的执行权限
 
       - name: Build and Test with Maven
+        env:
+          DB_USERNAME: root
+          DB_PASSWORD: root
         run: ./mvnw clean install
         working-directory: ./backend # 编译并运行测试，确保后端代码质量
