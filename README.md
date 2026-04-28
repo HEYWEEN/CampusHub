@@ -26,53 +26,80 @@
 * Node.js ≥ 18（建议 20 LTS）
 * Java 17+
 * Maven 3.9+（或使用仓库内置的 `./mvnw`）
-* MySQL 8（可选，视配置而定）
+* MySQL 8
 
-### 2.2 启动前端
+### 2.2 一键启动 `start.sh`（推荐）
+
+根目录提供 `start.sh`，一键起前后端，并自动检查/生成配置文件。
+
+| 命令 | 作用 |
+| --- | --- |
+| `./start.sh` 或 `./start.sh local` | **本地开发**：`mvnw spring-boot:run` + `vite dev`（端口 5173 / 8080） |
+| `./start.sh prod` | **生产模式**：构建 jar 与 dist，再用 `java -jar` + `vite preview` 启动 |
+| `./start.sh stop` | 停止 prod 模式启动的后台进程（读 `.run-pids/` 中的 PID） |
+| `./start.sh help` | 显示完整帮助 |
+
+**平台兼容**
+
+* **macOS / Linux**：直接 `./start.sh`
+* **Windows**：用 **Git Bash** 或 **WSL**（原生 CMD/PowerShell 跑不了 `.sh`）。脚本内 `uname` 检测 OS，自动切换 `mvnw` ↔ `mvnw.cmd`，并按系统给出 MySQL 启动命令。
+
+**首次运行流程**
+
+```bash
+./start.sh
+# 首次会从模板自动生成 application-local.properties 并提示填 MySQL 密码
+# 编辑 backend/src/main/resources/application-local.properties，写入密码
+./start.sh        # 再跑一次即可
+```
+
+`Ctrl+C` 会同时停掉前后端。日志默认写在 `.run-logs/{backend,frontend}.log`。
+
+### 2.3 配置文件清单
+
+> **核心约定**：所有 `.example` 模板都可入库；对应的真实文件**绝不进 git**（已在 `.gitignore`）。
+
+| 文件 | 用于 | 来源 / 模板 | 进 git？ | 谁负责填 |
+| --- | --- | --- | --- | --- |
+| `backend/src/main/resources/application-local.properties` | 本地开发 | `application-local.properties.example` | ❌ | **每位成员**：填自己的 MySQL 密码 |
+| `backend/src/main/resources/application-prod.properties` | 服务器 | 已存在，全部用 `${ENV}` 占位 | ✅ | 不用改 |
+| `.env.prod`（根目录） | 服务器 | `.env.prod.example` | ❌ | **部署人**：填 `DB_USERNAME` / `DB_PASSWORD` 等 |
+| `frontend/.env.production` | 服务器 | `frontend/.env.production.example` | ❌ | **部署人**：填 `VITE_API_BASE_URL` |
+
+首次需先建库（local 模式 `start.sh` 会主动提示）：
+
+```sql
+CREATE DATABASE campushub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+启动 MySQL 服务（按系统选一条）：
+
+```bash
+brew services start mysql            # macOS (Homebrew)
+sudo systemctl start mysql           # Linux
+net start MySQL80                    # Windows（管理员）
+```
+
+### 2.4 手动启动（不想用脚本时）
+
+**前端：**
 
 ```bash
 cd frontend
 npm install
-npm run dev        # 默认 http://localhost:5173
-npm run build      # 生产构建
-npm run lint       # ESLint 检查
+npm run dev          # http://localhost:5173
+npm run build        # 生产构建
+npm run lint         # ESLint 检查
 ```
 
-### 2.3 启动后端
-
-**第一次运行需先完成数据库初始化（一次性操作）：**
-
-```bash
-# 1. 启动本地 MySQL（使用 Homebrew 安装时）
-brew services start mysql
-
-# 2. 登录并创建数据库
-mysql -u root -p
-```
-
-```sql
-CREATE DATABASE campushub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-EXIT;
-```
-
-```bash
-# 3. 复制本地配置模板
-cd backend/src/main/resources
-cp application-local.properties.example application-local.properties
-
-# 4. 编辑 application-local.properties，填入你的 MySQL 密码
-```
-
-**之后每次启动：**
+**后端：**
 
 ```bash
 cd backend
-./mvnw spring-boot:run                 # macOS / Linux
-mvnw.cmd spring-boot:run               # Windows
-./mvnw test                            # 运行单测
+./mvnw spring-boot:run     # macOS / Linux
+mvnw.cmd spring-boot:run   # Windows
+./mvnw test                # 运行单测
 ```
-
-> `application-local.properties` 含本地密码，已在 `.gitignore` 中忽略，**不要提交**。团队成员各自维护自己的副本。
 
 ---
 
