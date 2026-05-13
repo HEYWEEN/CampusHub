@@ -1,0 +1,745 @@
+openapi: 3.1.0
+info:
+  title: CampusHub 学生端 API（P3 核心契约）
+  version: "0.1.0"
+  description: |
+    依据 `docs/P3/01_统一规约.md` §2：统一响应包装、分页、错误码分段、JWT、PublicUserVO、隐私黑名单。
+    本文件覆盖《P3-详细设计》任务 2.1 所列 6 类核心接口；其余模块在迭代中扩展同文件。
+
+servers:
+  - url: https://api.example.com
+    description: 生产（示例）
+  - url: http://localhost:8080
+    description: 本地开发
+
+tags:
+  - name: auth
+    description: 鉴权（F-AUTH-*）
+  - name: tasks
+    description: 跑腿 / 万能互助任务（F-TASK-*）
+  - name: search
+    description: 任务大厅检索（F-SEARCH-01）
+  - name: trade
+    description: 二手交易订单（F-TRADE-*）
+
+paths:
+  /api/auth/sms-codes:
+    post:
+      tags: [auth]
+      summary: 发送短信验证码（F-AUTH-01）
+      description: |
+        频控：单手机号 60s≤1 次、24h≤20 次；单 IP 60s≤5 次、24h≤200 次。超限返回 429。
+      operationId: sendSmsCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SmsCodeSendRequest"
+      responses:
+        "200":
+          description: 业务成功（HTTP 200，`code`=0）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEmpty"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/auth/token:
+    post:
+      tags: [auth]
+      summary: 手机号 + 验证码登录或注册（F-AUTH-02）
+      description: |
+        首次验证通过自动建账，初始 `verifyStatus=guest`。响应含 Access + Refresh Token。
+      operationId: loginOrRegisterByCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginByCodeRequest"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTokenPair"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AccountLocked"
+
+  /api/auth/token/password:
+    post:
+      tags: [auth]
+      summary: 手机号 + 密码登录（日常登录，规约 §2.5.1）
+      operationId: loginByPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginByPasswordRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTokenPair"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AccountLocked"
+
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: 注册并设置密码（验证码通过后）
+      description: |
+        典型流程：先发验证码 → 本接口提交 `phone` + `smsCode` + `password` 完成注册。
+        若手机号已存在且已设密，返回 409 `PHONE_ALREADY_REGISTERED`。
+      operationId: registerWithPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTokenPair"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/tasks:
+    post:
+      tags: [tasks]
+      summary: 发布任务需求（F-TASK-01）
+      description: |
+        需 `Authorization`。发布前服务端调用信用闸门：`creditScore < 60` → 403；
+        成功后冻结悬赏积分（内部 `CreditApi.freeze`）。
+      operationId: createTask
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreateRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskId"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/CreditOrPermission"
+
+  /api/search/tasks:
+    get:
+      tags: [search]
+      summary: 浏览任务需求列表（含筛选，F-SEARCH-01 / F-TASK-11）
+      description: |
+        分页规约：`page` 从 1 起，`size` 默认 20、最大 100；`sort=createdAt,desc`。
+        筛选维度示例：`taskType`、`status`、`minCredit`、`deadlineFrom`、`deadlineTo`、关键词 `q`。
+      operationId: searchTasks
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/Sort"
+        - name: taskType
+          in: query
+          schema:
+            type: string
+            enum: [ERRAND, MUTUAL_HELP, TUTOR]
+          description: 任务类型（与后端枚举对齐）
+        - name: status
+          in: query
+          schema:
+            type: integer
+          description: 任务状态 TINYINT 数值（待接单/进行中…由枚举表约定）
+        - name: minCredit
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 120
+        - name: deadlineFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: deadlineTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: 标题/备注关键词（走 search 模块，具体分词策略实现期定）
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/tasks/{taskId}/accept:
+    post:
+      tags: [tasks]
+      summary: 接单（抢单，F-TASK-03）
+      description: |
+        乐观锁 `version`；禁止自接；进行中任务数超过个人上限 → 409。
+        成功后冻结接单方押金（内部 `CreditApi.freeze`）。
+      operationId: acceptTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  description: 当前任务乐观锁版本（可与 GET 详情一并返回）
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEmpty"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/tasks/{taskId}:
+    get:
+      tags: [tasks]
+      summary: 查看任务单详情（需求详情，F-TASK-12）
+      description: |
+        发布者信息仅返回 `PublicUserVO`；禁出隐私黑名单字段。
+        已登录时可返回与本人相关的扩展字段（如是否已接单）。
+      operationId: getTaskDetail
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/trade/orders/{orderId}:
+    get:
+      tags: [trade]
+      summary: 查看二手交易订单详情（F-TRADE-03/04）
+      description: |
+        买卖双方本人或仲裁/管理端可见完整链路；他人 404。
+        响应使用 VO，禁出 Entity。
+      operationId: getTradeOrderDetail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseTradeOrderDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/tasks/{taskId}/reviews:
+    post:
+      tags: [tasks]
+      summary: 提交任务完成评价（星级 + 评语）
+      description: |
+        典型时机：任务状态为 `COMPLETED` 后由发布者评价接单者。
+        差评触发信用规则时走 `CreditApi.deduct`（Strategy）与申诉流程（F-CREDIT-*），本接口仅收评价内容。
+      operationId: submitTaskReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskReviewRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseReviewId"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Authorization: Bearer <accessToken>"
+
+  parameters:
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        example: "createdAt,desc"
+
+  responses:
+    BadRequest:
+      description: 参数缺失或格式错误（HTTP 400）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+          examples:
+            invalidParam:
+              value:
+                code: 1001
+                message: "INVALID_PARAM"
+                data: { field: "phone", hint: "手机号格式错误" }
+                traceId: "trace-xxx"
+    Unauthorized:
+      description: 未登录或凭据无效（HTTP 401）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+          examples:
+            badCreds:
+              value:
+                code: 2001
+                message: "AUTH_INVALID_CREDENTIALS"
+                data: null
+                traceId: "trace-xxx"
+    AccountLocked:
+      description: 账号或 IP 因连续失败被锁定（HTTP 403）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+          examples:
+            locked:
+              value:
+                code: 2003
+                message: "ACCOUNT_LOCKED"
+                data: { lockedUntil: "2026-05-13T12:00:00+08:00" }
+                traceId: "trace-xxx"
+    CreditOrPermission:
+      description: 信用分不足或未认证等（HTTP 403）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+          examples:
+            credit:
+              value:
+                code: 10001
+                message: "CREDIT_TOO_LOW_TO_PUBLISH"
+                data: { creditScore: 55 }
+                traceId: "trace-xxx"
+    NotFound:
+      description: 资源不存在（HTTP 404）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+    Conflict:
+      description: 状态冲突 / 乐观锁失败 / 重复评价（HTTP 409）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+          examples:
+            optimistic:
+              value:
+                code: 4002
+                message: "TASK_VERSION_CONFLICT"
+                data: null
+                traceId: "trace-xxx"
+    TooManyRequests:
+      description: 短信或接口限流（HTTP 429）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiResponseError"
+
+  schemas:
+    ApiResponseEmpty:
+      type: object
+      required: [code, message, data, traceId]
+      properties:
+        code:
+          type: integer
+          const: 0
+        message:
+          type: string
+          example: "ok"
+        data:
+          nullable: true
+        traceId:
+          type: string
+
+    ApiResponseError:
+      type: object
+      required: [code, message, traceId]
+      properties:
+        code:
+          type: integer
+          description: 非 0 四位业务码（分段见规约 §2.4）
+        message:
+          type: string
+          description: UPPER_SNAKE_CASE 业务码，便于日志检索
+        data:
+          description: 可选结构化补充信息
+        traceId:
+          type: string
+
+    PublicUserVO:
+      type: object
+      required: [userId, nickname, avatarUrl, verifiedTag]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        verifiedTag:
+          type: boolean
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, accessExpiresAt, refreshExpiresAt, verifyStatus]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        accessExpiresAt:
+          type: string
+          format: date-time
+        refreshExpiresAt:
+          type: string
+          format: date-time
+        verifyStatus:
+          type: string
+          description: 认证状态摘要，与 `auth_user` 一致
+
+    ApiResponseTokenPair:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/TokenPair"
+
+    SmsCodeSendRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          pattern: "^1[3-9]\\d{9}$"
+          example: "13800138000"
+        scene:
+          type: string
+          enum: [LOGIN_REGISTER, RESET_PASSWORD, SECURITY]
+          description: 短信模板场景（与模板号映射在服务端配置）
+
+    LoginByCodeRequest:
+      type: object
+      required: [phone, smsCode]
+      properties:
+        phone:
+          type: string
+        smsCode:
+          type: string
+          minLength: 4
+          maxLength: 8
+
+    LoginByPasswordRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          minLength: 8
+          maxLength: 32
+
+    RegisterRequest:
+      type: object
+      required: [phone, smsCode, password]
+      properties:
+        phone:
+          type: string
+        smsCode:
+          type: string
+        password:
+          type: string
+          minLength: 8
+          maxLength: 32
+          description: 8–32 位，至少 1 字母 + 1 数字（规约 §2.5.2）
+
+    TaskCreateRequest:
+      type: object
+      required: [title, taskType, rewardPoint, deadlineAt, pickupHint, deliveryBuilding]
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        taskType:
+          type: string
+          enum: [ERRAND, MUTUAL_HELP, TUTOR]
+        rewardPoint:
+          type: integer
+          minimum: 1
+        deadlineAt:
+          type: string
+          format: date-time
+        pickupHint:
+          type: string
+          maxLength: 200
+        deliveryBuilding:
+          type: string
+          maxLength: 120
+        remark:
+          type: string
+          maxLength: 500
+
+    ApiResponseTaskId:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [taskId]
+              properties:
+                taskId:
+                  type: integer
+                  format: int64
+
+    TaskListItemVO:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        taskType:
+          type: string
+        status:
+          type: integer
+        rewardPoint:
+          type: integer
+        deadlineAt:
+          type: string
+          format: date-time
+        publisher:
+          $ref: "#/components/schemas/PublicUserVO"
+        createdAt:
+          type: string
+          format: date-time
+
+    PageResultTaskListItem:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskListItemVO"
+        total:
+          type: integer
+          format: int64
+        page:
+          type: integer
+        size:
+          type: integer
+
+    ApiResponseTaskPage:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/PageResultTaskListItem"
+
+    TaskDetailVO:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        taskType:
+          type: string
+        status:
+          type: integer
+        rewardPoint:
+          type: integer
+        deadlineAt:
+          type: string
+          format: date-time
+        pickupHint:
+          type: string
+        deliveryBuilding:
+          type: string
+        remark:
+          type: string
+        version:
+          type: integer
+        publisher:
+          $ref: "#/components/schemas/PublicUserVO"
+        assignee:
+          $ref: "#/components/schemas/PublicUserVO"
+          nullable: true
+        attachmentUrls:
+          type: array
+          items:
+            type: string
+
+    ApiResponseTaskDetail:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/TaskDetailVO"
+
+    TradeOrderDetailVO:
+      type: object
+      description: 买卖双方可见字段经 VO 裁剪；具体字段与 `trade` 模块对齐
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        itemId:
+          type: integer
+          format: int64
+        status:
+          type: integer
+        freezePoint:
+          type: integer
+        buyer:
+          $ref: "#/components/schemas/PublicUserVO"
+        seller:
+          $ref: "#/components/schemas/PublicUserVO"
+        createdAt:
+          type: string
+          format: date-time
+
+    ApiResponseTradeOrderDetail:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/TradeOrderDetailVO"
+
+    TaskReviewRequest:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          maxLength: 500
+        anonymous:
+          type: boolean
+          default: false
+          description: 若为 true，公开展示仍遵守匿名规约（与 edu 评价区分，本字段预留给产品确认）
+
+    ApiResponseReviewId:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [reviewId]
+              properties:
+                reviewId:
+                  type: integer
+                  format: int64
