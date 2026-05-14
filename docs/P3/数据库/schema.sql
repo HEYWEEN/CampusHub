@@ -78,9 +78,9 @@ CREATE TABLE IF NOT EXISTS user_profile (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- task 模块
+-- task 模块（表名遵循 §3.4 `<module>_<entity>` 约定：task_order）
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS task (
+CREATE TABLE IF NOT EXISTS task_order (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
   publisher_id      BIGINT       NOT NULL COMMENT '逻辑外键 user',
   assignee_id       BIGINT       NULL COMMENT '逻辑外键 user',
@@ -99,10 +99,10 @@ CREATE TABLE IF NOT EXISTS task (
   creator_id        BIGINT       NULL,
   updater_id        BIGINT       NULL,
   PRIMARY KEY (id),
-  KEY idx_task_publisher_status (publisher_id, status),
-  KEY idx_task_assignee_status (assignee_id, status),
-  KEY idx_task_status_deadline (status, deadline_at),
-  KEY idx_task_created_at (created_at)
+  KEY idx_task_order_publisher_status (publisher_id, status),
+  KEY idx_task_order_assignee_status (assignee_id, status),
+  KEY idx_task_order_status_deadline (status, deadline_at),
+  KEY idx_task_order_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS task_attachment (
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS task_attachment (
   updater_id        BIGINT       NULL,
   PRIMARY KEY (id),
   KEY idx_task_attachment_task_id (task_id),
-  CONSTRAINT fk_task_attachment_task FOREIGN KEY (task_id) REFERENCES task (id)
+  CONSTRAINT fk_task_attachment_task FOREIGN KEY (task_id) REFERENCES task_order (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS task_review (
@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS task_review (
   PRIMARY KEY (id),
   UNIQUE KEY uk_task_review_task_reviewer (task_id, reviewer_id),
   KEY idx_task_review_reviewee (reviewee_id, created_at),
-  CONSTRAINT fk_task_review_task FOREIGN KEY (task_id) REFERENCES task (id)
+  CONSTRAINT fk_task_review_task FOREIGN KEY (task_id) REFERENCES task_order (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
