@@ -49,7 +49,7 @@
 | USER-03 | P0 | user | 公开主页 `GET /api/users/{userId}/public`（仅 PublicUserVO） | 1h | A | ⬜ | 响应中无 realName/studentNo 字段 | AUTH-02 |
 | USER-04 | P0 | user | 个人主页 `GET /api/users/me`（全字段） | 0.5h | A | ⬜ | 本人才能拿到完整字段 | AUTH-02 |
 
-**A 小计：14.5h**（含 INF）
+**A 小计：14.5h**（含 INF；另接 NTF-01/02 共 3.5h，见 §1.5）→ **A 总计 18h**
 
 ---
 
@@ -85,7 +85,9 @@
 
 ---
 
-### 1.5 P1 — 评价 / 信用 / 通知（credit + notify）
+### 1.5 P1 — 信用（credit，D 主责）+ 通知（notify，A 主责）
+
+> 🔄 **2026-05-19 调整**：notify 模块整体从 D 转给 A（理由：站内信本质是 user-facing 基础设施，与 user 模块强相关）。D 聚焦 credit + 集测正常流。
 
 | ID | 优先级 | 模块 | 任务 | 工时 | 负责人 | 状态 | 完成标准 | 依赖 |
 |----|------|------|------|----:|------|:----:|--------|------|
@@ -93,10 +95,11 @@
 | CRD-02 | P1 | credit | 双向评分 `POST /api/credit/reviews`（任务/交易完成后触发） | 2h | D | ⬜ | 评分 1-5 校验；不可重复评 | CRD-01, TASK-05 |
 | CRD-03 | P1 | credit | 信用分计算 Strategy（5 个加分项 + 4 个扣分项） | 2h | D | ⬜ | 信用分变更写 `credit_score_log` | CRD-02 |
 | CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | ⬜ | 事件触发后 record 表有流水 | CRD-01, TASK-05 |
-| NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET/POST/PATCH /api/notify/messages` | 2h | D | ⬜ | 触发→站内信记录可查；幂等 | INF-06 |
-| NTF-02 | P1 | notify | `notify/listener/TaskEventListener`（任务事件 → 站内信模板） | 1.5h | D | ⬜ | 5 类任务事件均能触达；24h 同类去重 | NTF-01, TASK-05 |
+| NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET/POST/PATCH /api/notify/messages` | 2h | **A** | ⬜ | 触发→站内信记录可查；幂等 | INF-06 |
+| NTF-02 | P1 | notify | `notify/listener/TaskEventListener`（任务事件 → 站内信模板） | 1.5h | **A** | ⬜ | 5 类任务事件均能触达；24h 同类去重 | NTF-01, TASK-05 |
 
-**D 小计：11.5h**
+**D 小计：8h**（模块）+ 1.5h(单测) + 2h(QA-02) + 1.5h(QA-03) + 0.5h(DOC-03 投稿) = **13.5h**
+**A 多承担：NTF-01 + NTF-02 = 3.5h**（详见 §1.2）；**A 兼集测交付 owner**（review + 整合 ~1h，含在 DOC-03 主笔工时里）
 
 ---
 
@@ -121,7 +124,7 @@
 |----|------|------|----:|------|:----:|--------|
 | QA-01 | P0 | 各自模块单元测试（每个 Service 至少 3 个用例：正常+边界+异常） | 各自 1.5h | 各模块 owner | ⬜ | 模块 line coverage ≥ 60% |
 | QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | ⬜ | `mvn verify` 一键跑过 |
-| QA-03 | P0 | 集成测试 #2：异常流 ×2（未登录访问 / 重复接单 / 越权操作 任选 2） | 1.5h | D | ⬜ | 异常返回结构正确 |
+| QA-03 | P0 | 集成测试 #2：异常流 ×2（未登录访问 / 重复接单 / 越权操作 任选 2） | 1.5h | **D** | ⬜ | 异常返回结构正确；与 QA-02 共用 setup 代码 |
 | QA-04 | P0 | GitLab CI/CD 配置（依赖 / 静态检查 / 单测 / 集测 / 构建） | 2h | B | ⬜ | 至少 1 次绿色运行 |
 
 **QA 小计：~11.5h**（含各自的 1.5h）
@@ -136,7 +139,7 @@
 | EXP-02 | "AI 调试对决"（≥ 2 个 Bug） | 4h | C | ⬜ | 含 6 步对比表 + 4 问分析 |
 | DOC-01 | Bug 日志整合（所有人随时记到 `docs/P4/bug/<姓名>_<日期>.md`） | 2h | C 整合 | ⬜ | 至少 5 条 bug + 根因 + 验证 |
 | DOC-02 | 演示说明 + README 更新 | 2h | B | ⬜ | 助教按文档可启动 |
-| DOC-03 | AI 协作反思日志 #4 | 2h | D | ⬜ | 5 节均有实质内容 |
+| DOC-03 | AI 协作反思日志 #4（**A 主笔汇总** + B/C/D 各投稿自己模块的 0.5h） | 0.5+0.5+0.5+1=2.5h | **A 主笔** | ⬜ | 5 节均有实质内容；每位组员有自己模块的 AI 协作摘要 |
 
 **实验文档小计：14h**
 
@@ -144,13 +147,18 @@
 
 ## 2. 工时核对
 
+> 🔄 **2026-05-19 重平衡**（v2）：
+> - notify 模块（NTF-01/02）从 D 转给 A
+> - 集成测试（QA-02 + QA-03）**全部归 D**（同一人写风格统一；A 作为交付 owner 兜底 review）
+> - 反思日志（DOC-03）改为 A 主笔 + 全员投稿
+
 | 角色 | 模块工时 | QA 工时 | 实验/文档 | 合计 |
 |------|--------:|-------:|---------:|------:|
 | 前端（我） | 12 | 1.5 | 1（看板维护） | **14.5h** |
-| A（auth/user/common） | 14.5 | 1.5 | — | **16h** |
-| B（task） | 12.5 | 1.5 | EXP-01 + DOC-02 = 6 | **20h** |
-| C（trade/edu/sql） | 10 | 1.5 | EXP-02 + DOC-01 = 6 | **17.5h** |
-| D（credit/notify+集测） | 11.5 | 3.5 | DOC-03 = 2 | **17h** |
+| A（auth/user/common **+notify**；集测交付 owner） | 14.5 + 3.5 = 18 | 1.5 | DOC-03 主笔 + 集测 review 共 1h | **20.5h** |
+| B（task） | 12.5 | 1.5 | QA-04 CI/CD 2 + EXP-01 + DOC-02 = 6；DOC-03 投稿 0.5 | **20.5h** |
+| C（trade/edu/sql） | 10 | 1.5 | EXP-02 + DOC-01 = 6；DOC-03 投稿 0.5 | **18h** |
+| D（credit + 集测全套） | 8（去 notify） | 1.5 + QA-02 2 + **QA-03 1.5** = 5 | DOC-03 投稿 0.5 | **13.5h** ✅ |
 
 ---
 
