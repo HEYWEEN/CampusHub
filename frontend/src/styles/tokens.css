@@ -1,0 +1,80 @@
+/*
+ * CampusHub Design Tokens · v4 (Warm Editorial · Coral Accent)
+ * 基于用户 demo/Homepage.html 的配色重写
+ */
+
+:root {
+  /* ===== Warm Editorial Palette（来自 Homepage.html） ===== */
+  --bg:        #F5F1EA;   /* 主背景 米色 */
+  --bg-2:      #EFE9DD;   /* 次背景 */
+  --cream:     #FAF6EE;   /* 卡片底色 */
+  --ink:       #1A1815;   /* 主文字（深墨） */
+  --ink-2:     #3A3530;   /* 次级文字 */
+  --muted:     #7A6F63;   /* 辅助文字 */
+  --line:      rgba(26, 24, 21, 0.14);
+  --accent:    #E25A3C;   /* 主 accent 橙红 */
+  --slate:     #2B3340;   /* 深色蓝灰（dark card 用） */
+
+  /* ===== Aliases（兼容旧 token 名） ===== */
+  --bg-warm:        var(--bg);
+  --bg-warm-2:      var(--bg-2);
+  --bg-card:        var(--cream);
+  --bg-page:        var(--bg);
+  --bg-hover:       var(--bg-2);
+  --border-default: var(--line);
+  --border-ink:     var(--ink);
+  --border-ink-soft:var(--line);
+  --ink-muted:      var(--ink-2);
+  --ink-faint:      var(--muted);
+  --text-primary:   var(--ink);
+  --text-body:      var(--ink-2);
+  --text-muted:     var(--muted);
+  --text-disabled:  #a3a3a3;
+
+  /* ===== Semantic ===== */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger:  #C4533A;
+  --info:    #3b82f6;
+
+  /* ===== Spacing ===== */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* ===== Radius ===== */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
+
+  /* ===== Shadows ===== */
+  --shadow-sm:   0 1px 2px rgba(26, 24, 21, 0.06);
+  --shadow-md:   0 2px 8px rgba(26, 24, 21, 0.08);
+  --shadow-lg:   0 8px 24px rgba(26, 24, 21, 0.10);
+  --shadow-card: 0 30px 60px -30px rgba(26, 24, 21, 0.22);
+
+  /* ===== Motion ===== */
+  --ease-out:      cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out-strong: cubic-bezier(0.7, 0, 0.15, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 350ms;
+  --duration-slow: 900ms;
+
+  /* ===== Typography ===== */
+  --font-display: 'Instrument Serif', 'Noto Serif SC', Georgia, serif;
+  --font-body:    'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ===== Layout ===== */
+  --container-max: 1440px;
+}

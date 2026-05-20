@@ -1,0 +1,176 @@
+/* ============================================================
+ * AppLayout · 学生端主壳
+ * 沿用 HomePage tokens 的米色 editorial 风格
+ * ============================================================ */
+
+.app-layout {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* ---------- Header（固定顶部） ---------- */
+.app-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 40px;
+  height: 72px;
+  border-bottom: 1px solid transparent;
+  transition: background .35s ease, backdrop-filter .35s ease, border-color .35s ease;
+}
+.app-header.scrolled {
+  background: rgba(245, 241, 234, 0.82);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  border-bottom-color: var(--line);
+}
+@media (max-width: 720px) { .app-header { padding: 14px 22px; } }
+
+.app-header .logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-body);
+  font-weight: 600; font-size: 17px;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.app-header .logo .dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent);
+  position: relative;
+}
+.app-header .logo .dot::after {
+  content: ""; position: absolute; inset: 5px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+/* ---------- Primary Nav ---------- */
+.app-nav {
+  display: flex; gap: 4px;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 14px; font-weight: 500;
+}
+.app-nav-link {
+  position: relative;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background .25s ease, color .25s ease;
+}
+.app-nav-link:hover { color: var(--ink); background: rgba(26, 24, 21, 0.06); }
+.app-nav-link.is-active {
+  color: var(--accent);
+  background: rgba(226, 90, 60, 0.10);
+}
+@media (max-width: 900px) {
+  .app-nav { display: none; }   /* TODO: 加抽屉菜单 */
+}
+
+/* ---------- Header Right ---------- */
+.app-header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.app-icon-btn {
+  position: relative;
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease;
+}
+.app-icon-btn:hover { background: rgba(26, 24, 21, 0.07); color: var(--ink); }
+
+.app-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--bg);
+}
+
+.app-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  background: var(--ink);
+  color: var(--cream);
+  border: 0;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: transform .3s ease, background .3s ease;
+}
+.app-pill:hover {
+  transform: translateY(-1px);
+  background: var(--slate);
+}
+.app-pill .arr { transition: transform .3s ease; display: inline-block; }
+.app-pill:hover .arr { transform: translateX(3px); }
+
+/* ---------- Main Content ---------- */
+.app-main {
+  padding: 112px 40px 96px;   /* 顶部留 72px header + 40px gutter */
+  min-height: 100vh;
+}
+@media (max-width: 720px) {
+  .app-main { padding: 96px 22px 64px; }
+}
+
+/* ---------- 通用 wrap（限定最大宽度，与 HomePage .wrap 对齐） ---------- */
+.app-main .wrap {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+/* ---------- Page section header（每个 app 页面顶部用） ---------- */
+.page-head {
+  display: flex; align-items: end; justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+.page-head .page-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.5vw, 72px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.page-head .page-title .it {
+  font-style: italic;
+  color: var(--accent);
+}
+.page-head .page-sub {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+/* placeholder block （用于 FE-A 阶段还未实现的页面）*/
+.placeholder {
+  padding: 80px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--muted);
+}
+.placeholder .accent { color: var(--accent); font-style: normal; }
