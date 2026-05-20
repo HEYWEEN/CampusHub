@@ -1,0 +1,222 @@
+/* ============================================================
+ * Domain components · 共享样式
+ * PublicUserCard / TaskCard / TaskStatusBadge / CreditBadge
+ * 沿用 HomePage tokens
+ * ============================================================ */
+
+/* ─── PublicUserCard ─── */
+.puc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--font-body);
+}
+.puc.puc-row { flex-direction: row; }
+
+.puc-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--ink-2);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+img.puc-avatar { object-fit: cover; }
+
+.puc.puc-sm .puc-avatar { width: 28px; height: 28px; font-size: 14px; }
+.puc.puc-md .puc-avatar { width: 36px; height: 36px; font-size: 17px; }
+.puc.puc-lg .puc-avatar { width: 48px; height: 48px; font-size: 22px; }
+
+.puc-fallback {
+  background: linear-gradient(135deg, var(--accent) 0%, #c44b30 100%);
+  color: var(--cream);
+}
+
+.puc-text {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 0;
+}
+.puc-name {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 12em;
+}
+.puc.puc-lg .puc-name { font-size: 16px; font-weight: 600; }
+
+.puc-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* link 状态 */
+a.puc:hover .puc-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--accent);
+}
+
+/* ─── TaskStatusBadge ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: transparent;
+  flex: 0 0 auto;
+}
+.status-pending   { color: var(--accent); }
+.status-progress  { color: #2563eb; }
+.status-wait      { color: #b45309; background: rgba(245, 158, 11, .08); }
+.status-done      { color: #047857; background: rgba(16, 185, 129, .08); }
+.status-canceled  { color: var(--muted); }
+.status-expired   { color: var(--danger); background: rgba(196, 83, 58, .08); }
+
+/* ─── CreditBadge ─── */
+.credit-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  border: 1px solid currentColor;
+}
+.credit-num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+.credit-label {
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  opacity: .7;
+}
+.credit-gold    { color: #b45309; background: rgba(245, 158, 11, .10); }
+.credit-silver  { color: #047857; background: rgba(16, 185, 129, .08); }
+.credit-bronze  { color: var(--ink-2); background: rgba(26, 24, 21, .06); }
+.credit-low     { color: var(--danger); background: rgba(196, 83, 58, .10); }
+.credit-md .credit-num { font-size: 22px; }
+.credit-md       { padding: 6px 16px; }
+
+/* ─── TaskCard ─── */
+.task-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease;
+  min-height: 220px;
+}
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 50px -28px rgba(26, 24, 21, .22);
+}
+
+.task-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.task-type {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.task-type-errand { color: var(--accent); }
+.task-type-mutual_help { color: #2563eb; }
+.task-type-tutor { color: #7c3aed; }
+
+.task-card-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  margin: 0 0 14px;
+  color: var(--ink);
+  /* 2 行截断 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  margin-top: auto;       /* 把 foot 推到底部 */
+}
+.task-meta-item {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.task-meta-urgent  { color: var(--accent); }
+.task-meta-expired { color: var(--danger); text-decoration: line-through; }
+
+.task-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.task-reward {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.task-reward-num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+}
+.task-reward-unit {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}

@@ -6,6 +6,10 @@ import VerifyPage from './pages/auth/VerifyPage'
 import AppLayout from './components/layout/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import PlaceholderPage from './components/PlaceholderPage'
+import TaskHallPage from './pages/tasks/TaskHallPage'
+import TaskDetailPage from './pages/tasks/TaskDetailPage'
+import TaskNewPage from './pages/tasks/TaskNewPage'
+import MyTasksPage from './pages/tasks/MyTasksPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -43,44 +47,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/app/tasks" replace /> },
 
-      // 任务
-      {
-        path: 'tasks',
-        element: (
-          <PlaceholderPage
-            title={<>找点<span className="it">事</span>做。</>}
-            sub="任务大厅 · 跑腿 · 互助 · 辅导"
-            body={<>大厅 + 筛选 + 卡片列表 · <span className="accent">FE-C 阶段</span> 实施</>}
-          />
-        ),
-      },
-      {
-        path: 'tasks/new',
-        element: (
-          <PlaceholderPage
-            title={<>发布<span className="it">新任务</span>。</>}
-            sub="F-TASK-01 · 信用闸门 + 冻结悬赏"
-          />
-        ),
-      },
-      {
-        path: 'tasks/my',
-        element: (
-          <PlaceholderPage
-            title={<>我的<span className="it">任务</span>。</>}
-            sub="发布的 / 接的（tab 切换）"
-          />
-        ),
-      },
-      {
-        path: 'tasks/:id',
-        element: (
-          <PlaceholderPage
-            title={<>任务<span className="it">详情</span>。</>}
-            sub="F-TASK-12 · 状态机时间线 + 接单 / 凭证 / 确认"
-          />
-        ),
-      },
+      // 任务 ✅ FE-C 已实施
+      { path: 'tasks',      element: <TaskHallPage /> },
+      { path: 'tasks/new',  element: <TaskNewPage /> },
+      { path: 'tasks/my',   element: <MyTasksPage /> },
+      { path: 'tasks/:id',  element: <TaskDetailPage /> },
 
       // 二手
       {
