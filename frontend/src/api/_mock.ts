@@ -13,7 +13,7 @@ import type {
   TaskSearchParams,
 } from '../types/task'
 import type { PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
-import type { CreditMeVO } from '../types/credit'
+import type { CreditMeVO, CreditRecord, NotifyMessageVO } from '../types/credit'
 import type {
   TradeItemCreateDTO,
   TradeItemVO,
@@ -500,6 +500,55 @@ export function mockGetItem(id: string): TradeItemVO {
   const it = items.find((x) => x.itemId === id)
   if (!it) throw new BizError(404, '商品不存在')
   return { ...it, images: [...it.images] }
+}
+
+// ─────────────────────────────────────────────
+// 通知 + 积分流水 mock（F 阶段）
+// ─────────────────────────────────────────────
+
+const notifications: NotifyMessageVO[] = [
+  { id: 'n1', type: 'TASK_ACCEPTED', title: '你的任务已被接单', body: '王晓明 接了你的「占座 · 图书馆 4 楼 A 区」', createdAt: minutesAgo(2), bizId: 't109' },
+  { id: 'n2', type: 'CREDIT_SETTLE', title: '积分到账',         body: '辅导任务完成，60 积分已结算到你的账户',    createdAt: minutesAgo(45), bizId: 't107', readAt: minutesAgo(20) },
+  { id: 'n3', type: 'TASK_PROOF',    title: '凭证已上传',        body: '王晓明 上传了任务「带早餐」的完成凭证，请尽快确认',  createdAt: minutesAgo(60 * 2), bizId: 't106' },
+  { id: 'n4', type: 'REVIEW',        title: '你收到一条评价',    body: '李小冰 给你打了 5 星好评："沟通顺畅，速度快"', createdAt: minutesAgo(60 * 5), bizId: 't107', readAt: minutesAgo(60 * 4) },
+  { id: 'n5', type: 'SYSTEM',        title: '欢迎来到 CampusHub', body: '完成首次学生证认证可领 50 启动积分。',         createdAt: minutesAgo(60 * 24), readAt: minutesAgo(60 * 20) },
+  { id: 'n6', type: 'TASK_REMINDER', title: '任务即将超时',      body: '你接的「拍夕阳」任务还有 10 分钟到期',          createdAt: minutesAgo(8), bizId: 't105' },
+  { id: 'n7', type: 'CREDIT_FREEZE', title: '积分已冻结',         body: '你发布了任务，10 积分作为悬赏被冻结',          createdAt: minutesAgo(12), bizId: 't109', readAt: minutesAgo(5) },
+]
+
+const records: CreditRecord[] = [
+  { id: 'r1', direction: 'FREEZE',   delta: -10,  reasonCode: 'TASK_PUBLISH',  bizId: 't109', createdAt: minutesAgo(12) },
+  { id: 'r2', direction: 'SETTLE',   delta: 60,   reasonCode: 'TASK_COMPLETE', bizId: 't107', createdAt: minutesAgo(60 * 5) },
+  { id: 'r3', direction: 'UNFREEZE', delta: 8,    reasonCode: 'TASK_CANCEL',   bizId: 't110', createdAt: minutesAgo(60 * 8) },
+  { id: 'r4', direction: 'DEDUCT',   delta: -5,   reasonCode: 'BAD_REVIEW',    createdAt: minutesAgo(60 * 24 * 2) },
+  { id: 'r5', direction: 'SETTLE',   delta: 12,   reasonCode: 'TASK_COMPLETE', bizId: 't050', createdAt: minutesAgo(60 * 30) },
+  { id: 'r6', direction: 'FREEZE',   delta: -50,  reasonCode: 'TASK_PUBLISH',  bizId: 't048', createdAt: minutesAgo(60 * 48) },
+  { id: 'r7', direction: 'SETTLE',   delta: 200,  reasonCode: 'TUTOR_COMPLETE',bizId: 't040', createdAt: minutesAgo(60 * 72) },
+]
+
+export function mockListNotifications(filter?: 'all' | 'unread' | 'read'): NotifyMessageVO[] {
+  const list = [...notifications].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  if (filter === 'unread') return list.filter((n) => !n.readAt)
+  if (filter === 'read')   return list.filter((n) => !!n.readAt)
+  return list
+}
+
+export function mockUnreadCount(): number {
+  return notifications.filter((n) => !n.readAt).length
+}
+
+export function mockMarkRead(id: string): void {
+  const n = notifications.find((x) => x.id === id)
+  if (n && !n.readAt) n.readAt = new Date().toISOString()
+}
+
+export function mockMarkAllRead(): void {
+  const now = new Date().toISOString()
+  notifications.forEach((n) => { if (!n.readAt) n.readAt = now })
+}
+
+export function mockListCreditRecords(): CreditRecord[] {
+  return [...records].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
 export function mockCreateItem(dto: TradeItemCreateDTO, userId = MOCK_CURRENT_USER_ID): string {

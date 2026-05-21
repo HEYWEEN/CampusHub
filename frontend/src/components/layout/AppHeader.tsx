@@ -1,6 +1,9 @@
+import { useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../../stores/auth'
 import { useNotifyStore } from '../../stores/notify'
+import { getUnreadCount } from '../../api/notify'
 
 const NAV = [
   { to: '/app/tasks',     label: '任务' },
@@ -15,6 +18,17 @@ export default function AppHeader() {
   const navigate = useNavigate()
   const logout = useAuthStore((s) => s.logout)
   const unread = useNotifyStore((s) => s.unreadCount)
+  const setUnread = useNotifyStore((s) => s.setUnread)
+
+  // 每 30 秒拉一次未读数（也在通知页变更后会 invalidate）
+  const { data } = useQuery({
+    queryKey: ['notify-unread'],
+    queryFn: () => getUnreadCount(),
+    refetchInterval: 30_000,
+  })
+  useEffect(() => {
+    if (data) setUnread(data.count)
+  }, [data, setUnread])
 
   const handleLogout = () => {
     logout()

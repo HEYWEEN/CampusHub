@@ -1,7 +1,7 @@
 import { apiGet } from './client'
 import { BizError } from '../types/api'
-import type { CreditMeVO } from '../types/credit'
-import { mockGetCredit } from './_mock'
+import type { CreditMeVO, CreditRecord } from '../types/credit'
+import { mockGetCredit, mockListCreditRecords } from './_mock'
 
 async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
   if (!import.meta.env.DEV) return real()
@@ -19,4 +19,10 @@ export const getMyCredit = () =>
   withMock<CreditMeVO>(
     () => apiGet('/api/credits/me'),
     () => mockGetCredit(),
+  )
+
+export const listMyRecords = () =>
+  withMock<CreditRecord[]>(
+    () => apiGet('/api/credits/me/records'),
+    () => mockListCreditRecords(),
   )

@@ -18,6 +18,8 @@ import TradeDetailPage from './pages/trade/TradeDetailPage'
 import TradeNewPage from './pages/trade/TradeNewPage'
 import EduTutorHallPage from './pages/edu/EduTutorHallPage'
 import EduTutorNewPage from './pages/edu/EduTutorNewPage'
+import NotifyListPage from './pages/notify/NotifyListPage'
+import CreditPage from './pages/credit/CreditPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -101,34 +103,17 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 通知
-      {
-        path: 'notify',
-        element: (
-          <PlaceholderPage
-            title={<>有<span className="it">新</span>消息。</>}
-            sub="站内通知 · F-NOTIFY-02/03"
-          />
-        ),
-      },
+      // 通知 ✅ FE-F
+      { path: 'notify', element: <NotifyListPage /> },
 
-      // 信用
-      {
-        path: 'credit',
-        element: (
-          <PlaceholderPage
-            title={<>我的<span className="it">信用</span>。</>}
-            sub="信用分 + 积分账户 · F-CREDIT-01/08"
-            body={<>历史曲线 · 流水查询 · <span className="accent">FE-F 阶段</span></>}
-          />
-        ),
-      },
+      // 信用 ✅ FE-F
+      { path: 'credit',         element: <CreditPage /> },
       {
         path: 'credit/appeals',
         element: (
           <PlaceholderPage
             title={<>申诉<span className="it">记录</span>。</>}
-            sub="F-CREDIT-05~07"
+            sub="F-CREDIT-05~07 · 联调阶段补"
           />
         ),
       },
