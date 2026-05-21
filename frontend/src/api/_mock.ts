@@ -12,7 +12,8 @@ import type {
   TaskListItemVO,
   TaskSearchParams,
 } from '../types/task'
-import type { PublicUserVO } from '../types/user'
+import type { PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
+import type { CreditMeVO } from '../types/credit'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -295,4 +296,109 @@ export function mockCancelTask(id: string): void {
   if (t.status === 'COMPLETED') throw new BizError(409, '已完成的任务无法取消')
   t.status = 'CANCELED'
   t.version += 1
+}
+
+// ─────────────────────────────────────────────
+// 用户 / 信用 mock（D 阶段）
+// ─────────────────────────────────────────────
+
+const me: UserMeVO = {
+  userId: MOCK_CURRENT_USER_ID,
+  nickname: '张大锤',
+  avatarUrl: null,
+  verifiedTag: '校园已认证',
+  phoneMasked: '138****8842',
+  verifyStatus: 'approved',
+  privacy: {
+    hidePublishHist: true,
+    hideAcceptHist: true,
+    hideCourseReviews: true,
+    imOpen: true,
+  },
+  dailyAcceptLimit: 2,
+}
+
+const credit: CreditMeVO = {
+  userId: MOCK_CURRENT_USER_ID,
+  creditScore: 85,
+  pointBalance: 320,
+  pointFrozen: 50,
+  dailyAcceptLimit: 2,
+  canPublish: true,
+  canAccept: true,
+}
+
+export function mockGetMe(): UserMeVO {
+  return { ...me, privacy: { ...me.privacy } }
+}
+
+export function mockGetCredit(): CreditMeVO {
+  return { ...credit }
+}
+
+export function mockUpdateProfile(dto: ProfileUpdateDTO): UserMeVO {
+  if (dto.nickname !== undefined) {
+    me.nickname = dto.nickname
+    users[me.userId] = { ...users[me.userId], nickname: dto.nickname }
+  }
+  if (dto.avatarUrl !== undefined) {
+    me.avatarUrl = dto.avatarUrl
+    users[me.userId] = { ...users[me.userId], avatarUrl: dto.avatarUrl }
+  }
+  return mockGetMe()
+}
+
+export function mockUpdatePrivacy(privacy: PrivacySettings): UserMeVO {
+  me.privacy = { ...privacy }
+  return mockGetMe()
+}
+
+export function mockUpdateAcceptLimit(limit: number): UserMeVO {
+  if (limit < 1 || limit > 3) throw new BizError(400, '接单上限只能 1-3')
+  me.dailyAcceptLimit = limit
+  credit.dailyAcceptLimit = limit
+  return mockGetMe()
+}
+
+export function mockGetPublicUser(userId: string): PublicUserVO {
+  if (userId === me.userId) {
+    return {
+      userId: me.userId,
+      nickname: me.nickname,
+      avatarUrl: me.avatarUrl,
+      verifiedTag: me.verifiedTag,
+    }
+  }
+  const u = users[userId]
+  if (!u) throw new BizError(404, '用户不存在')
+  return { ...u }
+}
+
+/** 当前用户对某用户的 "公开 stats"（受隐私开关影响） */
+export interface PublicUserStats {
+  user: PublicUserVO
+  publishedCount: number | null   // null = 该项被隐藏
+  acceptedCount: number | null
+  reviewsCount: number | null
+}
+
+export function mockGetPublicStats(userId: string): PublicUserStats {
+  const user = mockGetPublicUser(userId)
+  // 自己看自己 → 全部显示
+  // 看他人 → 受对方隐私开关
+  if (userId === me.userId) {
+    return {
+      user,
+      publishedCount: tasks.filter((t) => t.publisher.userId === userId).length,
+      acceptedCount: tasks.filter((t) => t.acceptor?.userId === userId).length,
+      reviewsCount: 12,
+    }
+  }
+  // mock：假设其他用户隐私设置与 me 相同（全部 hide）
+  return {
+    user,
+    publishedCount: null,
+    acceptedCount: null,
+    reviewsCount: null,
+  }
 }

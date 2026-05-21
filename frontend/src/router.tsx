@@ -10,6 +10,9 @@ import TaskHallPage from './pages/tasks/TaskHallPage'
 import TaskDetailPage from './pages/tasks/TaskDetailPage'
 import TaskNewPage from './pages/tasks/TaskNewPage'
 import MyTasksPage from './pages/tasks/MyTasksPage'
+import MePage from './pages/me/MePage'
+import ProfileEditPage from './pages/me/ProfileEditPage'
+import PublicUserPage from './pages/u/PublicUserPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -24,17 +27,8 @@ export const router = createBrowserRouter([
   { path: '/register', element: <RegisterPage /> },
   { path: '/verify', element: <VerifyPage /> },
 
-  // ===== 公开用户主页 =====
-  {
-    path: '/u/:userId',
-    element: (
-      <PlaceholderPage
-        title={<>Hello <span className="it">stranger.</span></>}
-        sub="公开用户主页 · F-USER-03"
-        body={<>仅渲染 PublicUserVO · <span className="accent">FE-D 阶段</span> 实施</>}
-      />
-    ),
-  },
+  // ===== 公开用户主页 ✅ FE-D =====
+  { path: '/u/:userId', element: <PublicUserPage /> },
 
   // ===== 学生端 /app/** =====
   {
@@ -175,25 +169,9 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 我的
-      {
-        path: 'me',
-        element: (
-          <PlaceholderPage
-            title={<>我的<span className="it">主页</span>。</>}
-            sub="个人资料 + 隐私开关 · F-USER-01/02/04"
-          />
-        ),
-      },
-      {
-        path: 'me/edit',
-        element: (
-          <PlaceholderPage
-            title={<>编辑<span className="it">资料</span>。</>}
-            sub="昵称 / 头像 / 三项隐私开关默认开"
-          />
-        ),
-      },
+      // 我的 ✅ FE-D
+      { path: 'me',      element: <MePage /> },
+      { path: 'me/edit', element: <ProfileEditPage /> },
     ],
   },
 
