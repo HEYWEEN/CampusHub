@@ -14,6 +14,11 @@ import type {
 } from '../types/task'
 import type { PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
 import type { CreditMeVO } from '../types/credit'
+import type {
+  TradeItemCreateDTO,
+  TradeItemVO,
+  TradeSearchParams,
+} from '../types/trade'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -373,6 +378,151 @@ export function mockGetPublicUser(userId: string): PublicUserVO {
   if (!u) throw new BizError(404, '用户不存在')
   return { ...u }
 }
+
+// ─────────────────────────────────────────────
+// 二手 trade mock（E 阶段）
+// ─────────────────────────────────────────────
+
+const items: TradeItemVO[] = [
+  {
+    itemId: 'i101',
+    title: 'Kindle Paperwhite 4（无划痕）',
+    price: 380,
+    description: '九成新，2022 年买的，平时只在宿舍用。保护套和数据线都送。\n仙林面交，可以试用一会儿再决定。',
+    images: ['/illustrations/reading.png'],
+    pickupType: 'BUILDING_RANGE',
+    buildingRange: '仙林 14 号楼',
+    status: 'ON_SALE',
+    seller: users.u2,
+    createdAt: minutesAgo(60),
+  },
+  {
+    itemId: 'i102',
+    title: '计算机组成原理（清华版）+ 配套实验书',
+    price: 25,
+    description: '考完研留下的，笔记不多，正文很干净。两本一起出。',
+    images: ['/illustrations/focused.png'],
+    pickupType: 'EXACT_DORM',
+    buildingRange: '16 号楼 412',
+    status: 'ON_SALE',
+    seller: users.u4,
+    createdAt: minutesAgo(60 * 3),
+  },
+  {
+    itemId: 'i103',
+    title: 'iPad mini 6 64G WiFi 版',
+    price: 2100,
+    description: '紫色，1 年质保还剩 4 个月。平时就看 PDF 和记笔记，无任何磕碰。',
+    images: ['/illustrations/coffee.png'],
+    pickupType: 'MEETING',
+    buildingRange: '南门 / 西门均可',
+    status: 'ON_SALE',
+    seller: users.u3,
+    createdAt: minutesAgo(60 * 8),
+  },
+  {
+    itemId: 'i104',
+    title: '宿舍小电饭锅（毕业转手）',
+    price: 80,
+    description: '1.6L，正好够 2 人吃。煮饭炖汤煮粥都可以。明年 6 月毕业现在低价出。',
+    images: ['/illustrations/plant.png'],
+    pickupType: 'EXACT_DORM',
+    buildingRange: '5 号楼 308',
+    status: 'IN_TRADE',
+    seller: users.u5,
+    createdAt: minutesAgo(60 * 24),
+  },
+  {
+    itemId: 'i105',
+    title: '高数考研全程班教材（张宇 + 李永乐）',
+    price: 40,
+    description: '基础到强化，含视频网盘账号（剩余 6 个月）',
+    images: ['/illustrations/free-time.png'],
+    pickupType: 'BUILDING_RANGE',
+    buildingRange: '仙林任意宿舍楼',
+    status: 'ON_SALE',
+    seller: users.u4,
+    createdAt: minutesAgo(60 * 12),
+  },
+  {
+    itemId: 'i106',
+    title: 'Sony WH-1000XM4 降噪耳机',
+    price: 1500,
+    description: '银色，1 年内的，无瑕疵。包装盒和配件齐全。',
+    images: ['/illustrations/reflecting.png'],
+    pickupType: 'MEETING',
+    buildingRange: '校内任意地点',
+    status: 'ON_SALE',
+    seller: users.u1,
+    createdAt: minutesAgo(30),
+  },
+  {
+    itemId: 'i107',
+    title: '折叠椅（带杯架 · 露营也能用）',
+    price: 35,
+    description: '阳台坐久了腰疼买的，结果没用几次。颜色军绿。',
+    images: ['/illustrations/catching-up.png'],
+    pickupType: 'EXACT_DORM',
+    buildingRange: '14 号楼 305',
+    status: 'COMPLETED',
+    seller: users.u2,
+    createdAt: minutesAgo(60 * 60),
+  },
+  {
+    itemId: 'i108',
+    title: '手冲咖啡套装（V60 滤杯 + 手冲壶 + 电子秤）',
+    price: 120,
+    description: '一整套出，新买的电子秤还没拆封。本来想晨起来一杯，结果还是奶茶香。',
+    images: ['/illustrations/coffee.png'],
+    pickupType: 'BUILDING_RANGE',
+    buildingRange: '鼓楼校区',
+    status: 'ON_SALE',
+    seller: users.u3,
+    createdAt: minutesAgo(60 * 5),
+  },
+]
+
+export function mockSearchItems(params: TradeSearchParams): PageResponse<TradeItemVO> {
+  const { page = 1, size = 12, status, q } = params
+  let filtered = [...items]
+  if (status) filtered = filtered.filter((i) => i.status === status)
+  if (q) {
+    const kw = q.toLowerCase()
+    filtered = filtered.filter(
+      (i) => i.title.toLowerCase().includes(kw) || i.description.toLowerCase().includes(kw),
+    )
+  }
+  filtered.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  return pageOf(filtered, page, size)
+}
+
+export function mockGetItem(id: string): TradeItemVO {
+  const it = items.find((x) => x.itemId === id)
+  if (!it) throw new BizError(404, '商品不存在')
+  return { ...it, images: [...it.images] }
+}
+
+export function mockCreateItem(dto: TradeItemCreateDTO, userId = MOCK_CURRENT_USER_ID): string {
+  const itemId = 'i' + Math.floor(Math.random() * 9000 + 1000)
+  const newItem: TradeItemVO = {
+    itemId,
+    title: dto.title,
+    price: dto.price,
+    description: dto.description,
+    images: dto.images.length > 0 ? dto.images : ['/illustrations/free-time.png'],
+    pickupType: dto.pickupType,
+    buildingRange: dto.buildingRange,
+    status: 'ON_SALE',
+    seller: users[userId] ?? users.u1,
+    createdAt: new Date().toISOString(),
+  }
+  items.unshift(newItem)
+  return itemId
+}
+
+// ─────────────────────────────────────────────
+// PublicUserStats（user 模块已用）
+// ─────────────────────────────────────────────
 
 /** 当前用户对某用户的 "公开 stats"（受隐私开关影响） */
 export interface PublicUserStats {

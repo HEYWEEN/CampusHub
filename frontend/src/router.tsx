@@ -13,6 +13,11 @@ import MyTasksPage from './pages/tasks/MyTasksPage'
 import MePage from './pages/me/MePage'
 import ProfileEditPage from './pages/me/ProfileEditPage'
 import PublicUserPage from './pages/u/PublicUserPage'
+import TradeHallPage from './pages/trade/TradeHallPage'
+import TradeDetailPage from './pages/trade/TradeDetailPage'
+import TradeNewPage from './pages/trade/TradeNewPage'
+import EduTutorHallPage from './pages/edu/EduTutorHallPage'
+import EduTutorNewPage from './pages/edu/EduTutorNewPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -47,55 +52,14 @@ export const router = createBrowserRouter([
       { path: 'tasks/my',   element: <MyTasksPage /> },
       { path: 'tasks/:id',  element: <TaskDetailPage /> },
 
-      // 二手
-      {
-        path: 'trade',
-        element: (
-          <PlaceholderPage
-            title={<>宿舍里的<span className="it">好东西</span>。</>}
-            sub="二手大厅 · F-TRADE-*"
-            body={<><span className="accent">FE-E 阶段</span> 实施</>}
-          />
-        ),
-      },
-      {
-        path: 'trade/new',
-        element: (
-          <PlaceholderPage
-            title={<>挂个<span className="it">出售</span>。</>}
-            sub="F-TRADE-01 · 9 图 EXIF 清洗"
-          />
-        ),
-      },
-      {
-        path: 'trade/:id',
-        element: (
-          <PlaceholderPage
-            title={<>商品<span className="it">详情</span>。</>}
-            sub="F-TRADE-03 · 议价 → 下单 → 冻结积分"
-          />
-        ),
-      },
+      // 二手 ✅ FE-E
+      { path: 'trade',      element: <TradeHallPage /> },
+      { path: 'trade/new',  element: <TradeNewPage /> },
+      { path: 'trade/:id',  element: <TradeDetailPage /> },
 
-      // 教育
-      {
-        path: 'edu/tutor',
-        element: (
-          <PlaceholderPage
-            title={<>找位<span className="it">学长</span>。</>}
-            sub="辅导大厅 · F-EDU-06/07"
-          />
-        ),
-      },
-      {
-        path: 'edu/tutor/new',
-        element: (
-          <PlaceholderPage
-            title={<>发布<span className="it">辅导需求</span>。</>}
-            sub="F-EDU-05 · 违禁词拦截 + 信用闸门"
-          />
-        ),
-      },
+      // 教育 ✅ FE-E
+      { path: 'edu/tutor',     element: <EduTutorHallPage /> },
+      { path: 'edu/tutor/new', element: <EduTutorNewPage /> },
       {
         path: 'edu/resources',
         element: (

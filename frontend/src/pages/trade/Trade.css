@@ -1,0 +1,148 @@
+/* ============================================================
+ * Trade pages 共享样式（部分复用 Tasks.css 的 toolbar / grid）
+ * ============================================================ */
+
+.trade-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+@media (max-width: 1200px) { .trade-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 880px)  { .trade-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .trade-grid { grid-template-columns: 1fr; } }
+
+/* ─── Trade 详情 ─── */
+.trade-detail-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .trade-detail-layout { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.trade-gallery {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.trade-gallery img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+.trade-gallery-status {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+}
+
+.trade-detail-side {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+
+.trade-detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -.015em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.trade-detail-price {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--accent);
+}
+.trade-detail-price-unit {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 16px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.trade-detail-desc {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.trade-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+}
+.trade-meta-row:last-child { border-bottom: 0; }
+.trade-meta-key {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.trade-meta-val { color: var(--ink); font-weight: 500; }
+
+/* 上传图占位（发布页） */
+.image-uploader {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.image-slot {
+  aspect-ratio: 1;
+  border: 2px dashed var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .25s ease, background .25s ease;
+}
+.image-slot:hover { border-color: var(--ink); color: var(--ink); }
+.image-slot.has-image {
+  border-style: solid;
+  border-color: var(--line);
+  background: var(--cream);
+  padding: 12px;
+}
+.image-slot img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
