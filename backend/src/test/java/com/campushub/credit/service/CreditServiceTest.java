@@ -4,6 +4,7 @@ import com.campushub.credit.api.CreditApi;
 import com.campushub.credit.entity.CreditAccount;
 import com.campushub.credit.repository.CreditAccountRepository;
 import com.campushub.credit.repository.CreditRecordRepository;
+import com.campushub.credit.repository.CreditScoreLogRepository;
 import com.campushub.common.exception.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +27,14 @@ class CreditServiceTest {
     @Autowired private CreditApi credit;
     @Autowired private CreditAccountRepository accountRepo;
     @Autowired private CreditRecordRepository recordRepo;
+    @Autowired private CreditScoreLogRepository scoreLogRepo;
 
     private static final long USER = 1001L;
 
     @BeforeEach
     void cleanup() {
         recordRepo.deleteAll();
+        scoreLogRepo.deleteAll();
         accountRepo.deleteAll();
     }
 
@@ -118,5 +121,57 @@ class CreditServiceTest {
         // 再冻结应被余额不足拦截
         assertThrows(BizException.class, () -> credit.freeze(USER, 1, "task:7b:freeze"));
         assertTrue(reload(USER).getPointBalance() >= 0);
+    }
+
+    // ---- CRD-03 deduct / 信用分 ----
+
+    @Test
+    void deduct_usesStrategyDelta_ignoringPassedDelta() {
+        // 入参 delta=999 应被忽略，以规则 -5 为准
+        credit.deduct(USER, 999, "TASK_NO_SHOW", "task:8:noshow");
+        assertEquals(95, reload(USER).getCreditScore());
+    }
+
+    @Test
+    void deduct_clampsAtZero_neverNegative() {
+        // 初始 100，连扣 4 次 -30 = -120，应夹紧到 0
+        credit.deduct(USER, 0, "SEVERE_VIOLATION", "v:1");
+        credit.deduct(USER, 0, "SEVERE_VIOLATION", "v:2");
+        credit.deduct(USER, 0, "SEVERE_VIOLATION", "v:3");
+        credit.deduct(USER, 0, "SEVERE_VIOLATION", "v:4");
+        assertEquals(0, reload(USER).getCreditScore());
+    }
+
+    @Test
+    void deduct_clampsAtMax120() {
+        // 先扣到接近上限再加分不超过 120
+        for (int i = 0; i < 25; i++) {
+            credit.deduct(USER, 0, "TASK_COMPLETE_BONUS", "bonus:" + i);
+        }
+        assertEquals(120, reload(USER).getCreditScore(), "信用分上限 120");
+    }
+
+    @Test
+    void deduct_sameBizKeyTwice_isIdempotent() {
+        credit.deduct(USER, 0, "TASK_NO_SHOW", "task:9:noshow");
+        credit.deduct(USER, 0, "TASK_NO_SHOW", "task:9:noshow");
+        assertEquals(95, reload(USER).getCreditScore(), "重复计分不应二次扣");
+        assertEquals(1, scoreLogRepo.count(), "幂等下只 1 条 score log");
+    }
+
+    @Test
+    void deduct_unknownReason_usesPassedDelta_forManualAdjust() {
+        // 管理员手动调整：reasonCode 未登记，用入参 delta
+        credit.deduct(USER, -7, "MANUAL_ADJUST", "admin:1");
+        assertEquals(93, reload(USER).getCreditScore());
+    }
+
+    @Test
+    void deduct_writesScoreLog_withBeforeAfter() {
+        credit.deduct(USER, 0, "TASK_NO_SHOW", "task:10:noshow");
+        var log = scoreLogRepo.findAll().get(0);
+        assertEquals(100, log.getBeforeScore());
+        assertEquals(95, log.getAfterScore());
+        assertEquals(-5, log.getDelta());
     }
 }

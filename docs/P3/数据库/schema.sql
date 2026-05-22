@@ -178,6 +178,21 @@ CREATE TABLE IF NOT EXISTS credit_record (
   KEY idx_credit_record_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- CRD-03：信用分变更日志（D 补充，已与 schema owner 同步）。用于 180 天信用曲线 + 审计举证。
+CREATE TABLE IF NOT EXISTS credit_score_log (
+  id                BIGINT       NOT NULL AUTO_INCREMENT,
+  user_id           BIGINT       NOT NULL,
+  delta             INT          NOT NULL COMMENT '信用分有符号变化',
+  reason_code       VARCHAR(64)  NOT NULL COMMENT '计分规则，见 ScoreRule 枚举',
+  before_score      INT          NOT NULL,
+  after_score       INT          NOT NULL,
+  biz_id            VARCHAR(128) NOT NULL COMMENT '幂等键，如 review:999:malicious',
+  created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_credit_score_log_biz (biz_id),
+  KEY idx_credit_score_log_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- ---------------------------------------------------------------------------
 -- trade 模块（订单详情 API 对应）
 -- ---------------------------------------------------------------------------

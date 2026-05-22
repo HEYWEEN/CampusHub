@@ -5,9 +5,13 @@ import com.campushub.credit.api.CreditApi;
 import com.campushub.credit.entity.CreditAccount;
 import com.campushub.credit.entity.CreditDirection;
 import com.campushub.credit.entity.CreditRecord;
+import com.campushub.credit.entity.CreditScoreLog;
 import com.campushub.credit.exception.CreditErrorCode;
 import com.campushub.credit.repository.CreditAccountRepository;
 import com.campushub.credit.repository.CreditRecordRepository;
+import com.campushub.credit.repository.CreditScoreLogRepository;
+import com.campushub.credit.strategy.ScoreStrategy;
+import com.campushub.credit.strategy.ScoreStrategyRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +35,17 @@ public class CreditServiceImpl implements CreditApi {
 
     private final CreditAccountRepository accountRepo;
     private final CreditRecordRepository recordRepo;
+    private final CreditScoreLogRepository scoreLogRepo;
+    private final ScoreStrategyRegistry scoreRegistry;
 
-    public CreditServiceImpl(CreditAccountRepository accountRepo, CreditRecordRepository recordRepo) {
+    public CreditServiceImpl(CreditAccountRepository accountRepo,
+                             CreditRecordRepository recordRepo,
+                             CreditScoreLogRepository scoreLogRepo,
+                             ScoreStrategyRegistry scoreRegistry) {
         this.accountRepo = accountRepo;
         this.recordRepo = recordRepo;
+        this.scoreLogRepo = scoreLogRepo;
+        this.scoreRegistry = scoreRegistry;
     }
 
     @Override
@@ -89,8 +100,29 @@ public class CreditServiceImpl implements CreditApi {
     @Override
     @Transactional
     public void deduct(long userId, int delta, String reasonCode, String bizKey) {
-        // 信用分扣减走 Strategy（按 reasonCode 决定 delta）+ 写 credit_score_log，留给 CRD-03。
-        throw new UnsupportedOperationException("CRD-03 待实现：CreditApi.deduct（信用分 Strategy + credit_score_log）");
+        if (scoreLogRepo.existsByBizId(bizKey)) return; // 幂等
+
+        // 已登记的系统规则：以 Strategy 的 delta 为权威，忽略入参 delta（避免调用方传错）；
+        // 未登记（如管理员手动调整 FR-ADM-01）：用入参 delta。
+        int effectiveDelta;
+        if (scoreRegistry.contains(reasonCode)) {
+            ScoreStrategy rule = scoreRegistry.resolve(reasonCode);
+            effectiveDelta = rule.delta();
+        } else {
+            effectiveDelta = delta;
+        }
+
+        CreditAccount account = getOrCreateAccount(userId);
+        int before = account.getCreditScore();
+        int after = account.adjustScore(effectiveDelta); // 内部夹紧 [0,120]
+        accountRepo.save(account);
+        scoreLogRepo.save(new CreditScoreLog(userId, after - before, reasonCode, before, after, bizKey));
+    }
+
+    /** 信用分计分快捷入口：reasonCode 决定 delta（CRD-04 listener / 评价触发用）。 */
+    @Transactional
+    public void applyScore(long userId, String reasonCode, String bizKey) {
+        deduct(userId, 0, reasonCode, bizKey);
     }
 
     // ---- 内部 ----
