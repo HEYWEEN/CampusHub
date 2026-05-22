@@ -69,6 +69,13 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- 仅引入 BCryptPasswordEncoder，不引入 starter-security
+		     避免 SecurityConfig 占位说明里提到的 CSRF/默认 401 副作用 -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
