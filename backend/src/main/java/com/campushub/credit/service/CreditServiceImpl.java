@@ -1,45 +1,113 @@
 package com.campushub.credit.service;
 
+import com.campushub.common.exception.BizException;
 import com.campushub.credit.api.CreditApi;
+import com.campushub.credit.entity.CreditAccount;
+import com.campushub.credit.entity.CreditDirection;
+import com.campushub.credit.entity.CreditRecord;
+import com.campushub.credit.exception.CreditErrorCode;
+import com.campushub.credit.repository.CreditAccountRepository;
+import com.campushub.credit.repository.CreditRecordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Credit 模块核心服务 —— 同时实现 {@link CreditApi} 给跨模块调用。
+ * Credit 模块核心服务 —— 同时实现 {@link CreditApi} 给跨模块调用（CRD-01）。
  *
- * <p><b>当前状态：INF-06 stub。</b> 仅提供接口骨架让 task / trade（B / C）能 @Autowired
- * 并通过编译，方法体尚未实现，真实逻辑在 CRD-01 完成。getScoreOf 暂返回初始信用分 100，
- * 让依赖信用闸门的调用方在 stub 期不会被误拦截。其余写操作显式抛出，避免被误当成功。
+ * <p><b>幂等模型</b>：每个写操作传 bizKey，先查 {@code credit_record.biz_id} 是否已存在，
+ * 已存在则静默短路（return），保证事件重投/重试安全（P3 §5）。
+ *
+ * <p><b>不变量</b>：point_balance / point_frozen 不出负，credit_score 夹紧 [0,120]——
+ * 边界校验落在 {@link CreditAccount} 领域方法里。并发更新靠 @Version 乐观锁。
+ *
+ * <p><b>账户懒创建</b>：getScoreOf / 冻结等遇账户不存在时按「认证即初始 100」语义创建，
+ * 不依赖外部种子流程。
+ *
+ * <p>注：{@link #settle} 当前实现为「收款方入账」单边语义；付款方冻结的释放（task 完成时
+ * 发布者 point_frozen 扣除）需与 B 的 task 完成事件 payload 一并敲定，见 CRD-04。
  */
 @Service
 public class CreditServiceImpl implements CreditApi {
 
-    /** 新用户认证通过后的初始信用分（P3 §3.7 / schema credit_account.credit_score 默认 100）。 */
-    private static final int INITIAL_CREDIT_SCORE = 100;
+    private final CreditAccountRepository accountRepo;
+    private final CreditRecordRepository recordRepo;
+
+    public CreditServiceImpl(CreditAccountRepository accountRepo, CreditRecordRepository recordRepo) {
+        this.accountRepo = accountRepo;
+        this.recordRepo = recordRepo;
+    }
 
     @Override
+    @Transactional
     public int getScoreOf(long userId) {
-        // CRD-01 待实现：查 credit_account.credit_score（账户不存在懒创建）。
-        // stub 期返回初始分，避免 task 信用闸门（<60 禁发）误拦截联调。
-        return INITIAL_CREDIT_SCORE;
+        return getOrCreateAccount(userId).getCreditScore();
     }
 
     @Override
+    @Transactional
     public void freeze(long userId, int points, String bizKey) {
-        throw new UnsupportedOperationException("CRD-01 待实现：CreditApi.freeze");
+        requirePositive(points);
+        if (alreadyDone(bizKey)) return;
+
+        CreditAccount account = getOrCreateAccount(userId);
+        if (account.getPointBalance() < points) {
+            throw new BizException(CreditErrorCode.CREDIT_NOT_ENOUGH, "可用积分不足，无法冻结", 422);
+        }
+        account.freeze(points);
+        accountRepo.save(account);
+        recordRepo.save(new CreditRecord(userId, CreditDirection.FREEZE, -points, "FREEZE", bizKey));
     }
 
     @Override
+    @Transactional
     public void unfreeze(long userId, int points, String bizKey) {
-        throw new UnsupportedOperationException("CRD-01 待实现：CreditApi.unfreeze");
+        requirePositive(points);
+        if (alreadyDone(bizKey)) return;
+
+        CreditAccount account = getOrCreateAccount(userId);
+        if (account.getPointFrozen() < points) {
+            // 冻结额不足通常是上游 bizKey 配对错误，按业务规则拒绝而非静默
+            throw new BizException(CreditErrorCode.CREDIT_NOT_ENOUGH, "冻结额不足，无法解冻", 422);
+        }
+        account.unfreeze(points);
+        accountRepo.save(account);
+        recordRepo.save(new CreditRecord(userId, CreditDirection.UNFREEZE, points, "UNFREEZE", bizKey));
     }
 
     @Override
+    @Transactional
     public void settle(long userId, int points, String bizKey) {
-        throw new UnsupportedOperationException("CRD-01 待实现：CreditApi.settle");
+        requirePositive(points);
+        if (alreadyDone(bizKey)) return;
+
+        CreditAccount payee = getOrCreateAccount(userId);
+        payee.credit(points);
+        accountRepo.save(payee);
+        recordRepo.save(new CreditRecord(userId, CreditDirection.SETTLE, points, "SETTLE", bizKey));
     }
 
     @Override
+    @Transactional
     public void deduct(long userId, int delta, String reasonCode, String bizKey) {
-        throw new UnsupportedOperationException("CRD-03 待实现：CreditApi.deduct");
+        // 信用分扣减走 Strategy（按 reasonCode 决定 delta）+ 写 credit_score_log，留给 CRD-03。
+        throw new UnsupportedOperationException("CRD-03 待实现：CreditApi.deduct（信用分 Strategy + credit_score_log）");
+    }
+
+    // ---- 内部 ----
+
+    /** 幂等短路：bizKey 已记流水则视为已完成。 */
+    private boolean alreadyDone(String bizKey) {
+        return recordRepo.existsByBizId(bizKey);
+    }
+
+    private CreditAccount getOrCreateAccount(long userId) {
+        return accountRepo.findByUserId(userId)
+                .orElseGet(() -> accountRepo.save(new CreditAccount(userId)));
+    }
+
+    private static void requirePositive(int points) {
+        if (points <= 0) {
+            throw new BizException(CreditErrorCode.CREDIT_NOT_ENOUGH, "积分数量必须为正", 422);
+        }
     }
 }
