@@ -1,5 +1,6 @@
 package com.campushub.common.interceptor;
 
+import com.campushub.auth.service.TokenBlacklist;
 import com.campushub.common.exception.BizException;
 import com.campushub.common.response.ResponseCode;
 import com.campushub.common.util.CurrentUserHolder;
@@ -31,13 +32,16 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklist blacklist;
     private final List<String> whitelist;
 
     public JwtAuthInterceptor(
             JwtUtil jwtUtil,
+            TokenBlacklist blacklist,
             @Value("${campushub.security.whitelist:/api/health,/api/auth/sms-codes,/api/auth/token,/api/auth/register}") String whitelistCsv
     ) {
         this.jwtUtil = jwtUtil;
+        this.blacklist = blacklist;
         this.whitelist = Arrays.stream(whitelistCsv.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -66,6 +70,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
         if (!"ACCESS".equals(jwtUtil.getType(claims))) {
             throw new BizException(ResponseCode.UNAUTHORIZED, "需要 Access Token");
+        }
+        if (blacklist.isRevoked(jwtUtil.getJti(claims))) {
+            throw new BizException(ResponseCode.UNAUTHORIZED, "Token 已注销");
         }
 
         CurrentUserHolder.set(jwtUtil.getUserId(claims), jwtUtil.getVerifyStatus(claims));

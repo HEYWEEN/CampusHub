@@ -2,15 +2,21 @@ package com.campushub.auth.controller;
 
 import com.campushub.auth.dto.LoginByCodeDTO;
 import com.campushub.auth.dto.LoginByPasswordDTO;
+import com.campushub.auth.dto.RefreshTokenDTO;
 import com.campushub.auth.dto.RegisterDTO;
 import com.campushub.auth.dto.SmsCodeSendDTO;
+import com.campushub.auth.dto.VerificationSubmitDTO;
 import com.campushub.auth.service.AuthService;
 import com.campushub.auth.service.SmsCodeService;
+import com.campushub.auth.service.VerificationService;
 import com.campushub.auth.vo.TokenPairVO;
+import com.campushub.auth.vo.VerificationStatusVO;
 import com.campushub.common.response.ApiResponse;
+import com.campushub.common.util.CurrentUserHolder;
 import com.campushub.common.util.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,10 +34,14 @@ public class AuthController {
 
     private final SmsCodeService smsCodeService;
     private final AuthService authService;
+    private final VerificationService verificationService;
 
-    public AuthController(SmsCodeService smsCodeService, AuthService authService) {
+    public AuthController(SmsCodeService smsCodeService,
+                          AuthService authService,
+                          VerificationService verificationService) {
         this.smsCodeService = smsCodeService;
         this.authService = authService;
+        this.verificationService = verificationService;
     }
 
     /**
@@ -77,5 +87,48 @@ public class AuthController {
         return ApiResponse.success(
                 authService.loginByPassword(dto.getPhone(), dto.getPassword())
         );
+    }
+
+    /**
+     * POST /api/auth/verifications —— 学生证认证提交（F-AUTH-03）
+     * 需登录；同用户 PENDING 中再提交返回 409。
+     */
+    @PostMapping("/verifications")
+    public ApiResponse<VerificationStatusVO> submitVerification(@Valid @RequestBody VerificationSubmitDTO dto) {
+        long userId = CurrentUserHolder.getUserId();
+        return ApiResponse.success(verificationService.submit(userId, dto));
+    }
+
+    /**
+     * GET /api/auth/verifications/me —— 查询我的最新认证状态
+     */
+    @GetMapping("/verifications/me")
+    public ApiResponse<VerificationStatusVO> queryMyVerification() {
+        long userId = CurrentUserHolder.getUserId();
+        return ApiResponse.success(verificationService.queryMine(userId));
+    }
+
+    /**
+     * POST /api/auth/token/refresh —— 用 refresh token 换新 token pair（F-AUTH-04）
+     * 旧 refresh jti 入黑，防重放。
+     */
+    @PostMapping("/token/refresh")
+    public ApiResponse<TokenPairVO> refresh(@Valid @RequestBody RefreshTokenDTO dto) {
+        return ApiResponse.success(authService.refresh(dto.getRefreshToken()));
+    }
+
+    /**
+     * POST /api/auth/logout —— 登出，把当前 access + 可选 refresh 入黑名单
+     * 需登录（拦截器已拒绝无 token 的请求）。
+     */
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(HttpServletRequest request,
+                                     @RequestBody(required = false) RefreshTokenDTO dto) {
+        String auth = request.getHeader("Authorization");
+        String accessToken = (auth != null && auth.startsWith("Bearer "))
+                ? auth.substring("Bearer ".length()) : null;
+        String refreshToken = (dto != null) ? dto.getRefreshToken() : null;
+        authService.logout(accessToken, refreshToken);
+        return ApiResponse.success();
     }
 }

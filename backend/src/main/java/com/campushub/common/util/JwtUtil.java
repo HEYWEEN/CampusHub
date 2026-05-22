@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * JWT 工具：基于 jjwt 0.12.x。
@@ -55,8 +57,12 @@ public class JwtUtil {
         claims.put("verifyStatus", verifyStatus);
         claims.put("type", type);
 
+        // jti 用于黑名单（logout / refresh-rotation）；UUID 短形式即可
+        String jti = UUID.randomUUID().toString().replace("-", "");
+
         return Jwts.builder()
                 .claims(claims)
+                .id(jti)
                 .subject(String.valueOf(userId))
                 .issuer(props.getIssuer())
                 .issuedAt(now)
@@ -92,5 +98,13 @@ public class JwtUtil {
     public String getType(Claims claims) {
         Object t = claims.get("type");
         return t == null ? "ACCESS" : t.toString();
+    }
+
+    public String getJti(Claims claims) {
+        return claims.getId();
+    }
+
+    public Instant getExpiry(Claims claims) {
+        return claims.getExpiration().toInstant();
     }
 }

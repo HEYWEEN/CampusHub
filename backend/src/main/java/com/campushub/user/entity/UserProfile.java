@@ -50,6 +50,10 @@ public class UserProfile {
     @Column(name = "hide_course_reviews", nullable = false)
     private boolean hideCourseReviews = true;
 
+    /** 个人接单上限 1~3，默认 2（P3 user_profile.daily_accept_limit；task 模块 TASK-08 维护） */
+    @Column(name = "daily_accept_limit", nullable = false)
+    private int dailyAcceptLimit = 2;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -81,6 +85,11 @@ public class UserProfile {
     public void setHideAcceptHistory(boolean v) { this.hideAcceptHistory = v; this.updatedAt = Instant.now(); }
     public boolean isHideCourseReviews() { return hideCourseReviews; }
     public void setHideCourseReviews(boolean v) { this.hideCourseReviews = v; this.updatedAt = Instant.now(); }
+    public int getDailyAcceptLimit() { return dailyAcceptLimit; }
+    public void setDailyAcceptLimit(int dailyAcceptLimit) {
+        this.dailyAcceptLimit = dailyAcceptLimit;
+        this.updatedAt = Instant.now();
+    }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

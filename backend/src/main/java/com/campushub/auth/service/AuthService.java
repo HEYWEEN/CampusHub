@@ -13,6 +13,7 @@ import com.campushub.common.util.PhoneMaskUtil;
 import com.campushub.config.JwtProperties;
 import com.campushub.user.entity.UserProfile;
 import com.campushub.user.repository.UserProfileRepository;
+import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +46,7 @@ public class AuthService {
     private final AesUtil aes;
     private final JwtUtil jwt;
     private final JwtProperties jwtProps;
+    private final TokenBlacklist blacklist;
 
     public AuthService(AuthUserRepository userRepo,
                        UserProfileRepository profileRepo,
@@ -52,7 +54,8 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        AesUtil aes,
                        JwtUtil jwt,
-                       JwtProperties jwtProps) {
+                       JwtProperties jwtProps,
+                       TokenBlacklist blacklist) {
         this.userRepo = userRepo;
         this.profileRepo = profileRepo;
         this.smsVerifier = smsVerifier;
@@ -60,6 +63,7 @@ public class AuthService {
         this.aes = aes;
         this.jwt = jwt;
         this.jwtProps = jwtProps;
+        this.blacklist = blacklist;
     }
 
     /**
@@ -134,6 +138,52 @@ public class AuthService {
             throw new BizException(AuthErrorCode.CREDENTIALS_INVALID, "手机号或密码错误", 401);
         }
         return issueTokens(user);
+    }
+
+    /**
+     * POST /api/auth/token/refresh  用 refresh token 换新 access+refresh。
+     * 旧 refresh 的 jti 立即入黑（refresh-rotation 防重放）。
+     */
+    @Transactional(readOnly = true)
+    public TokenPairVO refresh(String refreshToken) {
+        Claims claims = jwt.parse(refreshToken);
+        if (!"REFRESH".equals(jwt.getType(claims))) {
+            throw new BizException(ResponseCode.UNAUTHORIZED, "需要 Refresh Token");
+        }
+        String oldJti = jwt.getJti(claims);
+        if (blacklist.isRevoked(oldJti)) {
+            throw new BizException(ResponseCode.UNAUTHORIZED, "Refresh Token 已失效");
+        }
+
+        long userId = jwt.getUserId(claims);
+        AuthUser user = userRepo.findById(userId).orElseThrow(() ->
+                new BizException(AuthErrorCode.CREDENTIALS_INVALID, "用户不存在", 401));
+        ensureNotBanned(user);
+
+        // 旧 refresh 入黑 → 防重放
+        blacklist.revoke(oldJti, jwt.getExpiry(claims));
+
+        return issueTokens(user);
+    }
+
+    /**
+     * POST /api/auth/logout  把当前 access + 携带 refresh 双入黑。
+     * refreshToken 可空（前端有时只传 access）。
+     */
+    public void logout(String accessToken, String refreshToken) {
+        revokeIfValid(accessToken);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            revokeIfValid(refreshToken);
+        }
+    }
+
+    private void revokeIfValid(String token) {
+        try {
+            Claims claims = jwt.parse(token);
+            blacklist.revoke(jwt.getJti(claims), jwt.getExpiry(claims));
+        } catch (BizException ignore) {
+            // token 已失效就无需再入黑（幂等）
+        }
     }
 
     private void ensureNotBanned(AuthUser user) {
