@@ -1,6 +1,7 @@
 package com.campushub.credit.service;
 
 import com.campushub.common.exception.BizException;
+import com.campushub.common.response.PageResponse;
 import com.campushub.credit.api.CreditApi;
 import com.campushub.credit.entity.CreditAccount;
 import com.campushub.credit.entity.CreditDirection;
@@ -12,8 +13,15 @@ import com.campushub.credit.repository.CreditRecordRepository;
 import com.campushub.credit.repository.CreditScoreLogRepository;
 import com.campushub.credit.strategy.ScoreStrategy;
 import com.campushub.credit.strategy.ScoreStrategyRegistry;
+import com.campushub.credit.vo.CreditMeVO;
+import com.campushub.credit.vo.CreditRecordVO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Credit 模块核心服务 —— 同时实现 {@link CreditApi} 给跨模块调用（CRD-01）。
@@ -123,6 +131,41 @@ public class CreditServiceImpl implements CreditApi {
     @Transactional
     public void applyScore(long userId, String reasonCode, String bizKey) {
         deduct(userId, 0, reasonCode, bizKey);
+    }
+
+    // ---- 查询（F-CREDIT-01 / 08，给本人信用中心用） ----
+
+    /** 信用分门槛：低于此分禁止发布/接单（P1 SRS FR-CRED-01）。 */
+    private static final int SCORE_PUBLISH_FLOOR = 60;
+    /** 低于此分每日限接 1 单。 */
+    private static final int SCORE_LIMIT_FLOOR = 80;
+    /** 信用无限制时的每日接单默认上限（task 模块 TASK-08 可再调整，此处仅作信用派生默认）。 */
+    private static final int DEFAULT_DAILY_ACCEPT_LIMIT = 3;
+
+    @Transactional
+    public CreditMeVO getMyCredit(long userId) {
+        CreditAccount a = getOrCreateAccount(userId);
+        int score = a.getCreditScore();
+        boolean canPublish = score >= SCORE_PUBLISH_FLOOR;
+        boolean canAccept = score >= SCORE_PUBLISH_FLOOR;
+        int dailyAcceptLimit = score < SCORE_PUBLISH_FLOOR ? 0
+                : score < SCORE_LIMIT_FLOOR ? 1
+                : DEFAULT_DAILY_ACCEPT_LIMIT;
+        return new CreditMeVO(userId, score, a.getPointBalance(), a.getPointFrozen(),
+                dailyAcceptLimit, canPublish, canAccept);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<CreditRecordVO> getMyRecords(long userId, int page, int size) {
+        int p = Math.max(page, 1);
+        int s = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(p - 1, s);
+        Page<CreditRecord> result = recordRepo.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        List<CreditRecordVO> items = result.getContent().stream()
+                .map(r -> new CreditRecordVO(r.getId(), r.getDirection().name(), r.getDelta(),
+                        r.getReasonCode(), r.getBizId(), r.getCreatedAt()))
+                .toList();
+        return PageResponse.of(items, result.getTotalElements(), p, s);
     }
 
     // ---- 内部 ----
