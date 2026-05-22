@@ -1,18 +1,12 @@
-import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import AppHeader from './AppHeader'
 import './AppLayout.css'
 
+/**
+ * 学生端主壳：AppHeader（自治 sticky）+ Outlet
+ * AppHeader 内部已处理 sticky / 未读拉取 / 登出 — 这里不再 useEffect
+ */
 export default function AppLayout() {
-  // 滚动后 header 加 backdrop blur（沿用 HomePage 的 header.scrolled 模式）
-  useEffect(() => {
-    const hdr = document.getElementById('app-hdr')
-    const onScroll = () => hdr?.classList.toggle('scrolled', window.scrollY > 16)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
     <div className="app-layout">
       <AppHeader />
