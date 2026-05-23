@@ -30,7 +30,7 @@
 | INF-03 | P0 | config | `WebMvcConfig`（CORS）/ `JwtConfig` / `SecurityConfig`（放行白名单） | 1.5h | A | ⬜ | 前端可跨域调通 `/api/health` | INF-02 |
 | INF-04 | P0 | common | `JwtUtil` / `JwtAuthInterceptor` / `TraceIdInterceptor` | 2h | A | ⬜ | 带合法 JWT 能拿到 userId；无 JWT 返回 401 | INF-03 |
 | INF-05 | P0 | 数据库 | 执行 `schema.sql` 建表 + `V2__seed_data.sql` 种子（5 个测试账号 + 信用账户初始化） | 1h | C | ⬜ | 本地 MySQL 30 张表全部建好；测试账号可登录 | INF-01 |
-| INF-06 | P0 | 跨模块 API | 定义 `CreditApi` / `UserApi` / `TaskApi` / `NotifyApi` interface（不实现） | 1.5h | D | ⬜ | 接口签名与 P3 类图一致；他人可 `@Autowired` 占位 | INF-01 |
+| INF-06 | P0 | 跨模块 API | 定义 `CreditApi` / `UserApi` / `TaskApi` / `NotifyApi` interface（不实现） | 1.5h | D | ✅ | 接口签名与 P3 类图一致；他人可 `@Autowired` 占位（D 只交 CreditApi，TaskApi/NotifyApi 归各模块 owner） | INF-01 |
 
 **INF 小计：9h** | M1 截止：W10 周日 23:59
 
@@ -91,10 +91,12 @@
 
 | ID | 优先级 | 模块 | 任务 | 工时 | 负责人 | 状态 | 完成标准 | 依赖 |
 |----|------|------|------|----:|------|:----:|--------|------|
-| CRD-01 | P0 | credit | `CreditApi` 实现：freeze / unfreeze / settle / getScoreOf（核心，前置依赖） | 3h | D | ⬜ | 4 个方法均有单测；账户余额不会出负 | INF-06 |
-| CRD-02 | P1 | credit | 双向评分 `POST /api/credit/reviews`（任务/交易完成后触发） | 2h | D | ⬜ | 评分 1-5 校验；不可重复评 | CRD-01, TASK-05 |
-| CRD-03 | P1 | credit | 信用分计算 Strategy（5 个加分项 + 4 个扣分项） | 2h | D | ⬜ | 信用分变更写 `credit_score_log` | CRD-02 |
-| CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | ⬜ | 事件触发后 record 表有流水 | CRD-01, TASK-05 |
+| CRD-01 | P0 | credit | `CreditApi` 实现：freeze / unfreeze / settle / getScoreOf / **deduct** | 3h | D | ✅ | 14 个 service 单测全过；bizKey 幂等；余额/分数不出负；@Version 乐观锁 | INF-06 |
+| CRD-02 | P1 | credit | 双向评分 `POST /api/credit/reviews`（任务/交易完成后触发） | 2h | D | ✅ | 评分 1-5 校验；不可重复评 409；双方评完各 +1 信用分（幂等 bizKey） | CRD-01, TASK-05 |
+| CRD-03 | P1 | credit | 信用分计算 Strategy（按 P1 SRS：**1 加分 + 4 扣分**，看板早期"5+4"不准） | 2h | D | ✅ | 5 条 ScoreRule 全覆盖；变更写 `credit_score_log`（schema.sql 已补 DDL）；分数夹紧 [0,120] | CRD-02 |
+| CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | 🟡 | 🔴 BLOCKED on B 的 `TaskCompletedEvent/TaskCanceledEvent` payload 字段定稿；约定走 `unfreeze + settle` 两段调用以适配单 userId 的 settle 契约 | CRD-01, TASK-05 |
+| **F-CREDIT-01** | P0 | credit | **`GET /api/credits/me` 我的信用总览** | 0.5h | D | ✅ | 字段与前端 `types/credit.ts` 严格对齐；canPublish/canAccept/dailyAcceptLimit 按 SRS 派生 | CRD-01 |
+| **F-CREDIT-08** | P1 | credit | **`GET /api/credits/me/records` 积分流水分页** | 0.5h | D | ✅ | page/size 1-based + 上限 100；按 createdAt DESC；返回 PageResponse 标准结构 | CRD-01 |
 | NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET/POST/PATCH /api/notify/messages` | 2h | **A** | ⬜ | 触发→站内信记录可查；幂等 | INF-06 |
 | NTF-02 | P1 | notify | `notify/listener/TaskEventListener`（任务事件 → 站内信模板） | 1.5h | **A** | ⬜ | 5 类任务事件均能触达；24h 同类去重 | NTF-01, TASK-05 |
 
@@ -123,8 +125,8 @@
 | ID | 优先级 | 任务 | 工时 | 负责人 | 状态 | 完成标准 |
 |----|------|------|----:|------|:----:|--------|
 | QA-01 | P0 | 各自模块单元测试（每个 Service 至少 3 个用例：正常+边界+异常） | 各自 1.5h | 各模块 owner | ⬜ | 模块 line coverage ≥ 60% |
-| QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | ⬜ | `mvn verify` 一键跑过 |
-| QA-03 | P0 | 集成测试 #2：异常流 ×2（未登录访问 / 重复接单 / 越权操作 任选 2） | 1.5h | **D** | ⬜ | 异常返回结构正确；与 QA-02 共用 setup 代码 |
+| QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | 🟡 | 🔴 BLOCKED on B 的 task 接口 + C 的 trade 接口；BaseIT 基类已交（commit `13f1efc`） |
+| QA-03 | P0 | 集成测试 #2：异常流 ×4（未登录访问 / 重复评 / 自评 / 评分越界） | 1.5h | **D** | ✅ | `CreditExceptionFlowTest` 4 个用例全过；ApiResponse 错误码结构正确；commit `8c8cc28` |
 | QA-04 | P0 | GitLab CI/CD 配置（依赖 / 静态检查 / 单测 / 集测 / 构建） | 2h | B | ⬜ | 至少 1 次绿色运行 |
 
 **QA 小计：~11.5h**（含各自的 1.5h）
@@ -139,7 +141,7 @@
 | EXP-02 | "AI 调试对决"（≥ 2 个 Bug） | 4h | C | ⬜ | 含 6 步对比表 + 4 问分析 |
 | DOC-01 | Bug 日志整合（所有人随时记到 `docs/P4/bug/<姓名>_<日期>.md`） | 2h | C 整合 | ⬜ | 至少 5 条 bug + 根因 + 验证 |
 | DOC-02 | 演示说明 + README 更新 | 2h | B | ⬜ | 助教按文档可启动 |
-| DOC-03 | AI 协作反思日志 #4（**A 主笔汇总** + B/C/D 各投稿自己模块的 0.5h） | 0.5+0.5+0.5+1=2.5h | **A 主笔** | ⬜ | 5 节均有实质内容；每位组员有自己模块的 AI 协作摘要 |
+| DOC-03 | AI 协作反思日志 #4（**A 主笔汇总** + B/C/D 各投稿自己模块的 0.5h） | 0.5+0.5+0.5+1=2.5h | **A 主笔** | 🟡 | A 主笔 §1-5 已完稿；**D 投稿 §6.3 完成**（2026-05-23）；B/C 投稿位待补 |
 
 **实验文档小计：14h**
 
