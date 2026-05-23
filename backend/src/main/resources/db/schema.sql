@@ -1,6 +1,7 @@
--- CampusHub P3 核心表 DDL（MySQL 8）
--- 依据：docs/P3/01_统一规约.md §3（审计字段、主键、跨模块无 FK、命名、枚举 TINYINT、utf8mb4）
--- 覆盖：鉴权 / 用户资料 / 任务与附件 / 信用账户与流水 / 二手订单 / 任务评价
+-- CampusHub 全量 DDL（MySQL 8）— 运行时副本
+-- 与 docs/P3/数据库/schema.sql 保持同步（C 维护）；变更时两处同时提交。
+-- 手动建库: mysql -u root -p < backend/src/main/resources/db/schema.sql
+-- 应用启动时由 Flyway 执行 db/migration/V*.sql，本文件供人工重放与评审。
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -78,7 +79,7 @@ CREATE TABLE IF NOT EXISTS user_profile (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- task 模块（表名遵循 §3.4 `<module>_<entity>` 约定：task_order）
+-- task 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS task_order (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
@@ -178,7 +179,6 @@ CREATE TABLE IF NOT EXISTS credit_record (
   KEY idx_credit_record_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- CRD-03：信用分变更日志（D 补充，已与 schema owner 同步）。用于 180 天信用曲线 + 审计举证。
 CREATE TABLE IF NOT EXISTS credit_score_log (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
   user_id           BIGINT       NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS credit_score_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- trade 模块（订单详情 API 对应）
+-- trade 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS trade_item (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
@@ -251,7 +251,7 @@ CREATE TABLE IF NOT EXISTS trade_order (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- edu 模块（辅导发布 + 违禁词）
+-- edu 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS edu_tutor_task (
   id              BIGINT       NOT NULL AUTO_INCREMENT,

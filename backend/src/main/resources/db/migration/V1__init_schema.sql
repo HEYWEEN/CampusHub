@@ -1,14 +1,8 @@
--- CampusHub P3 核心表 DDL（MySQL 8）
--- 依据：docs/P3/01_统一规约.md §3（审计字段、主键、跨模块无 FK、命名、枚举 TINYINT、utf8mb4）
--- 覆盖：鉴权 / 用户资料 / 任务与附件 / 信用账户与流水 / 二手订单 / 任务评价
+-- Flyway V1: 全量建表（连接串已指定 campushub 库，勿含 CREATE DATABASE / USE）
+-- 与 db/schema.sql 表结构一致；新环境首次 migrate 执行本脚本。
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
-CREATE DATABASE IF NOT EXISTS campushub
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_0900_ai_ci;
-USE campushub;
 
 -- ---------------------------------------------------------------------------
 -- auth 模块（表级 FK 仅模块内）
@@ -78,7 +72,7 @@ CREATE TABLE IF NOT EXISTS user_profile (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- task 模块（表名遵循 §3.4 `<module>_<entity>` 约定：task_order）
+-- task 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS task_order (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
@@ -178,7 +172,6 @@ CREATE TABLE IF NOT EXISTS credit_record (
   KEY idx_credit_record_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- CRD-03：信用分变更日志（D 补充，已与 schema owner 同步）。用于 180 天信用曲线 + 审计举证。
 CREATE TABLE IF NOT EXISTS credit_score_log (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
   user_id           BIGINT       NOT NULL,
@@ -194,7 +187,7 @@ CREATE TABLE IF NOT EXISTS credit_score_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- trade 模块（订单详情 API 对应）
+-- trade 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS trade_item (
   id                BIGINT       NOT NULL AUTO_INCREMENT,
@@ -251,7 +244,7 @@ CREATE TABLE IF NOT EXISTS trade_order (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ---------------------------------------------------------------------------
--- edu 模块（辅导发布 + 违禁词）
+-- edu 模块
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS edu_tutor_task (
   id              BIGINT       NOT NULL AUTO_INCREMENT,
