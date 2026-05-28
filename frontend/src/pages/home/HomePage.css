@@ -81,13 +81,10 @@ header.scrolled {
   font-weight: 600; font-size: 18px; letter-spacing: -.02em;
   color: var(--ink); text-decoration: none;
 }
-.logo .dot {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--accent); position: relative;
-}
-.logo .dot::after {
-  content: ""; position: absolute; inset: 5px;
-  border-radius: 50%; background: var(--bg);
+.logo .logo-mark {
+  height: 34px; width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .pill {

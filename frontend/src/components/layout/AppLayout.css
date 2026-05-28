@@ -36,15 +36,10 @@
   color: var(--ink);
   text-decoration: none;
 }
-.app-header .logo .dot {
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--accent);
-  position: relative;
-}
-.app-header .logo .dot::after {
-  content: ""; position: absolute; inset: 5px;
-  border-radius: 50%;
-  background: var(--bg);
+.app-header .logo .logo-mark {
+  height: 32px; width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 /* ---------- Primary Nav ---------- */

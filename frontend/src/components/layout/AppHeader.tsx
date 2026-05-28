@@ -56,7 +56,7 @@ export default function AppHeader() {
   return (
     <header id="app-hdr" className="app-header">
       <Link to="/" className="logo">
-        <span className="dot" />
+        <img className="logo-mark" src="/logo.png" alt="CampusHub" />
         <span>CampusHub</span>
       </Link>
 

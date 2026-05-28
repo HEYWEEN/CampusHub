@@ -10,7 +10,7 @@ export default function VerifyPage() {
     <main className="login-page">
       <header className="login-header">
         <a href="/" className="logo">
-          <span className="dot" />
+          <img className="logo-mark" src="/logo.png" alt="CampusHub" />
           <span>CampusHub</span>
         </a>
         <button
