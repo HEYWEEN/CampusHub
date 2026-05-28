@@ -37,7 +37,11 @@ public class TaskTimeoutScanner {
         for (Task task : expired) {
             task.setStatus(TaskStatus.EXPIRED);
             taskRepo.save(task);
-            events.publishEvent(new TaskExpiredEvent(task.getId(), task.getVersion()));
+            events.publishEvent(new TaskExpiredEvent(
+                    task.getId(),
+                    task.getPublisherId(),
+                    task.getAssigneeId(),
+                    task.getVersion()));
         }
 
         if (!expired.isEmpty()) {

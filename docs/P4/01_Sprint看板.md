@@ -88,6 +88,8 @@
 ### 1.5 P1 — 信用（credit，D 主责）+ 通知（notify，A 主责）
 
 > 🔄 **2026-05-19 调整**：notify 模块整体从 D 转给 A（理由：站内信本质是 user-facing 基础设施，与 user 模块强相关）。D 聚焦 credit + 集测正常流。
+>
+> 🔄 **2026-05-28 NTF 落地补记**：DDL 由 A 自己加 `V5__notify.sql`（schema.sql 同步更新）。 task 模块原 `TaskExpiredEvent` 缺 publisherId/accepterId，A 经组长授权直接补字段（影响面：仅 `TaskTimeoutScanner` 一处构造调用）。事件层用 `accepterId`、Task 实体用 `assigneeId` 的术语漂移记入 DOC-03 反思日志 §6.4。
 
 | ID | 优先级 | 模块 | 任务 | 工时 | 负责人 | 状态 | 完成标准 | 依赖 |
 |----|------|------|------|----:|------|:----:|--------|------|
@@ -97,8 +99,8 @@
 | CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | 🟡 | 🔴 BLOCKED on B 的 `TaskCompletedEvent/TaskCanceledEvent` payload 字段定稿；约定走 `unfreeze + settle` 两段调用以适配单 userId 的 settle 契约 | CRD-01, TASK-05 |
 | **F-CREDIT-01** | P0 | credit | **`GET /api/credits/me` 我的信用总览** | 0.5h | D | ✅ | 字段与前端 `types/credit.ts` 严格对齐；canPublish/canAccept/dailyAcceptLimit 按 SRS 派生 | CRD-01 |
 | **F-CREDIT-08** | P1 | credit | **`GET /api/credits/me/records` 积分流水分页** | 0.5h | D | ✅ | page/size 1-based + 上限 100；按 createdAt DESC；返回 PageResponse 标准结构 | CRD-01 |
-| NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET/POST/PATCH /api/notify/messages` | 2h | **A** | ⬜ | 触发→站内信记录可查；幂等 | INF-06 |
-| NTF-02 | P1 | notify | `notify/listener/TaskEventListener`（任务事件 → 站内信模板） | 1.5h | **A** | ⬜ | 5 类任务事件均能触达；24h 同类去重 | NTF-01, TASK-05 |
+| NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET /api/notify/messages` / `GET /unread-count` / `PATCH /{id}/read` / `POST /read-all` | 2h | **A** | ✅ | NotifyApi.appendLetter + bizKey 幂等（uk_notify_biz_key 兜底）；越权 markRead 返 403；6 个 service 测 + 6 个 controller 测全过 | INF-06 |
+| NTF-02 | P1 | notify | `notify/listener/TaskEventListener`（任务事件 → 站内信模板） | 1.5h | **A** | ✅ | 4 类 task event 触达（Accepted/Completed/Canceled/Expired）；AFTER_COMMIT phase；同事件重投不重复发；5 个 listener 测全过。**第 5 类 TaskReminderScheduler（F-NOTIFY-04）单列追加项** | NTF-01, TASK-05 |
 
 **D 小计：8h**（模块）+ 1.5h(单测) + 2h(QA-02) + 1.5h(QA-03) + 0.5h(DOC-03 投稿) = **13.5h**
 **A 多承担：NTF-01 + NTF-02 = 3.5h**（详见 §1.2）；**A 兼集测交付 owner**（review + 整合 ~1h，含在 DOC-03 主笔工时里）
