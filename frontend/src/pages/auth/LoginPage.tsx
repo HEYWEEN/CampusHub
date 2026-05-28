@@ -80,10 +80,10 @@ export default function LoginPage() {
         </div>
 
         <h1 className="login-title">
-          Welcome <span className="it">back.</span>
+          登录
         </h1>
         <p className="login-sub">
-          用学生手机号一键登录。没账号？验证后会自动建账。
+          用学生手机号一键登录，若未注册则会一键注册。
         </p>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <input
               type="text"
               className="login-input"
-              placeholder="6 位验证码"
+              placeholder="请输入验证码"
               value={code}
               onChange={(e) => {
                 setCode(e.target.value)
