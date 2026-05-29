@@ -81,6 +81,27 @@ public class UserService implements UserApi {
         return userRepo.existsById(userId);
     }
 
+    /**
+     * 不抛异常版本：用户不存在 / 资料缺失时返回 Optional.empty()。
+     * 跨模块调用方（如 trade toVo 渲染 seller）用这个版本避免污染外层事务。
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Optional<PublicUserVO> findPublicUser(long userId) {
+        var userOpt = userRepo.findById(userId);
+        if (userOpt.isEmpty()) return java.util.Optional.empty();
+        var profileOpt = profileRepo.findByUserId(userId);
+        if (profileOpt.isEmpty()) return java.util.Optional.empty();
+        AuthUser u = userOpt.get();
+        UserProfile p = profileOpt.get();
+        return java.util.Optional.of(new PublicUserVO(
+                u.getId(),
+                p.getNickname(),
+                p.getAvatarUrl(),
+                u.getVerifyStatus() == VerifyStatus.APPROVED ? "校园已认证" : null
+        ));
+    }
+
     // ==================== 模块内业务 ====================
 
     /**

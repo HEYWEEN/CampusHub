@@ -3,6 +3,8 @@ package com.campushub.user.api;
 import com.campushub.common.PublicUserVO;
 import com.campushub.common.enums.VerifyStatus;
 
+import java.util.Optional;
+
 /**
  * 跨模块用户查询契约（P4 §02 跨模块接口表 + P3 §1）。
  *
@@ -29,4 +31,11 @@ public interface UserApi {
      * 用户是否存在（task accept 自接禁止之类的轻量 check 可用）。
      */
     boolean exists(long userId);
+
+    /**
+     * 拿公开用户对象的 Optional 版本：用户不存在时返回 Optional.empty()，
+     * 不抛异常，不污染外层事务。
+     * 用于"卖家/发布者可能被注销，但商品仍需要展示"等场景。
+     */
+    Optional<PublicUserVO> findPublicUser(long userId);
 }

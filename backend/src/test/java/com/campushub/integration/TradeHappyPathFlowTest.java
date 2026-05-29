@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -28,28 +29,25 @@ class TradeHappyPathFlowTest extends BaseIT {
 
     @Autowired private CreditAccountRepository accountRepo;
 
+    // 与 AuthService.SIGNUP_BONUS_POINTS 对齐：新用户注册时自动获得 100 启动积分。
+    // 测试不再需要 seedBalance —— buyer 注册即拥有 100 起始余额。
     private static final int INITIAL_BALANCE = 100;
     private static final int PRICE = 30;
 
-    /** seed 用户初始余额（绕过尚未实现的"积分发放"路径）。 */
-    private void seedBalance(long userId, int points) {
-        CreditAccount acc = accountRepo.findByUserId(userId).orElseGet(() -> {
-            CreditAccount a = new CreditAccount(userId);
-            return accountRepo.save(a);
-        });
-        acc.deposit(points);
-        accountRepo.save(acc);
-    }
-
-    /** 通过 HTTP 发布一件二手商品，返回 itemId。 */
+    /** 通过 HTTP 发布一件二手商品，返回 itemId。
+     *  schema_audit A-3/A-4 修复后：改 multipart → JSON，imageUrls 由前端预先 /api/uploads 拿。 */
     private long publishItem(String sellerToken) throws Exception {
-        MvcResult res = mockMvc.perform(multipart("/api/trade/items")
-                        .param("title", "二手 Python 教材")
-                        .param("description", "九成新")
-                        .param("pricePoint", String.valueOf(PRICE))
-                        .param("pickupLocationType", "BUILDING_RANGE")
-                        .param("pickupLocationDetail", "三号楼大厅")
-                        .header("Authorization", bearer(sellerToken)))
+        Map<String, Object> body = new HashMap<>();
+        body.put("title", "二手 Python 教材");
+        body.put("description", "九成新");
+        body.put("pricePoint", PRICE);
+        body.put("pickupLocationType", "BUILDING_RANGE");
+        body.put("pickupLocationDetail", "三号楼大厅");
+        body.put("imageUrls", List.of());
+        MvcResult res = mockMvc.perform(post("/api/trade/items")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", bearer(sellerToken))
+                        .content(jsonBody(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andReturn();
@@ -82,7 +80,7 @@ class TradeHappyPathFlowTest extends BaseIT {
     void tradeOrder_fromPublish_toBothConfirm_settlesCredit() throws Exception {
         LoginResult buyer = registerAndLogin("13900003001");
         LoginResult seller = registerAndLogin("13900003002");
-        seedBalance(buyer.userId(), INITIAL_BALANCE);
+        // 注册自动 SIGNUP_BONUS = INITIAL_BALANCE，无需再 seed
 
         long itemId = publishItem(seller.accessToken());
         long orderId = placeOrder(buyer.accessToken(), itemId, PRICE);
@@ -103,11 +101,13 @@ class TradeHappyPathFlowTest extends BaseIT {
         CreditAccount sellerFinal = accountRepo.findByUserId(seller.userId()).orElseThrow();
         org.junit.jupiter.api.Assertions.assertEquals(0, buyerFinal.getPointFrozen(), "买家冻结应释放");
         org.junit.jupiter.api.Assertions.assertEquals(INITIAL_BALANCE, buyerFinal.getPointBalance());
-        org.junit.jupiter.api.Assertions.assertEquals(PRICE, sellerFinal.getPointBalance(), "卖家应收到结算积分");
+        // 卖家：SIGNUP_BONUS(=INITIAL_BALANCE) + 结算 PRICE
+        org.junit.jupiter.api.Assertions.assertEquals(INITIAL_BALANCE + PRICE, sellerFinal.getPointBalance(),
+                "卖家应在启动积分基础上收到结算积分");
 
         // 同步通过 HTTP /api/credits/me 验证（前端真实视角）
         mockMvc.perform(get("/api/credits/me").header("Authorization", bearer(seller.accessToken())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.pointBalance").value(PRICE));
+                .andExpect(jsonPath("$.data.pointBalance").value(INITIAL_BALANCE + PRICE));
     }
 }

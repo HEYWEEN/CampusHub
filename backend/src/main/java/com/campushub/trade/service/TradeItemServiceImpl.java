@@ -141,7 +141,10 @@ public class TradeItemServiceImpl implements TradeItemService {
     }
 
     private TradeItemVO toVo(TradeItem item, List<String> urls) {
-        PublicUserVO seller = userApi.getPublicUser(item.getSellerId());
+        // 卖家账号若被注销或测试数据用了不存在的 sellerId（如单测里直接 createItem(100L, ...)），
+        // 不应让商品 VO 渲染失败 —— 用 Optional 版本避免抛异常污染事务，找不到时降级占位。
+        PublicUserVO seller = userApi.findPublicUser(item.getSellerId())
+                .orElseGet(() -> new PublicUserVO(item.getSellerId(), "已注销用户", null, null));
         return new TradeItemVO(
                 item.getId(),
                 seller,

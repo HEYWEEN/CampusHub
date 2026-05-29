@@ -92,7 +92,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.userId").value(u.getId()))
                 .andExpect(jsonPath("$.data.nickname").value("张三"))
-                .andExpect(jsonPath("$.data.verifyStatus").value("APPROVED"))
+                .andExpect(jsonPath("$.data.verifyStatus").value("approved"))
                 .andExpect(jsonPath("$.data.phoneMasked").value("138****8300"))
                 .andExpect(jsonPath("$.data.hidePublishHistory").value(true))
                 .andExpect(jsonPath("$.data.dailyAcceptLimit").value(2));
