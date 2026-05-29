@@ -3,14 +3,23 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getMe } from '../../api/user'
 import { getMyCredit } from '../../api/credit'
+import { logout as logoutApi } from '../../api/auth'
 import { useAuthStore } from '../../stores/auth'
 import { useCreditStore } from '../../stores/credit'
 import './User.css'
 
 export default function MePage() {
   const navigate = useNavigate()
-  const logout = useAuthStore((s) => s.logout)
+  const clearAuth = useAuthStore((s) => s.logout)
+  const refreshToken = useAuthStore((s) => s.refreshToken)
   const hydrateCredit = useCreditStore((s) => s.hydrate)
+
+  const handleLogout = async () => {
+    // 让后端把 refresh token 入黑名单（schema_audit A-13）；失败也照样清本地态
+    try { await logoutApi(refreshToken) } catch { /* ignore */ }
+    clearAuth()
+    navigate('/login')
+  }
 
   const { data: me, isLoading: loadingMe } = useQuery({
     queryKey: ['me'],
@@ -37,11 +46,10 @@ export default function MePage() {
 
   const ch = (me.nickname?.[0] ?? '我').toUpperCase()
   const score = credit?.creditScore ?? 80
-  const PRIVACY_LABELS: { key: keyof typeof me.privacy; label: string; desc: string }[] = [
-    { key: 'hidePublishHist',   label: '隐藏我发布的任务', desc: '公开主页不显示发布历史列表' },
-    { key: 'hideAcceptHist',    label: '隐藏我接的任务',   desc: '公开主页不显示接单记录' },
-    { key: 'hideCourseReviews', label: '隐藏我的课程评价', desc: '我的课评在评价区匿名展示' },
-    { key: 'imOpen',            label: '接收私信',         desc: '关闭后陌生人不能给我发私信' },
+  const PRIVACY_LABELS: { key: 'hidePublishHistory' | 'hideAcceptHistory' | 'hideCourseReviews'; label: string; desc: string }[] = [
+    { key: 'hidePublishHistory', label: '隐藏我发布的任务', desc: '公开主页不显示发布历史列表' },
+    { key: 'hideAcceptHistory',  label: '隐藏我接的任务',   desc: '公开主页不显示接单记录' },
+    { key: 'hideCourseReviews',  label: '隐藏我的课程评价', desc: '我的课评在评价区匿名展示' },
   ]
 
   return (
@@ -73,10 +81,7 @@ export default function MePage() {
             <button
               type="button"
               className="me-action-btn is-danger"
-              onClick={() => {
-                logout()
-                navigate('/login')
-              }}
+              onClick={handleLogout}
             >
               退出登录
             </button>
@@ -160,7 +165,7 @@ export default function MePage() {
             </div>
             <div className="privacy-list">
               {PRIVACY_LABELS.map((p) => {
-                const on = !!me.privacy[p.key]
+                const on = !!me[p.key]
                 return (
                   <div className="privacy-item" key={p.key}>
                     <div className="privacy-text">

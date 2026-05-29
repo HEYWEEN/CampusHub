@@ -84,7 +84,7 @@ class AuthControllerVerificationTest {
                 "realName", "张三",
                 "studentNo", "211250000",
                 "idCard", "",
-                "attachmentsBase64", List.of(fakeImageBase64())
+                "attachmentUrls", List.of("/uploads/aa/bb/test.jpg")
         ));
     }
 
@@ -107,8 +107,8 @@ class AuthControllerVerificationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(submitBody()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("PENDING"))
-                .andExpect(jsonPath("$.data.attachmentSha256[0]").isString());
+                .andExpect(jsonPath("$.data.status").value("pending"))
+                .andExpect(jsonPath("$.data.attachmentUrls[0]").isString());
 
         // 用户 verify_status 同步推进到 PENDING
         AuthUser reloaded = userRepo.findById(u.getId()).orElseThrow();
@@ -155,8 +155,8 @@ class AuthControllerVerificationTest {
         mockMvc().perform(get("/api/auth/verifications/me")
                         .header("Authorization", "Bearer " + tok))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("PENDING"))
-                .andExpect(jsonPath("$.data.attachmentSha256").isArray());
+                .andExpect(jsonPath("$.data.status").value("pending"))
+                .andExpect(jsonPath("$.data.attachmentUrls").isArray());
     }
 
     @Test

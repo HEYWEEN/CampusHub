@@ -17,7 +17,8 @@ public class ProfilePatchDTO {
     private String nickname;
 
     @Size(max = 512, message = "头像 URL 不能超过 512 字符")
-    @Pattern(regexp = "^$|^(https?|file)://.*", message = "头像 URL 协议非法")
+    // 允许：空 / 自家图床相对路径 /uploads/... / http(s) / file://（兼容历史脚本）
+    @Pattern(regexp = "^$|^/uploads/.*|^(https?|file)://.*", message = "头像 URL 协议非法")
     private String avatarUrl;
 
     public String getNickname() { return nickname; }

@@ -40,30 +40,32 @@ class TradeItemServiceTest {
     @Test
     void createItem_happyPath() {
         TradeItemCreateDTO dto = dto("二手教材", 50);
-        TradeItemVO vo = itemService.createItem(100L, dto, List.of());
+        TradeItemVO vo = itemService.createItem(100L, dto);
 
         assertEquals("二手教材", vo.title());
         assertEquals(50, vo.pricePoint());
         assertEquals(TradeItemStatus.ON_SALE, vo.status());
     }
 
+    // 原 createItem_cleansExifFromJpeg 测试已废弃：
+    //   schema_audit A-3/A-4 修复后 TradeItemService.createItem 不再接 binary，
+    //   只接 imageUrls 列表（由前端先调 /api/uploads 拿 URL）。
+    //   EXIF 清洗职责后续应迁移到 ImageStorage 层（TODO）。
     @Test
-    void createItem_cleansExifFromJpeg() throws Exception {
-        byte[] jpeg = buildJpegWithApp1("GPSLatitude=39.9042");
+    void createItem_persistsImageUrls() {
         TradeItemCreateDTO dto = dto("带图商品", 30);
+        dto.setImageUrls(List.of("/uploads/aa/bb/ccdd.jpg", "/uploads/ee/ff/0011.png"));
 
-        itemService.createItem(101L, dto, List.of(new TradeItemService.ImageUpload(jpeg, "image/jpeg")));
+        TradeItemVO vo = itemService.createItem(101L, dto);
 
         TradeItem saved = itemRepo.findAll().get(0);
-        assertFalse(imageRepo.findByItemIdOrderBySortOrderAsc(saved.getId()).isEmpty());
-        byte[] cleaned = ExifCleaner.clean(jpeg, "image/jpeg");
-        String cleanedStr = new String(cleaned, StandardCharsets.ISO_8859_1);
-        assertFalse(cleanedStr.contains("GPSLatitude=39.9042"));
+        assertEquals(2, imageRepo.findByItemIdOrderBySortOrderAsc(saved.getId()).size());
+        assertEquals(2, vo.imageUrls().size());
     }
 
     @Test
     void updateStatus_ownerCanToggle() {
-        TradeItemVO created = itemService.createItem(200L, dto("可下架", 10), List.of());
+        TradeItemVO created = itemService.createItem(200L, dto("可下架", 10));
         TradeItemStatusPatchDTO patch = new TradeItemStatusPatchDTO();
         patch.setStatus(TradeItemStatus.OFF_SALE);
 

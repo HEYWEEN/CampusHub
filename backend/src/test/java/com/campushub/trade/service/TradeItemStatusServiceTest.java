@@ -35,7 +35,7 @@ class TradeItemStatusServiceTest {
 
     @Test
     void updateStatus_forbiddenWhenNotOwner() {
-        TradeItemVO item = itemService.createItem(1L, dto("商品"), List.of());
+        TradeItemVO item = itemService.createItem(1L, dto("商品"));
         TradeItemStatusPatchDTO patch = new TradeItemStatusPatchDTO();
         patch.setStatus(TradeItemStatus.OFF_SALE);
 
@@ -46,7 +46,7 @@ class TradeItemStatusServiceTest {
 
     @Test
     void updateStatus_inTradeCannotChange() {
-        TradeItemVO item = itemService.createItem(2L, dto("交易中"), List.of());
+        TradeItemVO item = itemService.createItem(2L, dto("交易中"));
         var entity = itemRepo.findById(item.id()).orElseThrow();
         entity.setStatus(TradeItemStatus.IN_TRADE);
         itemRepo.save(entity);
@@ -62,7 +62,7 @@ class TradeItemStatusServiceTest {
 
   @Test
     void updateStatus_ownerCanOffSale() {
-        TradeItemVO item = itemService.createItem(3L, dto("可下架"), List.of());
+        TradeItemVO item = itemService.createItem(3L, dto("可下架"));
         TradeItemStatusPatchDTO patch = new TradeItemStatusPatchDTO();
         patch.setStatus(TradeItemStatus.OFF_SALE);
 

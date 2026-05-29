@@ -11,18 +11,22 @@ package com.campushub.common;
  * **严禁包含**：realName / studentNo / idCard / phone（明文或脱敏后）
  *
  * verifiedTag 由 auth_user.verify_status == APPROVED 推导出来，
- * 让前端可以无视底层 enum 直接展示"已认证" / "未认证"小标签。
+ * 返回字符串 "校园已认证" 或 null —— 前端可以直接渲染 `{verifiedTag && <Tag>{verifiedTag}</Tag>}`
+ * （schema_audit B-2 / B-3 修复，原本是 boolean 导致前端渲染为 `true` 字面量）。
+ *
+ * userId 暂保持 Long → JSON number（前端 type 写 string，但 React 不严格比较，能容忍）；
+ * 真正的 ID 类型统一留到 P3 阶段全局 Jackson ToStringSerializer。
  */
 public class PublicUserVO {
 
     private Long userId;
     private String nickname;
     private String avatarUrl;
-    private boolean verifiedTag;
+    private String verifiedTag;   // "校园已认证" 或 null
 
     public PublicUserVO() {}
 
-    public PublicUserVO(Long userId, String nickname, String avatarUrl, boolean verifiedTag) {
+    public PublicUserVO(Long userId, String nickname, String avatarUrl, String verifiedTag) {
         this.userId = userId;
         this.nickname = nickname;
         this.avatarUrl = avatarUrl;
@@ -32,5 +36,5 @@ public class PublicUserVO {
     public Long getUserId() { return userId; }
     public String getNickname() { return nickname; }
     public String getAvatarUrl() { return avatarUrl; }
-    public boolean isVerifiedTag() { return verifiedTag; }
+    public String getVerifiedTag() { return verifiedTag; }
 }

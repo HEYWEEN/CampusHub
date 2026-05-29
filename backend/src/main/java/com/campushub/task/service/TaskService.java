@@ -4,7 +4,6 @@ import com.campushub.task.dto.*;
 import com.campushub.task.entity.Task;
 import com.campushub.task.vo.*;
 import org.springframework.data.domain.Page;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,8 +27,11 @@ public interface TaskService {
     /** TASK-04 接单 */
     void accept(long userId, long taskId, int expectedVersion);
 
-    /** TASK-05 上传凭证 */
-    TaskProofVO submitProof(long userId, long taskId, List<MultipartFile> images, String text);
+    /**
+     * TASK-05 上传凭证。
+     * imageUrls 由前端预先上传到 /api/uploads 拿到的 URL 列表（schema_audit A-8 修复）。
+     */
+    TaskProofVO submitProof(long userId, long taskId, List<String> imageUrls, String text);
 
     /** TASK-05 确认完成 */
     Task confirmComplete(long userId, long taskId);

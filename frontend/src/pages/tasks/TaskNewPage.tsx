@@ -22,13 +22,14 @@ export default function TaskNewPage() {
 
   const [type, setType] = useState<TaskType>('ERRAND')
   const [title, setTitle] = useState('')
-  const [detail, setDetail] = useState('')
+  const [remark, setRemark] = useState('')
   const [rewardPoint, setRewardPoint] = useState(10)
   const [deadlineAt, setDeadlineAt] = useState(
     // 默认截止时间 = 2 小时后
     formatLocalDateTime(new Date(Date.now() + 2 * 60 * 60_000)),
   )
-  const [building, setBuilding] = useState('')
+  const [pickupHint, setPickupHint] = useState('')
+  const [deliveryBuilding, setDeliveryBuilding] = useState('')
   const [error, setError] = useState('')
 
   const mutation = useMutation({
@@ -45,16 +46,24 @@ export default function TaskNewPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!title.trim() || title.length > 50) {
-      setError('标题需要 1-50 字')
+    if (!title.trim() || title.length > 120) {
+      setError('标题需要 1-120 字')
       return
     }
-    if (!detail.trim() || detail.length > 500) {
-      setError('详情需要 1-500 字')
+    if (!pickupHint.trim() || pickupHint.length > 200) {
+      setError('取件位置必填（最多 200 字）')
       return
     }
-    if (rewardPoint < 0 || rewardPoint > 500) {
-      setError('悬赏 0-500 积分之间')
+    if (!deliveryBuilding.trim() || deliveryBuilding.length > 120) {
+      setError('送达地点必填（最多 120 字）')
+      return
+    }
+    if (remark.length > 500) {
+      setError('补充说明最多 500 字')
+      return
+    }
+    if (rewardPoint < 1 || rewardPoint > 500) {
+      setError('悬赏 1-500 积分之间')
       return
     }
     if (!deadlineAt) {
@@ -68,10 +77,11 @@ export default function TaskNewPage() {
     mutation.mutate({
       taskType: type,
       title: title.trim(),
-      detail: detail.trim(),
       rewardPoint,
       deadlineAt: new Date(deadlineAt).toISOString(),
-      building: building.trim() || undefined,
+      pickupHint: pickupHint.trim(),
+      deliveryBuilding: deliveryBuilding.trim(),
+      remark: remark.trim() || undefined,
     })
   }
 
@@ -121,20 +131,20 @@ export default function TaskNewPage() {
           <div className="form-hint">{title.length} / 50</div>
         </div>
 
-        {/* 详情 */}
+        {/* 补充说明 */}
         <div className="form-field">
-          <label className="form-label" htmlFor="t-detail">
-            详情 <span className="required">·</span>
+          <label className="form-label" htmlFor="t-remark">
+            补充说明（可选）
           </label>
           <textarea
-            id="t-detail"
+            id="t-remark"
             className="form-textarea"
-            placeholder="详细要求 · 时间地点 · 联系方式（写在 IM 里更安全）"
-            value={detail}
-            onChange={(e) => setDetail(e.target.value)}
+            placeholder="详细要求 · 联系方式（写在 IM 里更安全）"
+            value={remark}
+            onChange={(e) => setRemark(e.target.value)}
             maxLength={500}
           />
-          <div className="form-hint">{detail.length} / 500</div>
+          <div className="form-hint">{remark.length} / 500</div>
         </div>
 
         {/* 悬赏 + 截止 */}
@@ -172,18 +182,33 @@ export default function TaskNewPage() {
           </div>
         </div>
 
-        {/* 楼栋 */}
+        {/* 取件位置 */}
         <div className="form-field">
-          <label className="form-label" htmlFor="t-building">
-            地点（可选）
+          <label className="form-label" htmlFor="t-pickup">
+            取件位置 <span className="required">·</span>
           </label>
           <input
-            id="t-building"
+            id="t-pickup"
             className="form-input"
-            placeholder="例如：计科楼 / 仙林食堂 / 北门"
-            value={building}
-            onChange={(e) => setBuilding(e.target.value)}
-            maxLength={50}
+            placeholder="例如：菜鸟驿站 / 南苑食堂窗口 3"
+            value={pickupHint}
+            onChange={(e) => setPickupHint(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+
+        {/* 送达地点 */}
+        <div className="form-field">
+          <label className="form-label" htmlFor="t-delivery">
+            送达地点 <span className="required">·</span>
+          </label>
+          <input
+            id="t-delivery"
+            className="form-input"
+            placeholder="例如：计科楼 / 启明苑 18 栋"
+            value={deliveryBuilding}
+            onChange={(e) => setDeliveryBuilding(e.target.value)}
+            maxLength={120}
           />
         </div>
 

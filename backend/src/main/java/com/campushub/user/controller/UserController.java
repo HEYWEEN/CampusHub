@@ -7,6 +7,7 @@ import com.campushub.common.util.IpUtil;
 import com.campushub.user.dto.PrivacyPatchDTO;
 import com.campushub.user.dto.ProfilePatchDTO;
 import com.campushub.user.service.UserService;
+import com.campushub.user.vo.PublicUserStatsVO;
 import com.campushub.user.vo.UserMeVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -65,5 +66,15 @@ public class UserController {
     @GetMapping("/{userId}/public")
     public ApiResponse<PublicUserVO> getPublic(@PathVariable long userId) {
         return ApiResponse.success(userService.getPublicUser(userId));
+    }
+
+    /**
+     * 公开主页 + 三项可隐藏统计（schema_audit A-10 修复）。
+     * 当前 MVP：counts 全返 null（前端按"已隐藏"渲染），后续补真实跨模块聚合。
+     */
+    @GetMapping("/{userId}/public/stats")
+    public ApiResponse<PublicUserStatsVO> getPublicStats(@PathVariable long userId) {
+        PublicUserVO user = userService.getPublicUser(userId);
+        return ApiResponse.success(new PublicUserStatsVO(user, null, null, null));
     }
 }

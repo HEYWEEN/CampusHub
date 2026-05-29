@@ -11,14 +11,13 @@ import './Trade.css'
 const PICKUP_LABEL: Record<string, string> = {
   EXACT_DORM: '精确宿舍',
   BUILDING_RANGE: '楼栋范围',
-  MEETING: '面交',
+  MEETUP: '面交',
 }
 
 const STATUS_LABEL = {
-  ON_SALE:   { text: '在售', tone: 'pending' as const },
-  IN_TRADE:  { text: '交易中', tone: 'progress' as const },
-  COMPLETED: { text: '已售出', tone: 'done' as const },
-  WITHDRAWN: { text: '已下架', tone: 'canceled' as const },
+  ON_SALE:  { text: '在售',   tone: 'pending' as const },
+  IN_TRADE: { text: '交易中', tone: 'progress' as const },
+  OFF_SALE: { text: '已下架', tone: 'canceled' as const },
 }
 
 export default function TradeDetailPage() {
@@ -52,14 +51,14 @@ export default function TradeDetailPage() {
           <span className={`status-badge status-${status.tone} trade-gallery-status`}>
             {status.text}
           </span>
-          <img src={item.images[0]} alt={item.title} />
+          <img src={item.imageUrls[0]} alt={item.title} />
         </div>
 
         {/* 右：信息 + 操作 */}
         <aside className="trade-detail-side">
           <h1 className="trade-detail-title">{item.title}</h1>
           <div className="trade-detail-price">
-            {item.price}<span className="trade-detail-price-unit">积分</span>
+            {item.pricePoint}<span className="trade-detail-price-unit">积分</span>
           </div>
 
           <div>
@@ -69,12 +68,12 @@ export default function TradeDetailPage() {
             </div>
             <div className="trade-meta-row">
               <span className="trade-meta-key">取货方式</span>
-              <span className="trade-meta-val">{PICKUP_LABEL[item.pickupType]}</span>
+              <span className="trade-meta-val">{PICKUP_LABEL[item.pickupLocationType]}</span>
             </div>
-            {item.buildingRange && (
+            {item.pickupLocationDetail && (
               <div className="trade-meta-row">
                 <span className="trade-meta-key">地点</span>
-                <span className="trade-meta-val">{item.buildingRange}</span>
+                <span className="trade-meta-val">{item.pickupLocationDetail}</span>
               </div>
             )}
             <div className="trade-meta-row">
@@ -96,7 +95,7 @@ export default function TradeDetailPage() {
                 联系卖家 · 议价 →
               </button>
               <p className="action-hint">
-                议价 / 下单都通过私信完成，下单后会冻结你 {item.price} 积分作为押金
+                议价 / 下单都通过私信完成，下单后会冻结你 {item.pricePoint} 积分作为押金
               </p>
             </>
           ) : (

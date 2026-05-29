@@ -39,7 +39,8 @@ instance.interceptors.response.use(
         response.data = body.data
         return response
       }
-      throw new BizError(body.code, body.message ?? '未知错误')
+      // HTTP 2xx 但业务 code 非 0：当作 200 响应下的业务错（httpStatus = 200）
+      throw new BizError(body.code, body.message ?? '未知错误', response.status)
     }
     return response
   },
@@ -53,7 +54,8 @@ instance.interceptors.response.use(
     }
     const code = error.response?.data?.code ?? error.response?.status ?? 0
     const message = error.response?.data?.message ?? error.message ?? '网络错误'
-    return Promise.reject(new BizError(code, message))
+    // httpStatus 给 withMock 判断用：undefined = 网络/无响应，>= 500 才 fallback
+    return Promise.reject(new BizError(code, message, error.response?.status))
   },
 )
 

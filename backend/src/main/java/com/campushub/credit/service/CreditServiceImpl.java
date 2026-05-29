@@ -133,6 +133,22 @@ public class CreditServiceImpl implements CreditApi {
         deduct(userId, 0, reasonCode, bizKey);
     }
 
+    /**
+     * 系统奖励积分（新用户启动积分 / 活动奖励）。
+     * 复用 SETTLE direction 流水（语义=积分入账），reasonCode 区分场景。
+     */
+    @Override
+    @Transactional
+    public void award(long userId, int points, String reasonCode, String bizKey) {
+        requirePositive(points);
+        if (alreadyDone(bizKey)) return;
+
+        CreditAccount account = getOrCreateAccount(userId);
+        account.credit(points);
+        accountRepo.save(account);
+        recordRepo.save(new CreditRecord(userId, CreditDirection.SETTLE, points, reasonCode, bizKey));
+    }
+
     // ---- 查询（F-CREDIT-01 / 08，给本人信用中心用） ----
 
     /** 信用分门槛：低于此分禁止发布/接单（P1 SRS FR-CRED-01）。 */

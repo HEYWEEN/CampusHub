@@ -12,17 +12,17 @@ export interface PublicUserVO {
   verifiedTag?: '校园已认证' | null
 }
 
+// 三项隐私开关 — 与后端 UserMeVO / PrivacyPatchDTO 字段名严格对齐（扁平结构）
 export interface PrivacySettings {
-  hidePublishHist: boolean       // 默认 true（隐藏发布历史）
-  hideAcceptHist: boolean        // 默认 true（隐藏接单记录）
+  hidePublishHistory: boolean    // 默认 true（隐藏发布历史）
+  hideAcceptHistory: boolean     // 默认 true（隐藏接单记录）
   hideCourseReviews: boolean     // 默认 true（隐藏课程评价）
-  imOpen: boolean                // 是否接收私信
 }
 
-export interface UserMeVO extends PublicUserVO {
+// UserMeVO 把 PrivacySettings 三项字段展平在顶层（对齐后端扁平结构）
+export interface UserMeVO extends PublicUserVO, PrivacySettings {
   phoneMasked: string            // 138****1234 后端已脱敏
   verifyStatus: VerifyStatus
-  privacy: PrivacySettings
   dailyAcceptLimit: number       // 1~3，可调
 }
 

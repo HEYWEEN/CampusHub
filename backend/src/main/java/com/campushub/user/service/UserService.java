@@ -63,7 +63,7 @@ public class UserService implements UserApi {
                 u.getId(),
                 p.getNickname(),
                 p.getAvatarUrl(),
-                u.getVerifyStatus() == VerifyStatus.APPROVED
+                u.getVerifyStatus() == VerifyStatus.APPROVED ? "校园已认证" : null
         );
     }
 

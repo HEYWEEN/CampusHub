@@ -2,20 +2,20 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { searchItems } from '../../api/trade'
-import type { TradeStatus } from '../../types/trade'
+import type { TradeItemStatus } from '../../types/trade'
 import TradeCard from '../../components/domain/TradeCard'
 import '../tasks/Tasks.css'
 import './Trade.css'
 
-const STATUSES: { value: TradeStatus | null; label: string }[] = [
+const STATUSES: { value: TradeItemStatus | null; label: string }[] = [
   { value: 'ON_SALE',  label: '在售' },
   { value: null,       label: '全部' },
   { value: 'IN_TRADE', label: '交易中' },
-  { value: 'COMPLETED', label: '已售出' },
+  { value: 'OFF_SALE', label: '已下架' },
 ]
 
 export default function TradeHallPage() {
-  const [status, setStatus] = useState<TradeStatus | null>('ON_SALE')
+  const [status, setStatus] = useState<TradeItemStatus | null>('ON_SALE')
   const [q, setQ] = useState('')
 
   const { data, isLoading } = useQuery({
@@ -73,7 +73,7 @@ export default function TradeHallPage() {
       {data && data.items.length > 0 && (
         <div className="trade-grid">
           {data.items.map((item) => (
-            <TradeCard key={item.itemId} item={item} />
+            <TradeCard key={item.id} item={item} />
           ))}
         </div>
       )}

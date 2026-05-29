@@ -1,5 +1,8 @@
 package com.campushub.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * auth_verification.status 独立状态机（schema.sql 注释定义）。
  *
@@ -23,6 +26,19 @@ public enum VerificationStatus {
 
     public int getCode() {
         return code;
+    }
+
+    /** Jackson 序列化为小写字符串：PENDING → "pending"（schema_audit B-7） */
+    @JsonValue
+    public String jsonValue() {
+        return name().toLowerCase();
+    }
+
+    /** Jackson 反序列化：接受任意大小写 */
+    @JsonCreator
+    public static VerificationStatus fromJson(String s) {
+        if (s == null) return null;
+        return VerificationStatus.valueOf(s.toUpperCase());
     }
 
     public static VerificationStatus fromCode(int code) {

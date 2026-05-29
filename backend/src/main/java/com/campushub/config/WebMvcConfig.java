@@ -2,10 +2,12 @@ package com.campushub.config;
 
 import com.campushub.common.interceptor.JwtAuthInterceptor;
 import com.campushub.common.interceptor.TraceIdInterceptor;
+import com.campushub.common.storage.ImageStorage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -23,10 +25,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final TraceIdInterceptor traceIdInterceptor;
     private final JwtAuthInterceptor jwtAuthInterceptor;
+    private final ImageStorage imageStorage;
 
-    public WebMvcConfig(TraceIdInterceptor traceIdInterceptor, JwtAuthInterceptor jwtAuthInterceptor) {
+    public WebMvcConfig(TraceIdInterceptor traceIdInterceptor,
+                        JwtAuthInterceptor jwtAuthInterceptor,
+                        ImageStorage imageStorage) {
         this.traceIdInterceptor = traceIdInterceptor;
         this.jwtAuthInterceptor = jwtAuthInterceptor;
+        this.imageStorage = imageStorage;
     }
 
     @Override
@@ -38,6 +44,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtAuthInterceptor)
                 .addPathPatterns("/api/**")
                 .order(1);
+    }
+
+    /**
+     * 静态资源映射：把 /uploads/** 映射到本地图床目录，让浏览器能 <img src="/uploads/xx.jpg">。
+     * 路径不带 /api 前缀，所以不会被 JwtAuthInterceptor 拦截，无需登录即可访问。
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String location = "file:" + imageStorage.getBaseDir().toString() + "/";
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(location)
+                .setCachePeriod(3600);
     }
 
     @Override

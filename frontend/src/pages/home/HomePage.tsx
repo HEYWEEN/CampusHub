@@ -3,46 +3,151 @@ import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import './HomePage.css'
 
-const TILES: { to: string; num: string; en: string; cn: string; desc: string; illo: string }[] = [
-  {
-    to: '/app/tasks',
-    num: '01',
-    en: 'task',
-    cn: '跑腿',
-    desc: '取快递、带饭、占座 —— 校园里的小麻烦交给同学。',
-    illo: '/illustrations/free-time.png',
-  },
-  {
-    to: '/app/trade',
-    num: '02',
-    en: 'trade',
-    cn: '二手',
-    desc: '同校面交、积分结算。',
-    illo: '/illustrations/coffee.png',
-  },
-  {
-    to: '/app/edu/tutor',
-    num: '03',
-    en: 'tutor',
-    cn: '辅导',
-    desc: '找懂你专业的学长学姐。课程对口、信用透明。',
-    illo: '/illustrations/focused.png',
-  },
-  {
-    to: '/app/team',
-    num: '04',
-    en: 'team',
-    cn: '组队',
-    desc: '比赛 / 课设 / 毕设 —— 标签匹配，技能互补。',
-    illo: '/illustrations/catching-up.png',
-  },
+/* ─────────── 4 大功能 Tile ─────────── */
+type TileIcon = 'run' | 'bag' | 'cap' | 'team'
+const TILES: {
+  to: string
+  num: string
+  cn: string
+  desc: string
+  illo: string
+  icon: TileIcon
+}[] = [
+    {
+      to: '/app/tasks',
+      num: '01',
+      cn: '跑腿',
+      desc: '取快递、带饭、占座…\n让忙碌的你更轻松',
+      illo: '/illustrations/free-time.png',
+      icon: 'run',
+    },
+    {
+      to: '/app/trade',
+      num: '02',
+      cn: '二手',
+      desc: '同校面交，安全可靠\n闲置物品流转起来',
+      illo: '/illustrations/coffee.png',
+      icon: 'bag',
+    },
+    {
+      to: '/app/edu/tutor',
+      num: '03',
+      cn: '辅导',
+      desc: '学长学姐在线帮忙\n难题不再难',
+      illo: '/illustrations/focused.png',
+      icon: 'cap',
+    },
+    {
+      to: '/app/team',
+      num: '04',
+      cn: '组队',
+      desc: '比赛 / 课设 / 毕设\n找到你的队友',
+      illo: '/illustrations/catching-up.png',
+      icon: 'team',
+    },
+  ]
+
+/* ─────────── Tile 顶部小图标（手写 SVG，单色描线） ─────────── */
+function TileIconSvg({ kind }: { kind: TileIcon }) {
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  }
+  switch (kind) {
+    case 'run':
+      return (
+        <svg {...common}>
+          {/* 奔跑小人 — 头部实心，躯干 + 前后摆动的四肢 */}
+          <circle cx="16" cy="4.5" r="1.8" fill="currentColor" stroke="none" />
+          <path d="M11 21l2.5-5 -2-2.5 3-4 2.5 2.5 3-.5" />
+          <path d="M10 13l-3 .5" />
+          <path d="M14.5 9.5l-3 1.5" />
+        </svg>
+      )
+    case 'bag':
+      return (
+        <svg {...common}>
+          <path d="M6 8h12l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H8.7a1.5 1.5 0 0 1-1.5-1.3L6 8z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+      )
+    case 'cap':
+      return (
+        <svg {...common}>
+          <path d="M2 9l10-4 10 4-10 4L2 9z" />
+          <path d="M6 11v4c0 1.4 2.7 3 6 3s6-1.6 6-3v-4" />
+          <path d="M22 9v5" />
+        </svg>
+      )
+    case 'team':
+      return (
+        <svg {...common}>
+          <circle cx="8" cy="9" r="2.6" />
+          <circle cx="16" cy="9" r="2.6" />
+          <path d="M3 19c.7-2.8 2.7-4.4 5-4.4s4.3 1.6 5 4.4" />
+          <path d="M13 19c.7-2.8 2.7-4.4 5-4.4s4.3 1.6 5 4.4" />
+        </svg>
+      )
+  }
+}
+
+/* ─────────── 底部统计 ─────────── */
+// TODO: F-STATS-01 - 接 /api/stats 拉真实数据，目前为静态展示
+const STATS = [
+  { num: '1286+', label: '活跃用户', icon: 'users' as const },
+  { num: '3421+', label: '累计完成任务', icon: 'check' as const },
+  { num: '98%', label: '好评率', icon: 'heart' as const },
+  { num: '100%', label: '实名认证', icon: 'shield' as const },
 ]
+
+function StatIcon({ kind }: { kind: 'users' | 'check' | 'heart' | 'shield' }) {
+  const c = {
+    width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none',
+    stroke: 'currentColor', strokeWidth: 1.7,
+    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  }
+  switch (kind) {
+    case 'users':
+      return (
+        <svg {...c}>
+          <circle cx="9" cy="9" r="3" />
+          <path d="M3 19c.6-3 2.9-4.8 6-4.8s5.4 1.8 6 4.8" />
+          <circle cx="17" cy="8" r="2.5" />
+          <path d="M14.7 14.5c1-.4 2.1-.6 3.3-.6 2.4 0 3.8 1 4.5 2.6" />
+        </svg>
+      )
+    case 'check':
+      return (
+        <svg {...c}>
+          <rect x="5" y="4" width="14" height="17" rx="2" />
+          <path d="M9 11l2 2 4-4" />
+        </svg>
+      )
+    case 'heart':
+      return (
+        <svg {...c}>
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+      )
+    case 'shield':
+      return (
+        <svg {...c}>
+          <path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6l8-3z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+      )
+  }
+}
 
 export default function HomePage() {
   useEffect(() => {
-    // sticky header 已由 AppHeader 自治，不在此处重复
-
-    // ── split text（仅 H1） ──────────────────────────────────────────
+    /* ── split text（仅 H1 楷书） ── */
     let chIdx = 0
     const splitNode = (node: Node) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -67,7 +172,7 @@ export default function HomePage() {
       el.dataset.splitDone = '1'
     })
 
-    // ── scroll reveal ────────────────────────────────────────────────
+    /* ── scroll reveal ── */
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -86,9 +191,11 @@ export default function HomePage() {
       },
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
     )
-    document.querySelectorAll<HTMLElement>('[data-rise],[data-split]').forEach((el) => io.observe(el))
+    document
+      .querySelectorAll<HTMLElement>('[data-rise],[data-split]')
+      .forEach((el) => io.observe(el))
 
-    // ── cursor follower ─────────────────────────────────────────────
+    /* ── cursor follower ── */
     const cur = document.getElementById('cursor')
     let mx = 0, my = 0, cx = 0, cy = 0, raf = 0
     const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY }
@@ -122,29 +229,45 @@ export default function HomePage() {
   return (
     <>
       <div className="cursor" id="cursor" />
-
-      {/* 通用 AppHeader：根据登录态自动切换简洁版 / 完整 nav 版 */}
       <AppHeader />
 
       <main className="home-shell">
-        {/* ─────────── HERO ─────────── */}
+        {/* ─────────── HERO（双列：左文 + 右钟楼） ─────────── */}
         <section className="home-hero">
-          <div className="eyebrow rise" data-rise>
-            <span className="pulse" />
-            <span>南京大学 · 软件工程二大作业 · 2026</span>
-            <span className="ln" />
+          <div className="hero-left">
+            <div className="eyebrow rise" data-rise>
+              <span className="pulse" />
+              <span>南大人 · 帮南大人 · 2026</span>
+              <span className="ln" />
+            </div>
+
+            <h1 className="home-title">
+              <span className="row split" data-split>南京大学</span>
+              <span className="row split" data-split data-delay="120">
+                校园<span className="it">互助</span>平台
+              </span>
+            </h1>
+
+            <p className="home-sub rise" data-rise data-delay="320">
+              跑腿、二手、辅导、组队，全部在这里完成。<br />
+              互帮互助，让校园生活更简单。
+            </p>
+
+
           </div>
 
-          <h1 className="home-title">
-            <span className="row split whole" data-split>南京大学校园互助平台</span>
-          </h1>
-
-          <p className="home-sub rise" data-rise data-delay="220">
-            南京大学<span className="serif it"> 校园互助平台 </span>—— 跑腿、二手、辅导、组队，全部在这里完成。
-          </p>
+          <div className="hero-right rise" data-rise data-delay="220">
+            <img
+              className="hero-illo"
+              src="/illustrations/beidalou.png"
+              alt="南京大学北大楼"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
         </section>
 
-        {/* ─────────── 4 FUNCTION TILES ─────────── */}
+        {/* ─────────── 4 大功能 Tile ─────────── */}
         <section className="home-tiles">
           {TILES.map((t, i) => (
             <Link
@@ -155,19 +278,71 @@ export default function HomePage() {
               data-delay={String(120 + i * 80)}
             >
               <div className="tile-head">
+                <span className="tile-icon" aria-hidden>
+                  <TileIconSvg kind={t.icon} />
+                </span>
                 <span className="tile-num">{t.num}</span>
-                <span className="tile-en">{t.en}</span>
               </div>
-              <h3 className="tile-title">
-                <span className="it">{t.cn}</span>
-              </h3>
-              <p className="tile-desc">{t.desc}</p>
+
+              <h3 className="tile-title">{t.cn}</h3>
+              <p className="tile-desc">
+                {t.desc.split('\n').map((line, idx) => (
+                  <span key={idx} className="tile-desc-line">{line}</span>
+                ))}
+              </p>
+
               <div className="tile-foot">
-                <span className="tile-cta">立即去 <span aria-hidden>→</span></span>
+                <span className="tile-cta">
+                  进入 <span aria-hidden>→</span>
+                </span>
                 <img className="tile-illo" src={t.illo} alt="" loading="lazy" />
               </div>
             </Link>
           ))}
+        </section>
+
+        {/* ─────────── 公告条 ─────────── */}
+        {/* TODO: F-NOTICE-01 - 接 /api/announcements/latest 拉真实数据 */}
+        <section className="home-notice rise" data-rise data-delay="200">
+          <span className="notice-icon" aria-hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z" />
+              <path d="M16 8a5 5 0 0 1 0 8" />
+              <path d="M19 5a8 8 0 0 1 0 14" />
+            </svg>
+          </span>
+          <span className="notice-label">公告</span>
+          <span className="notice-sep" />
+          <span className="notice-tag">【重要】</span>
+          <span className="notice-text">关于谨防校园诈骗的提醒</span>
+          <span className="notice-date mono">05-26</span>
+          <Link to="/app/notify" className="notice-more">
+            查看全部 <span aria-hidden>→</span>
+          </Link>
+        </section>
+
+        {/* ─────────── 底部统计带 ─────────── */}
+        <section className="home-stats rise" data-rise data-delay="240">
+          <div className="stats-grid">
+            {STATS.map((s) => (
+              <div key={s.label} className="stat-item">
+                <span className="stat-icon" aria-hidden>
+                  <StatIcon kind={s.icon} />
+                </span>
+                <div className="stat-text">
+                  <div className="stat-num">{s.num}</div>
+                  <div className="stat-label">{s.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <img
+            className="stats-illo"
+            src="/illustrations/nju-gate.png"
+            alt=""
+            loading="lazy"
+            aria-hidden
+          />
         </section>
 
         {/* ─────────── FOOTER ─────────── */}

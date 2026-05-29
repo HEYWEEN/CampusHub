@@ -96,7 +96,7 @@ class TradeConfirmServiceTest {
         itemDto.setTitle("确认测试");
         itemDto.setPricePoint(price);
         itemDto.setPickupLocationType(PickupLocationType.MEETUP);
-        TradeItemVO item = itemService.createItem(sellerId, itemDto, List.of());
+        TradeItemVO item = itemService.createItem(sellerId, itemDto);
 
         TradeOrderCreateDTO orderDto = new TradeOrderCreateDTO();
         orderDto.setItemId(item.id());

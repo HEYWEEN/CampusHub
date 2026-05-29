@@ -25,7 +25,7 @@ export default function TaskCard({ task }: { task: TaskListItemVO }) {
       <h3 className="task-card-title">{task.title}</h3>
 
       <div className="task-card-meta">
-        {task.building && <span className="task-meta-item">📍 {task.building}</span>}
+        {task.deliveryBuilding && <span className="task-meta-item">📍 {task.deliveryBuilding}</span>}
         <span className={`task-meta-item${dl.urgent ? ' task-meta-urgent' : ''}${dl.expired ? ' task-meta-expired' : ''}`}>
           ⏰ 截止 {dl.text}
         </span>

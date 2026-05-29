@@ -44,173 +44,207 @@ const tasks: TaskDetailVO[] = [
     taskId: 't101',
     taskType: 'ERRAND',
     title: '帮我从南苑食堂带一份黄焖鸡米饭',
-    detail: '南苑食堂 2 楼黄焖鸡窗口，不要香菜，多加一份木耳。打包好送到计科 311 教室门口。',
+    remark: '南苑食堂 2 楼黄焖鸡窗口，不要香菜，多加一份木耳。打包好送到计科 311 教室门口。',
     rewardPoint: 8,
     deadlineAt: inMinutes(45),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u2,
-    building: '计科楼',
-    attachments: [],
+    deliveryBuilding: '计科楼',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(12),
   },
   {
     taskId: 't102',
     taskType: 'ERRAND',
     title: '菜鸟驿站取快递（顺丰大件）',
-    detail: '驿站在 16 号宿舍楼下，快递柜密码 8842。送到 14 号 412 房间。',
+    remark: '驿站在 16 号宿舍楼下，快递柜密码 8842。送到 14 号 412 房间。',
     rewardPoint: 5,
     deadlineAt: inMinutes(120),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u3,
-    building: '16 号楼',
-    attachments: [],
+    deliveryBuilding: '16 号楼',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(35),
   },
   {
     taskId: 't103',
     taskType: 'TUTOR',
     title: '高数 II 期中冲刺辅导（连续 4 次课）',
-    detail: '想找会高数的学长学姐，每次 1 小时，4 次包月。主要复习二重积分、级数。',
+    remark: '想找会高数的学长学姐，每次 1 小时，4 次包月。主要复习二重积分、级数。',
     rewardPoint: 200,
     deadlineAt: inMinutes(60 * 24 * 3),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u4,
-    building: '在线 / 线下面议',
-    attachments: [],
+    deliveryBuilding: '在线 / 线下面议',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60 * 2),
   },
   {
     taskId: 't104',
     taskType: 'MUTUAL_HELP',
     title: '有人去仙林校区吗？想搭车一起回去',
-    detail: '今晚 8 点左右从鼓楼回仙林，可以分摊滴滴。学姐人很好聊得来。',
+    remark: '今晚 8 点左右从鼓楼回仙林，可以分摊滴滴。学姐人很好聊得来。',
     rewardPoint: 15,
     deadlineAt: inMinutes(60 * 4),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u5,
-    building: '鼓楼 → 仙林',
-    attachments: [],
+    deliveryBuilding: '鼓楼 → 仙林',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(20),
   },
   {
     taskId: 't105',
     taskType: 'ERRAND',
     title: '帮拍一张行政楼前夕阳的照片',
-    detail: '今晚日落前帮我拍 2-3 张行政楼的夕阳全景，发到 IM。',
+    remark: '今晚日落前帮我拍 2-3 张行政楼的夕阳全景，发到 IM。',
     rewardPoint: 12,
     deadlineAt: inMinutes(90),
+    pickupHint: '现场告知',
     status: 'IN_PROGRESS',
     publisher: users.u2,
-    acceptor: users.u3,
-    building: '行政楼',
-    attachments: [],
+    assignee: users.u3,
+    deliveryBuilding: '行政楼',
+    attachmentUrls: [],
     version: 1,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60),
   },
   {
     taskId: 't106',
     taskType: 'ERRAND',
     title: '帮买一份阿姨包子（要韭菜的）',
-    detail: '早餐摊在西门，3 个韭菜包，1 杯豆浆。',
+    remark: '早餐摊在西门，3 个韭菜包，1 杯豆浆。',
     rewardPoint: 5,
     deadlineAt: minutesAgo(30),
+    pickupHint: '现场告知',
     status: 'WAIT_CONFIRM',
     publisher: users.u1,
-    acceptor: users.u3,
-    building: '西门',
-    attachments: [],
-    proofImages: ['/illustrations/coffee.png'],
-    proofNote: '已送到，3 个包子 + 豆浆，请确认。',
+    assignee: users.u3,
+    deliveryBuilding: '西门',
+    attachmentUrls: [],
     version: 2,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(95),
   },
   {
     taskId: 't107',
     taskType: 'TUTOR',
     title: '操作系统 Lab2 求救（缺页中断那一关）',
-    detail: 'Lab2 第三个测试用例怎么都过不了，怀疑是 LRU 实现有 bug，求大佬带飞 1 小时。',
+    remark: 'Lab2 第三个测试用例怎么都过不了，怀疑是 LRU 实现有 bug，求大佬带飞 1 小时。',
     rewardPoint: 60,
     deadlineAt: inMinutes(60 * 12),
+    pickupHint: '现场告知',
     status: 'COMPLETED',
     publisher: users.u4,
-    acceptor: users.u1,
-    building: '在线',
-    attachments: [],
+    assignee: users.u1,
+    deliveryBuilding: '在线',
+    attachmentUrls: [],
     version: 4,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60 * 26),
   },
   {
     taskId: 't108',
     taskType: 'MUTUAL_HELP',
     title: '室友的猫不见了，求大家帮看下 5 栋附近',
-    detail: '橘色狸花，戴红色项圈，名字叫"豆瓣"。看到请联系。重金致谢！',
+    remark: '橘色狸花，戴红色项圈，名字叫"豆瓣"。看到请联系。重金致谢！',
     rewardPoint: 100,
     deadlineAt: inMinutes(60 * 48),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u5,
-    building: '5 栋宿舍楼附近',
-    attachments: [],
+    deliveryBuilding: '5 栋宿舍楼附近',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(15),
   },
   {
     taskId: 't109',
     taskType: 'ERRAND',
     title: '占座 · 图书馆 4 楼 A 区靠窗',
-    detail: '需要占两个连座，明早 8:30 - 11:00 用。',
+    remark: '需要占两个连座，明早 8:30 - 11:00 用。',
     rewardPoint: 6,
     deadlineAt: inMinutes(60 * 14),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u1,
-    building: '图书馆',
-    attachments: [],
+    deliveryBuilding: '图书馆',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(5),
   },
   {
     taskId: 't110',
     taskType: 'TUTOR',
     title: '计组实验 5 求助（Verilog ALU 设计）',
-    detail: '加法器和移位器写完了，乘法那块一直时序不对，求大佬指点。',
+    remark: '加法器和移位器写完了，乘法那块一直时序不对，求大佬指点。',
     rewardPoint: 80,
     deadlineAt: inMinutes(60 * 36),
+    pickupHint: '现场告知',
     status: 'CANCELED',
     publisher: users.u3,
-    building: '在线',
-    attachments: [],
+    deliveryBuilding: '在线',
+    attachmentUrls: [],
     version: 1,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60 * 8),
   },
   {
     taskId: 't111',
     taskType: 'ERRAND',
     title: '打印店取一份 30 页论文',
-    detail: '北门打印店，单号 P-8841，付过款了直接取就行。',
+    remark: '北门打印店，单号 P-8841，付过款了直接取就行。',
     rewardPoint: 4,
     deadlineAt: minutesAgo(60),
+    pickupHint: '现场告知',
     status: 'EXPIRED',
     publisher: users.u4,
-    building: '北门打印店',
-    attachments: [],
+    deliveryBuilding: '北门打印店',
+    attachmentUrls: [],
     version: 1,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60 * 5),
   },
   {
     taskId: 't112',
     taskType: 'MUTUAL_HELP',
     title: '周末晨跑搭子（紫金山）',
-    detail: '想找一两个稳定的跑友，每周六早上紫金山。配速 5:30 左右。',
+    remark: '想找一两个稳定的跑友，每周六早上紫金山。配速 5:30 左右。',
     rewardPoint: 0,
     deadlineAt: inMinutes(60 * 60),
+    pickupHint: '现场告知',
     status: 'PENDING_ACCEPT',
     publisher: users.u5,
-    building: '紫金山北门',
-    attachments: [],
+    deliveryBuilding: '紫金山北门',
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: false,
     createdAt: minutesAgo(60),
   },
 ]
@@ -233,7 +267,7 @@ export function mockSearchTasks(params: TaskSearchParams): PageResponse<TaskList
   if (q) {
     const kw = q.toLowerCase()
     filtered = filtered.filter(
-      (t) => t.title.toLowerCase().includes(kw) || t.detail.toLowerCase().includes(kw),
+      (t) => t.title.toLowerCase().includes(kw) || (t.remark || "").toLowerCase().includes(kw),
     )
   }
   // 默认按创建时间倒序
@@ -253,14 +287,17 @@ export function mockCreateTask(dto: TaskCreateDTO, userId = MOCK_CURRENT_USER_ID
     taskId,
     taskType: dto.taskType,
     title: dto.title,
-    detail: dto.detail,
+    remark: dto.remark || '',
     rewardPoint: dto.rewardPoint,
     deadlineAt: dto.deadlineAt,
-    building: dto.building,
+    pickupHint: dto.pickupHint,
+    deliveryBuilding: dto.deliveryBuilding,
     status: 'PENDING_ACCEPT',
     publisher: users[userId] ?? users.u1,
-    attachments: [],
+    attachmentUrls: [],
     version: 0,
+    canAccept: false,
+    isPublisher: true,
     createdAt: new Date().toISOString(),
   }
   tasks.unshift(newTask)
@@ -273,17 +310,17 @@ export function mockAcceptTask(id: string, userId = MOCK_CURRENT_USER_ID): void 
   if (t.status !== 'PENDING_ACCEPT') throw new BizError(409, '任务已无法接单')
   if (t.publisher.userId === userId) throw new BizError(400, '不能接自己发布的任务')
   t.status = 'IN_PROGRESS'
-  t.acceptor = users[userId] ?? users.u1
+  t.assignee = users[userId] ?? users.u1
   t.version += 1
 }
 
-export function mockSubmitProof(id: string, images: string[], note: string): void {
+export function mockSubmitProof(id: string, images: string[], _note: string): void {
   const t = tasks.find((x) => x.taskId === id)
   if (!t) throw new BizError(404, '任务不存在')
   if (t.status !== 'IN_PROGRESS') throw new BizError(409, '当前状态无法上传凭证')
   t.status = 'WAIT_CONFIRM'
-  t.proofImages = images
-  t.proofNote = note
+  // 凭证图直接进 attachmentUrls；note 在后端 mock 层暂时丢弃（后端 task proof 是 multipart text+files 单独传）
+  t.attachmentUrls = [...(t.attachmentUrls || []), ...images]
   t.version += 1
 }
 
@@ -314,12 +351,9 @@ const me: UserMeVO = {
   verifiedTag: '校园已认证',
   phoneMasked: '138****8842',
   verifyStatus: 'approved',
-  privacy: {
-    hidePublishHist: true,
-    hideAcceptHist: true,
-    hideCourseReviews: true,
-    imOpen: true,
-  },
+  hidePublishHistory: true,
+  hideAcceptHistory: true,
+  hideCourseReviews: true,
   dailyAcceptLimit: 2,
 }
 
@@ -334,7 +368,7 @@ const credit: CreditMeVO = {
 }
 
 export function mockGetMe(): UserMeVO {
-  return { ...me, privacy: { ...me.privacy } }
+  return { ...me }
 }
 
 export function mockGetCredit(): CreditMeVO {
@@ -353,8 +387,8 @@ export function mockUpdateProfile(dto: ProfileUpdateDTO): UserMeVO {
   return mockGetMe()
 }
 
-export function mockUpdatePrivacy(privacy: PrivacySettings): UserMeVO {
-  me.privacy = { ...privacy }
+export function mockUpdatePrivacy(privacy: Partial<PrivacySettings>): UserMeVO {
+  Object.assign(me, privacy)
   return mockGetMe()
 }
 
@@ -385,97 +419,97 @@ export function mockGetPublicUser(userId: string): PublicUserVO {
 
 const items: TradeItemVO[] = [
   {
-    itemId: 'i101',
+    id: 101,
     title: 'Kindle Paperwhite 4（无划痕）',
-    price: 380,
+    pricePoint: 380,
     description: '九成新，2022 年买的，平时只在宿舍用。保护套和数据线都送。\n仙林面交，可以试用一会儿再决定。',
-    images: ['/illustrations/reading.png'],
-    pickupType: 'BUILDING_RANGE',
-    buildingRange: '仙林 14 号楼',
+    imageUrls: ['/illustrations/reading.png'],
+    pickupLocationType: 'BUILDING_RANGE',
+    pickupLocationDetail: '仙林 14 号楼',
     status: 'ON_SALE',
     seller: users.u2,
     createdAt: minutesAgo(60),
   },
   {
-    itemId: 'i102',
+    id: 102,
     title: '计算机组成原理（清华版）+ 配套实验书',
-    price: 25,
+    pricePoint: 25,
     description: '考完研留下的，笔记不多，正文很干净。两本一起出。',
-    images: ['/illustrations/focused.png'],
-    pickupType: 'EXACT_DORM',
-    buildingRange: '16 号楼 412',
+    imageUrls: ['/illustrations/focused.png'],
+    pickupLocationType: 'EXACT_DORM',
+    pickupLocationDetail: '16 号楼 412',
     status: 'ON_SALE',
     seller: users.u4,
     createdAt: minutesAgo(60 * 3),
   },
   {
-    itemId: 'i103',
+    id: 103,
     title: 'iPad mini 6 64G WiFi 版',
-    price: 2100,
+    pricePoint: 2100,
     description: '紫色，1 年质保还剩 4 个月。平时就看 PDF 和记笔记，无任何磕碰。',
-    images: ['/illustrations/coffee.png'],
-    pickupType: 'MEETING',
-    buildingRange: '南门 / 西门均可',
+    imageUrls: ['/illustrations/coffee.png'],
+    pickupLocationType: 'MEETUP',
+    pickupLocationDetail: '南门 / 西门均可',
     status: 'ON_SALE',
     seller: users.u3,
     createdAt: minutesAgo(60 * 8),
   },
   {
-    itemId: 'i104',
+    id: 104,
     title: '宿舍小电饭锅（毕业转手）',
-    price: 80,
+    pricePoint: 80,
     description: '1.6L，正好够 2 人吃。煮饭炖汤煮粥都可以。明年 6 月毕业现在低价出。',
-    images: ['/illustrations/plant.png'],
-    pickupType: 'EXACT_DORM',
-    buildingRange: '5 号楼 308',
+    imageUrls: ['/illustrations/plant.png'],
+    pickupLocationType: 'EXACT_DORM',
+    pickupLocationDetail: '5 号楼 308',
     status: 'IN_TRADE',
     seller: users.u5,
     createdAt: minutesAgo(60 * 24),
   },
   {
-    itemId: 'i105',
+    id: 105,
     title: '高数考研全程班教材（张宇 + 李永乐）',
-    price: 40,
+    pricePoint: 40,
     description: '基础到强化，含视频网盘账号（剩余 6 个月）',
-    images: ['/illustrations/free-time.png'],
-    pickupType: 'BUILDING_RANGE',
-    buildingRange: '仙林任意宿舍楼',
+    imageUrls: ['/illustrations/free-time.png'],
+    pickupLocationType: 'BUILDING_RANGE',
+    pickupLocationDetail: '仙林任意宿舍楼',
     status: 'ON_SALE',
     seller: users.u4,
     createdAt: minutesAgo(60 * 12),
   },
   {
-    itemId: 'i106',
+    id: 106,
     title: 'Sony WH-1000XM4 降噪耳机',
-    price: 1500,
+    pricePoint: 1500,
     description: '银色，1 年内的，无瑕疵。包装盒和配件齐全。',
-    images: ['/illustrations/reflecting.png'],
-    pickupType: 'MEETING',
-    buildingRange: '校内任意地点',
+    imageUrls: ['/illustrations/reflecting.png'],
+    pickupLocationType: 'MEETUP',
+    pickupLocationDetail: '校内任意地点',
     status: 'ON_SALE',
     seller: users.u1,
     createdAt: minutesAgo(30),
   },
   {
-    itemId: 'i107',
+    id: 107,
     title: '折叠椅（带杯架 · 露营也能用）',
-    price: 35,
+    pricePoint: 35,
     description: '阳台坐久了腰疼买的，结果没用几次。颜色军绿。',
-    images: ['/illustrations/catching-up.png'],
-    pickupType: 'EXACT_DORM',
-    buildingRange: '14 号楼 305',
-    status: 'COMPLETED',
+    imageUrls: ['/illustrations/catching-up.png'],
+    pickupLocationType: 'EXACT_DORM',
+    pickupLocationDetail: '14 号楼 305',
+    status: 'OFF_SALE',
     seller: users.u2,
     createdAt: minutesAgo(60 * 60),
   },
   {
-    itemId: 'i108',
+    id: 108,
     title: '手冲咖啡套装（V60 滤杯 + 手冲壶 + 电子秤）',
-    price: 120,
+    pricePoint: 120,
     description: '一整套出，新买的电子秤还没拆封。本来想晨起来一杯，结果还是奶茶香。',
-    images: ['/illustrations/coffee.png'],
-    pickupType: 'BUILDING_RANGE',
-    buildingRange: '鼓楼校区',
+    imageUrls: ['/illustrations/coffee.png'],
+    pickupLocationType: 'BUILDING_RANGE',
+    pickupLocationDetail: '鼓楼校区',
     status: 'ON_SALE',
     seller: users.u3,
     createdAt: minutesAgo(60 * 5),
@@ -497,9 +531,10 @@ export function mockSearchItems(params: TradeSearchParams): PageResponse<TradeIt
 }
 
 export function mockGetItem(id: string): TradeItemVO {
-  const it = items.find((x) => x.itemId === id)
+  const idNum = Number(id)
+  const it = items.find((x) => x.id === idNum)
   if (!it) throw new BizError(404, '商品不存在')
-  return { ...it, images: [...it.images] }
+  return { ...it, imageUrls: [...it.imageUrls] }
 }
 
 // ─────────────────────────────────────────────
@@ -551,22 +586,22 @@ export function mockListCreditRecords(): CreditRecord[] {
   return [...records].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-export function mockCreateItem(dto: TradeItemCreateDTO, userId = MOCK_CURRENT_USER_ID): string {
-  const itemId = 'i' + Math.floor(Math.random() * 9000 + 1000)
+export function mockCreateItem(dto: TradeItemCreateDTO, userId = MOCK_CURRENT_USER_ID): TradeItemVO {
+  const id = Math.floor(Math.random() * 9000 + 1000)
   const newItem: TradeItemVO = {
-    itemId,
+    id,
     title: dto.title,
-    price: dto.price,
-    description: dto.description,
-    images: dto.images.length > 0 ? dto.images : ['/illustrations/free-time.png'],
-    pickupType: dto.pickupType,
-    buildingRange: dto.buildingRange,
+    pricePoint: dto.pricePoint,
+    description: dto.description ?? '',
+    imageUrls: dto.imageUrls.length > 0 ? [...dto.imageUrls] : ['/illustrations/free-time.png'],
+    pickupLocationType: dto.pickupLocationType,
+    pickupLocationDetail: dto.pickupLocationDetail ?? '',
     status: 'ON_SALE',
     seller: users[userId] ?? users.u1,
     createdAt: new Date().toISOString(),
   }
   items.unshift(newItem)
-  return itemId
+  return newItem
 }
 
 // ─────────────────────────────────────────────
@@ -589,7 +624,7 @@ export function mockGetPublicStats(userId: string): PublicUserStats {
     return {
       user,
       publishedCount: tasks.filter((t) => t.publisher.userId === userId).length,
-      acceptedCount: tasks.filter((t) => t.acceptor?.userId === userId).length,
+      acceptedCount: tasks.filter((t) => t.assignee?.userId === userId).length,
       reviewsCount: 12,
     }
   }

@@ -25,11 +25,11 @@ async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
   try {
     return await real()
   } catch (err) {
-    if (err instanceof BizError && err.code !== 0 && err.code !== 404 && err.code < 500) {
+    if (err instanceof BizError && err.httpStatus !== undefined && err.httpStatus < 500) {
       // 业务错码（400/403/409 等）保留真实错误，不用 mock 掩盖
       throw err
     }
-    // 网络错或 500：fallback 到 mock
+    // 网络错或 5xx：fallback 到 mock
     // eslint-disable-next-line no-console
     console.warn('[mock] 后端未响应，使用 mock 数据')
     return mock()
@@ -54,16 +54,17 @@ export const createTask = (dto: TaskCreateDTO) =>
     () => ({ taskId: mockCreateTask(dto) }),
   )
 
-export const acceptTask = (taskId: string) =>
+export const acceptTask = (taskId: string, version: number) =>
   withMock<void>(
-    () => apiPost(`/api/tasks/${taskId}/accept`),
+    () => apiPost(`/api/tasks/${taskId}/accept`, { version }),
     () => { mockAcceptTask(taskId) },
   )
 
-export const submitProof = (taskId: string, images: string[], note: string) =>
+// schema_audit A-8 修复：后端字段名 text（不是 note），且 multipart 已改为 JSON
+export const submitProof = (taskId: string, images: string[], text: string) =>
   withMock<void>(
-    () => apiPost(`/api/tasks/${taskId}/proof`, { images, note }),
-    () => { mockSubmitProof(taskId, images, note) },
+    () => apiPost(`/api/tasks/${taskId}/proof`, { images, text }),
+    () => { mockSubmitProof(taskId, images, text) },
   )
 
 export const confirmTask = (taskId: string) =>
@@ -72,9 +73,9 @@ export const confirmTask = (taskId: string) =>
     () => { mockConfirmTask(taskId) },
   )
 
-export const cancelTask = (taskId: string) =>
+export const cancelTask = (taskId: string, reason?: string) =>
   withMock<void>(
-    () => apiPost(`/api/tasks/${taskId}/cancel`),
+    () => apiPost(`/api/tasks/${taskId}/cancel`, { reason: reason ?? '' }),
     () => { mockCancelTask(taskId) },
   )
 

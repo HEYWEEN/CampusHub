@@ -139,6 +139,6 @@ class TradeOrderServiceTest {
         dto.setTitle(title);
         dto.setPricePoint(price);
         dto.setPickupLocationType(PickupLocationType.BUILDING_RANGE);
-        return itemService.createItem(sellerId, dto, List.of());
+        return itemService.createItem(sellerId, dto);
     }
 }

@@ -13,7 +13,7 @@ async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
   try {
     return await real()
   } catch (err) {
-    if (err instanceof BizError && err.code !== 0 && err.code !== 404 && err.code < 500) throw err
+    if (err instanceof BizError && err.httpStatus !== undefined && err.httpStatus < 500) throw err
     return mock()
   }
 }

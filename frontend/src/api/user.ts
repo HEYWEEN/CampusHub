@@ -21,7 +21,7 @@ async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
   try {
     return await real()
   } catch (err) {
-    if (err instanceof BizError && err.code !== 0 && err.code !== 404 && err.code < 500) throw err
+    if (err instanceof BizError && err.httpStatus !== undefined && err.httpStatus < 500) throw err
     // eslint-disable-next-line no-console
     console.warn('[mock] user API 后端未响应，使用 mock')
     return mock()
@@ -52,7 +52,7 @@ export const updateProfile = (dto: ProfileUpdateDTO) =>
     () => mockUpdateProfile(dto),
   )
 
-export const updatePrivacy = (privacy: PrivacySettings) =>
+export const updatePrivacy = (privacy: Partial<PrivacySettings>) =>
   withMock<UserMeVO>(
     () => apiPatch('/api/users/me/privacy', privacy),
     () => mockUpdatePrivacy(privacy),

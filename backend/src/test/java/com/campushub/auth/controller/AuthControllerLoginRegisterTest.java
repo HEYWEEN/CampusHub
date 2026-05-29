@@ -76,7 +76,7 @@ class AuthControllerLoginRegisterTest {
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
-                .andExpect(jsonPath("$.data.verifyStatus").value("GUEST"));
+                .andExpect(jsonPath("$.data.verifyStatus").value("guest"));
 
         // 验证：DB 建账 + profile 同步建好 + 手机号仅 HMAC
         String hmac = aes.hmacIndex(phone);

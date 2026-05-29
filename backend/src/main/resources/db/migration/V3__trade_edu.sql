@@ -1,63 +1,26 @@
--- Flyway V3: trade + edu 增量 DDL（兼容 Hibernate 早期建表库）
--- 新环境若已执行 V1 全量脚本，本迁移因 IF NOT EXISTS 幂等跳过。
--- 维护人：C | 2026-05-23
+-- Flyway V3 — no-op（保留版本占位）
+--
+-- 历史背景：
+--   本脚本最初用于「老 Hibernate ddl-auto 建表的环境」补齐 trade_item / trade_order
+--   的新增列与 edu_* 三张新表。作者错用了 PostgreSQL 风格的
+--   `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`，该语法在 MySQL 8.x / 9.x 完全不支持，
+--   导致全新环境（campushub 库由 createDatabaseIfNotExist 自动建出）启动时
+--   ERROR 1064 (42000) at line 7 of V3__trade_edu.sql，后端 BUILD FAILURE。
+--
+-- 修复决策：
+--   1. 经核对，V1__init_schema.sql 已经包含 V3 想 ALTER / CREATE 的全部对象：
+--      - trade_item.{description, price_point, pickup_location_type, pickup_location_detail}
+--      - trade_order.{negotiated_price_point, buyer_confirmed, seller_confirmed}
+--      - 表 edu_tutor_task / edu_forbidden_word_hit / admin_forbidden_word
+--   2. 因此在「严格按 V1→V2→V3→V4→V5 顺序的环境」下，V3 本应 no-op。
+--   3. 直接删除 V3 文件会破坏 Flyway 版本链（老环境 schema_history 已有 V3 记录），
+--      改为 SELECT 1 占位 + 版本号保留，是对所有环境最稳的方案。
+--
+-- 升级提示：
+--   - 若你本地 schema_history 表里 V3 已有「failed」或「success（旧 checksum）」记录，
+--     请执行：cd backend && ./mvnw flyway:repair 后重启后端。
+--   - 全新本地环境无需任何额外操作。
+--
+-- 关联 Bug 记录：docs/P4/bug/何翌闻_2026-05-28.md #2
 
--- trade_item 补列
-ALTER TABLE trade_item
-    ADD COLUMN IF NOT EXISTS description VARCHAR(2000) NULL COMMENT '商品描述' AFTER title,
-    ADD COLUMN IF NOT EXISTS price_point INT NOT NULL DEFAULT 0 COMMENT '标价（积分）' AFTER description,
-    ADD COLUMN IF NOT EXISTS pickup_location_type TINYINT NOT NULL DEFAULT 1 COMMENT '0=精确宿舍 1=楼栋范围 2=面交' AFTER price_point,
-    ADD COLUMN IF NOT EXISTS pickup_location_detail VARCHAR(200) NULL COMMENT '取货地点描述' AFTER pickup_location_type;
-
--- trade_item_image
-CREATE TABLE IF NOT EXISTS trade_item_image (
-    id           BIGINT       NOT NULL AUTO_INCREMENT,
-    item_id      BIGINT       NOT NULL,
-    url          VARCHAR(512) NOT NULL,
-    sort_order   TINYINT      NOT NULL DEFAULT 0,
-    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY idx_trade_item_image_item_id (item_id),
-    CONSTRAINT fk_trade_item_image_item FOREIGN KEY (item_id) REFERENCES trade_item (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- trade_order 补列
-ALTER TABLE trade_order
-    ADD COLUMN IF NOT EXISTS negotiated_price_point INT NOT NULL DEFAULT 0 COMMENT '议价后成交价' AFTER status,
-    ADD COLUMN IF NOT EXISTS buyer_confirmed TINYINT NOT NULL DEFAULT 0 COMMENT '买家已确认' AFTER freeze_point,
-    ADD COLUMN IF NOT EXISTS seller_confirmed TINYINT NOT NULL DEFAULT 0 COMMENT '卖家已确认' AFTER buyer_confirmed;
-
--- edu_tutor_task
-CREATE TABLE IF NOT EXISTS edu_tutor_task (
-    id              BIGINT       NOT NULL AUTO_INCREMENT,
-    publisher_id    BIGINT       NOT NULL,
-    subject         VARCHAR(120) NOT NULL,
-    description     VARCHAR(2000) NOT NULL,
-    reward_point    INT          NOT NULL,
-    status          TINYINT      NOT NULL DEFAULT 0 COMMENT '0=待接单',
-    version         INT          NOT NULL DEFAULT 0,
-    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at      DATETIME     NULL,
-    creator_id      BIGINT       NULL,
-    updater_id      BIGINT       NULL,
-    PRIMARY KEY (id),
-    KEY idx_edu_tutor_task_publisher (publisher_id, status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- edu_forbidden_word_hit
-CREATE TABLE IF NOT EXISTS edu_forbidden_word_hit (
-    user_id         BIGINT       NOT NULL,
-    hit_count       INT          NOT NULL DEFAULT 0,
-    cooldown_until  DATETIME     NULL COMMENT '冷静期结束时间',
-    updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- admin_forbidden_word
-CREATE TABLE IF NOT EXISTS admin_forbidden_word (
-    id        BIGINT       NOT NULL AUTO_INCREMENT,
-    word      VARCHAR(100) NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_admin_forbidden_word (word)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+SELECT 1;

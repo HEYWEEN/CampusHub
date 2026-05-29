@@ -22,6 +22,7 @@ public record TaskDetailVO(
         PublicUserVO assignee,
         List<String> attachmentUrls,
         Instant createdAt,
+        int version,
         boolean canAccept,
         boolean isPublisher
 ) {
@@ -41,6 +42,7 @@ public record TaskDetailVO(
                 assignee,
                 attachmentUrls,
                 task.getCreatedAt(),
+                task.getVersion(),
                 canAccept,
                 isPublisher
         );

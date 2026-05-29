@@ -44,14 +44,14 @@
 
 /* ---------- Primary Nav ---------- */
 .app-nav {
-  display: flex; gap: 4px;
+  display: flex; gap: 6px;
   align-items: center;
   font-family: var(--font-body);
-  font-size: 14px; font-weight: 500;
+  font-size: 14.5px; font-weight: 500;
 }
 .app-nav-link {
   position: relative;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 9999px;
   color: var(--ink-2);
   text-decoration: none;
@@ -60,10 +60,67 @@
 .app-nav-link:hover { color: var(--ink); background: rgba(26, 24, 21, 0.06); }
 .app-nav-link.is-active {
   color: var(--accent);
-  background: rgba(226, 90, 60, 0.10);
+  background: transparent;
+}
+/* 活动项下方手绘风短下划线 —— editorial */
+.app-nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 18px; right: 18px; bottom: 2px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
 }
 @media (max-width: 900px) {
   .app-nav { display: none; }   /* TODO: 加抽屉菜单 */
+}
+
+/* ---------- 头像菜单（纯视觉，点击跳 /app/me） ---------- */
+.app-user {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 12px 4px 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px; font-weight: 500;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.app-user:hover {
+  background: rgba(26, 24, 21, 0.04);
+  border-color: var(--line);
+}
+.app-user-avatar {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--accent-soft, #FBE3DA);
+  flex-shrink: 0;
+}
+.app-user-avatar svg { display: block; }
+.app-user-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.app-user-avatar-fallback {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.app-user-name { white-space: nowrap; }
+.app-user-caret {
+  color: var(--muted);
+  transition: transform .2s ease;
+}
+.app-user:hover .app-user-caret { transform: translateY(1px); color: var(--ink-2); }
+@media (max-width: 720px) {
+  .app-user-name, .app-user-caret { display: none; }
+  .app-user { padding: 2px; }
 }
 
 /* ---------- Header Right ---------- */

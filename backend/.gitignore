@@ -33,3 +33,6 @@ build/
 
 ### Local config (sensitive, never commit) ###
 src/main/resources/application-local.properties
+
+### Local image uploads (P0b 图床落盘目录；prod 走云存储) ###
+uploads/

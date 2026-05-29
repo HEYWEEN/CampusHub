@@ -1,15 +1,17 @@
 /* ============================================================
- * HomePage v2 · 极简产品入口
- * ── Hero（一句话产品定位 + 双 CTA）
- * ── 4 个真实功能 tile（跑腿 / 二手 / 辅导 / 组队）
- * ── 致谢底部
+ * HomePage v3 · 南京大学 校园互助平台
+ * ── Hero（双列：左楷书标题+双 CTA / 右北大楼插画）
+ * ── 4 个功能 tile（图标 + 编号 + 楷书橙标 + 角落插画）
+ * ── 公告条
+ * ── 底部统计带 + 校门插画
+ * ── Footer
  *
- * 保留全局 utility（.pill / .cta-big / .ghost-btn / .flip / .rise / .split
+ * 保留全局 utility（.pill / .ghost-btn / .flip / .rise / .split
  * / .it / .logo / .dot / .eyebrow / .pulse / .ln / .mono / .serif / .cursor
  * / header），让其他页面也能 import.
  * ============================================================ */
 
-/* ---------- Base（其他页面也会从 main.tsx 全局 import 到） ---------- */
+/* ---------- Base ---------- */
 html, body {
   background: var(--bg);
   color: var(--ink);
@@ -31,14 +33,13 @@ button { background: none; color: inherit; cursor: pointer; font: inherit; borde
 @media (max-width: 720px) { .wrap { padding: 0 22px; } }
 
 /* ---------- 共享动画 utility ---------- */
-.split { display: inline-block; overflow: hidden; vertical-align: bottom; line-height: 1.05; }
+.split { display: inline-block; overflow: hidden; vertical-align: bottom; line-height: 1.15; }
 .split .ch {
   display: inline-block;
   transform: translateY(110%);
   transition: transform .9s cubic-bezier(.2,.7,.2,1);
 }
 .split .ch.in { transform: translateY(0); }
-.split.whole { display: block; }
 
 .flip { position: relative; display: inline-block; line-height: 1.2; }
 .flip-inner {
@@ -60,7 +61,7 @@ button { background: none; color: inherit; cursor: pointer; font: inherit; borde
 .rise { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1); }
 .rise.in { opacity: 1; transform: translateY(0); }
 
-/* ---------- Header（全局 fixed） ---------- */
+/* ---------- Header（公开页用，未登录时仍 fixed） ---------- */
 header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   padding: 22px 40px;
@@ -81,11 +82,7 @@ header.scrolled {
   font-weight: 600; font-size: 18px; letter-spacing: -.02em;
   color: var(--ink); text-decoration: none;
 }
-.logo .logo-mark {
-  height: 34px; width: auto;
-  object-fit: contain;
-  display: block;
-}
+.logo .logo-mark { height: 34px; width: auto; object-fit: contain; display: block; }
 
 .pill {
   display: inline-flex; align-items: center; gap: 8px;
@@ -104,29 +101,40 @@ header.scrolled {
 .home-shell {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 160px 40px 40px;
+  padding: 104px 40px 32px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
-@media (max-width: 720px) {
-  .home-shell { padding: 120px 22px 32px; }
+@media (max-width: 720px) { .home-shell { padding: 96px 22px 28px; } }
+
+/* ============================================================
+ * HERO（双列）
+ * ============================================================ */
+.home-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 40px;
+}
+@media (max-width: 980px) {
+  .home-hero { grid-template-columns: 1fr; gap: 24px; margin-bottom: 32px; }
 }
 
-/* ---------- Hero（紧凑版） ---------- */
-.home-hero {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  margin-bottom: 96px;
-}
+.hero-left { display: flex; flex-direction: column; gap: 16px; }
 
 .eyebrow {
-  display: flex; align-items: center; gap: 14px;
-  font-size: 12.5px; color: var(--muted);
-  text-transform: uppercase; letter-spacing: .18em;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 5px 14px 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 12px; color: var(--ink-2);
+  letter-spacing: .12em;
+  width: fit-content;
 }
-.eyebrow .ln { height: 1px; width: 48px; background: currentColor; opacity: .6; }
+.eyebrow .ln { display: none; }
 .eyebrow .pulse {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent);
@@ -140,83 +148,110 @@ header.scrolled {
 }
 
 .home-title {
-  /* 主字体：LXGW WenKai 霞鹜文楷（jsdelivr CDN）
-   * — 现代楷书风，有手写温度但又规整
-   * — 拉丁字符仍 fallback 到 Instrument Serif（同样有手写衬线感）
+  /* 主字体：LXGW WenKai 楷书（jsdelivr CDN） + Instrument Serif 西文
    * 回退：Noto Serif SC → 系统楷书 */
   font-family: 'Instrument Serif', 'LXGW WenKai', 'Noto Serif SC',
                'Kaiti SC', 'STKaiti', serif;
   font-weight: 400;
-  font-size: clamp(56px, 7.5vw, 110px);
-  line-height: 1.15;               /* 楷书字形舒展，行距更宽 */
+  font-size: clamp(44px, 5.2vw, 76px);
+  line-height: 1.1;
   letter-spacing: 0;
   color: var(--ink);
   margin: 0;
 }
 .home-title .row { display: block; }
-.home-title .row.indent { padding-left: .25em; }
 .home-title .it { font-style: italic; color: var(--accent); }
 
 .home-sub {
-  max-width: 620px;
-  font-size: 18px;
-  line-height: 1.55;
+  max-width: 520px;
+  font-size: 15.5px;
+  line-height: 1.65;
   color: var(--ink-2);
+  margin: 2px 0 0;
 }
-.home-sub .it { font-style: italic; color: var(--accent); }
 
 /* CTA row */
-.home-cta-row {
+.hero-cta-row {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
-.cta-big {
-  position: relative;
-  display: inline-flex; align-items: center; gap: 14px;
-  background: var(--ink); color: var(--cream);
-  padding: 22px 30px 22px 32px;
-  border-radius: 999px;
-  font-size: 15px; font-weight: 500;
-  overflow: hidden;
-  transition: transform .4s ease;
-  text-decoration: none;
-}
-.cta-big:hover { transform: translateY(-3px); }
-.cta-big .hand {
-  position: absolute; right: -6px; bottom: -22px;
-  width: 36px; height: 36px;
-  transform-origin: center;
-  animation: hand 1.6s ease-in-out infinite;
-}
-@keyframes hand {
-  0%, 100% { transform: translateY(0)    rotate(-8deg); }
-  50%      { transform: translateY(-6px) rotate(2deg); }
-}
-
-.ghost-btn {
+.cta-primary {
   display: inline-flex; align-items: center; gap: 10px;
-  font-size: 14.5px; font-weight: 500;
-  color: var(--ink-2);
+  padding: 12px 22px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 9999px;
+  font-size: 15px; font-weight: 500;
   text-decoration: none;
+  box-shadow: 0 12px 28px -10px rgba(226, 90, 60, 0.55);
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
 }
-.ghost-btn::after {
-  content: ""; display: block;
-  width: 34px; height: 1px;
-  background: currentColor;
-  transition: width .35s ease;
+.cta-primary:hover {
+  transform: translateY(-2px);
+  background: #d44d31;
+  box-shadow: 0 18px 36px -10px rgba(226, 90, 60, 0.65);
 }
-.ghost-btn:hover::after { width: 60px; }
+.cta-primary .cta-icon {
+  transition: transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.cta-primary:hover .cta-icon { transform: translate(2px, -2px) rotate(8deg); }
 
-/* ---------- 4 个 Tile ---------- */
+.cta-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 22px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  font-size: 15px; font-weight: 500;
+  text-decoration: none;
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.cta-secondary:hover {
+  background: rgba(26, 24, 21, 0.04);
+  border-color: var(--ink-2);
+  transform: translateY(-2px);
+}
+.cta-secondary .cta-arr { transition: transform .3s ease; display: inline-block; }
+.cta-secondary:hover .cta-arr { transform: translateX(4px); }
+
+/* Hero 右侧 北大楼插画 */
+.hero-right {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 300px;
+}
+.hero-illo {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  /* 让透明 PNG 在米色背景上呼吸；轻微飘浮 */
+  animation: heroFloat 6.5s ease-in-out infinite;
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@media (max-width: 980px) {
+  .hero-right { min-height: 240px; }
+  .hero-illo { max-width: 380px; }
+}
+
+/* ============================================================
+ * 4 个功能 Tile
+ * ============================================================ */
 .home-tiles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: auto;   /* 把 footer 推到底 */
+  gap: 16px;
+  margin-bottom: 22px;
 }
 @media (max-width: 1100px) { .home-tiles { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px)  { .home-tiles { grid-template-columns: 1fr; } }
@@ -225,26 +260,42 @@ header.scrolled {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 28px;
-  min-height: 280px;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  min-height: 210px;
   background: var(--cream);
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 20px;
   color: var(--ink);
   text-decoration: none;
   overflow: hidden;
-  transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease;
+  transition: transform .45s cubic-bezier(.2,.7,.2,1),
+              box-shadow .45s ease,
+              border-color .25s ease;
 }
 .tile:hover {
   transform: translateY(-6px);
   box-shadow: 0 30px 60px -30px rgba(26, 24, 21, .25);
+  border-color: rgba(226, 90, 60, 0.3);
 }
 
 .tile-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+}
+.tile-icon {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), background .25s ease;
+}
+.tile:hover .tile-icon {
+  transform: rotate(-6deg) scale(1.04);
+  background: var(--accent);
+  color: #fff;
 }
 .tile-num {
   font-family: var(--font-mono);
@@ -252,76 +303,216 @@ header.scrolled {
   letter-spacing: .18em;
   color: var(--muted);
 }
-.tile-en {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 16px;
-  color: var(--muted);
-}
 
 .tile-title {
-  font-family: var(--font-display);
-  font-size: clamp(38px, 4vw, 56px);
+  font-family: 'Instrument Serif', 'LXGW WenKai', 'Noto Serif SC',
+               'Kaiti SC', 'STKaiti', serif;
+  font-size: 30px;
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -.01em;
-  margin: 0;
+  letter-spacing: 0;
+  margin: 2px 0 0;
+  color: var(--accent);
 }
-.tile-title .it { font-style: italic; color: var(--accent); }
 
 .tile-desc {
   font-family: var(--font-body);
-  font-size: 14.5px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--ink-2);
-  max-width: 32ch;
   margin: 0;
+  display: flex;
+  flex-direction: column;
 }
+.tile-desc-line { display: block; }
 
 .tile-foot {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 4px;
+  min-height: 64px;
 }
 .tile-cta {
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ink);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: color .25s ease, gap .25s ease;
 }
-.tile-cta::after {
-  content: ""; display: inline-block;
-  width: 28px; height: 1px;
-  background: var(--ink);
-  margin-left: 4px;
-  transition: width .3s ease;
-}
-.tile:hover .tile-cta::after { width: 48px; }
-.tile:hover .tile-cta { color: var(--accent); }
-.tile:hover .tile-cta::after { background: var(--accent); }
+.tile:hover .tile-cta { color: var(--accent); gap: 10px; }
 
+/* tile 右下角小插画 —— 让其略微溢出角落，editorial 拼贴感 */
 .tile-illo {
-  width: 88px;
-  height: 88px;
+  width: 84px;
+  height: 84px;
   object-fit: contain;
-  opacity: .88;
+  opacity: .92;
+  margin-right: -6px;
+  margin-bottom: -4px;
   transition: transform .55s cubic-bezier(.2,.7,.2,1);
   pointer-events: none;
   user-select: none;
 }
 .tile:hover .tile-illo {
-  transform: translate(6px, -6px) rotate(-4deg);
+  transform: translate(4px, -4px) rotate(-3deg);
+}
+@media (max-width: 640px) {
+  .tile-illo { width: 76px; height: 76px; }
 }
 
-/* ---------- Footer ---------- */
+/* ============================================================
+ * 公告条
+ * ============================================================ */
+.home-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  transition: border-color .25s ease, background .25s ease;
+}
+.home-notice:hover { border-color: rgba(226, 90, 60, 0.3); }
+
+.notice-icon {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.notice-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: .04em;
+}
+.notice-sep {
+  width: 1px; height: 14px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+.notice-tag {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.notice-text {
+  font-size: 14px;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notice-date {
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  flex-shrink: 0;
+}
+.notice-more {
+  font-size: 13px;
+  color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 4px;
+  text-decoration: none;
+  transition: color .25s ease, gap .25s ease;
+  flex-shrink: 0;
+}
+.notice-more:hover { color: var(--accent); gap: 8px; }
+
+@media (max-width: 640px) {
+  .notice-text { white-space: normal; flex: 1 1 100%; order: 5; }
+  .notice-date { order: 6; }
+}
+
+/* ============================================================
+ * 底部统计带
+ * ============================================================ */
+.home-stats {
+  position: relative;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; } }
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stat-icon {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.stat-text { display: flex; flex-direction: column; }
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 450;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: .04em;
+}
+
+/* 校门插画 — 右下角溢出，作为氛围底纹 */
+.stats-illo {
+  position: absolute;
+  right: -30px;
+  bottom: -30px;
+  width: 360px;
+  height: auto;
+  opacity: 0.16;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+@media (max-width: 900px) {
+  .stats-illo { width: 260px; right: -40px; bottom: -40px; opacity: 0.1; }
+}
+
+/* ============================================================
+ * Footer
+ * ============================================================ */
 .home-foot {
-  margin-top: 80px;
-  padding-top: 28px;
+  margin-top: auto;
+  padding-top: 18px;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -329,7 +520,7 @@ header.scrolled {
   gap: 16px;
   flex-wrap: wrap;
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--muted);
 }
 .home-foot-left {

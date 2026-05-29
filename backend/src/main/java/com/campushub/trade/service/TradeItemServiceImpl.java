@@ -1,10 +1,12 @@
 package com.campushub.trade.service;
 
+import com.campushub.common.PublicUserVO;
 import com.campushub.common.exception.BizException;
+import com.campushub.common.exception.NotFoundException;
+import com.campushub.common.response.PageResponse;
 import com.campushub.common.response.ResponseCode;
-import com.campushub.common.storage.ObjectStorage;
-import com.campushub.common.util.ExifCleaner;
 import com.campushub.trade.dto.TradeItemCreateDTO;
+import com.campushub.trade.dto.TradeItemQueryDTO;
 import com.campushub.trade.dto.TradeItemStatusPatchDTO;
 import com.campushub.trade.entity.TradeItem;
 import com.campushub.trade.entity.TradeItemImage;
@@ -13,6 +15,11 @@ import com.campushub.trade.exception.TradeErrorCode;
 import com.campushub.trade.repository.TradeItemImageRepository;
 import com.campushub.trade.repository.TradeItemRepository;
 import com.campushub.trade.vo.TradeItemVO;
+import com.campushub.user.api.UserApi;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +31,19 @@ public class TradeItemServiceImpl implements TradeItemService {
 
     private final TradeItemRepository itemRepo;
     private final TradeItemImageRepository imageRepo;
-    private final ObjectStorage objectStorage;
+    private final UserApi userApi;
 
     public TradeItemServiceImpl(TradeItemRepository itemRepo,
                                 TradeItemImageRepository imageRepo,
-                                ObjectStorage objectStorage) {
+                                UserApi userApi) {
         this.itemRepo = itemRepo;
         this.imageRepo = imageRepo;
-        this.objectStorage = objectStorage;
+        this.userApi = userApi;
     }
 
     @Override
     @Transactional
-    public TradeItemVO createItem(long sellerId, TradeItemCreateDTO dto, List<ImageUpload> images) {
+    public TradeItemVO createItem(long sellerId, TradeItemCreateDTO dto) {
         TradeItem item = itemRepo.save(new TradeItem(
                 sellerId,
                 dto.getTitle(),
@@ -47,13 +54,12 @@ public class TradeItemServiceImpl implements TradeItemService {
         ));
 
         List<String> urls = new ArrayList<>();
-        if (images != null) {
+        if (dto.getImageUrls() != null) {
             int sort = 0;
-            for (ImageUpload upload : images) {
-                byte[] cleaned = ExifCleaner.clean(upload.bytes(), upload.contentType());
-                ObjectStorage.PutResult put = objectStorage.put(cleaned, upload.contentType());
-                imageRepo.save(new TradeItemImage(item.getId(), put.url(), sort++));
-                urls.add(put.url());
+            for (String url : dto.getImageUrls()) {
+                if (url == null || url.isBlank()) continue;
+                imageRepo.save(new TradeItemImage(item.getId(), url, sort++));
+                urls.add(url);
             }
         }
         return toVo(item, urls);
@@ -86,16 +92,59 @@ public class TradeItemServiceImpl implements TradeItemService {
         return toVo(item, loadUrls(item.getId()));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<TradeItemVO> listItems(TradeItemQueryDTO query) {
+        Specification<TradeItem> spec = (root, cq, cb) -> {
+            List<Predicate> preds = new ArrayList<>();
+            preds.add(cb.isNull(root.get("deletedAt")));
+            if (query.getStatus() != null) {
+                preds.add(cb.equal(root.get("status"), query.getStatus()));
+            }
+            if (query.getQ() != null && !query.getQ().isBlank()) {
+                String like = "%" + query.getQ() + "%";
+                preds.add(cb.or(
+                        cb.like(root.get("title"), like),
+                        cb.like(root.get("description"), like)
+                ));
+            }
+            return cb.and(preds.toArray(new Predicate[0]));
+        };
+
+        var pageable = PageRequest.of(
+                query.getPage() - 1,
+                query.getSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+        var page = itemRepo.findAll(spec, pageable);
+        List<TradeItemVO> vos = page.getContent().stream()
+                .map(item -> toVo(item, loadUrls(item.getId())))
+                .toList();
+        return PageResponse.of(vos, page.getTotalElements(), query.getPage(), query.getSize());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TradeItemVO getItem(long itemId) {
+        TradeItem item = itemRepo.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("商品不存在: " + itemId));
+        if (item.getDeletedAt() != null) {
+            throw new NotFoundException("商品已下架/删除");
+        }
+        return toVo(item, loadUrls(item.getId()));
+    }
+
     private List<String> loadUrls(Long itemId) {
         return imageRepo.findByItemIdOrderBySortOrderAsc(itemId).stream()
                 .map(TradeItemImage::getUrl)
                 .toList();
     }
 
-    static TradeItemVO toVo(TradeItem item, List<String> urls) {
+    private TradeItemVO toVo(TradeItem item, List<String> urls) {
+        PublicUserVO seller = userApi.getPublicUser(item.getSellerId());
         return new TradeItemVO(
                 item.getId(),
-                item.getSellerId(),
+                seller,
                 item.getTitle(),
                 item.getDescription(),
                 item.getPricePoint(),

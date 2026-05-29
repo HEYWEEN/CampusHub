@@ -3,13 +3,15 @@ package com.campushub.trade.repository;
 import com.campushub.trade.entity.TradeItem;
 import com.campushub.trade.entity.TradeItemStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface TradeItemRepository extends JpaRepository<TradeItem, Long> {
+public interface TradeItemRepository
+        extends JpaRepository<TradeItem, Long>, JpaSpecificationExecutor<TradeItem> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

@@ -1,5 +1,6 @@
 package com.campushub.task.dto;
 
+import com.campushub.task.entity.TaskStatus;
 import com.campushub.task.entity.TaskType;
 
 import java.time.Instant;
@@ -10,7 +11,9 @@ public class TaskQueryDTO {
     private int size = 20;
     private String sort = "createdAt,desc";
     private TaskType taskType;
-    private Integer status;
+    // status 接收 enum 字符串（如 PENDING_ACCEPT），Spring 自动按 Enum.valueOf 绑定
+    // 原本是 Integer，但前端永远传字符串 → 400（schema_audit A-14 修复）
+    private TaskStatus status;
     private Integer minCredit;
     private Instant deadlineFrom;
     private Instant deadlineTo;
@@ -24,8 +27,8 @@ public class TaskQueryDTO {
     public void setSort(String sort) { this.sort = sort; }
     public TaskType getTaskType() { return taskType; }
     public void setTaskType(TaskType v) { this.taskType = v; }
-    public Integer getStatus() { return status; }
-    public void setStatus(Integer v) { this.status = v; }
+    public TaskStatus getStatus() { return status; }
+    public void setStatus(TaskStatus v) { this.status = v; }
     public Integer getMinCredit() { return minCredit; }
     public void setMinCredit(Integer v) { this.minCredit = v; }
     public Instant getDeadlineFrom() { return deadlineFrom; }

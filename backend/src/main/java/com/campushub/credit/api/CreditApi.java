@@ -71,4 +71,15 @@ public interface CreditApi {
      * @param bizKey     幂等键，如 {@code review:999:bad}
      */
     void deduct(long userId, int delta, String reasonCode, String bizKey);
+
+    /**
+     * 系统奖励积分（直接计入 point_balance，不来自冻结池）。
+     * 用于新用户启动积分、活动奖励、补偿等场景。
+     * 复用 SETTLE 流水方向（语义=积分入账），用 reasonCode 区分具体场景。
+     *
+     * @param points     奖励数量（&gt;0）
+     * @param reasonCode 业务场景，如 {@code SIGNUP_BONUS}、{@code CAMPAIGN_REWARD}
+     * @param bizKey     幂等键，如 {@code user:123:signup}
+     */
+    void award(long userId, int points, String reasonCode, String bizKey);
 }

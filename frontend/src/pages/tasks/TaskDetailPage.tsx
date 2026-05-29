@@ -14,6 +14,7 @@ import type { TaskDetailVO, TaskStatus, TaskType } from '../../types/task'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import TaskStatusBadge from '../../components/domain/TaskStatusBadge'
+import ImageUploader from '../../components/ImageUploader'
 import { formatDeadline } from '../../utils/format'
 import './Tasks.css'
 
@@ -58,11 +59,11 @@ export default function TaskDetailPage() {
   }
 
   const acceptM = useMutation({
-    mutationFn: () => acceptTask(id),
+    mutationFn: (version: number) => acceptTask(id, version),
     onSuccess: invalidateAll,
   })
   const cancelM = useMutation({
-    mutationFn: () => cancelTask(id),
+    mutationFn: (reason?: string) => cancelTask(id, reason),
     onSuccess: invalidateAll,
   })
   const confirmM = useMutation({
@@ -103,16 +104,16 @@ export default function TaskDetailPage() {
           </div>
 
           <h1 className="detail-title">{task.title}</h1>
-          <p className="detail-desc">{task.detail}</p>
+          <p className="detail-desc">{task.remark}</p>
 
-          {/* 凭证 */}
-          {task.proofImages && task.proofImages.length > 0 && (
+          {/* 凭证 — TODO: 后端 TaskDetailVO.attachmentUrls 不带 kind 分类，
+              凭证 vs 详情图无法区分；等 P1/P2 阶段补 TaskAttachmentVO 后再恢复 */}
+          {task.attachmentUrls && task.attachmentUrls.length > 0 && (
             <div className="detail-proof">
-              <div className="detail-proof-title">完成凭证</div>
-              {task.proofNote && <p className="detail-proof-note">{task.proofNote}</p>}
+              <div className="detail-proof-title">附件</div>
               <div className="detail-proof-images">
-                {task.proofImages.map((url, i) => (
-                  <img key={i} src={url} alt={`凭证 ${i + 1}`} />
+                {task.attachmentUrls.map((url, i) => (
+                  <img key={i} src={url} alt={`附件 ${i + 1}`} />
                 ))}
               </div>
             </div>
@@ -151,10 +152,10 @@ export default function TaskDetailPage() {
             <PublicUserCard user={task.publisher} size="lg" link />
           </div>
 
-          {task.acceptor && (
+          {task.assignee && (
             <div className="side-section">
               <div className="side-label">接单者</div>
-              <PublicUserCard user={task.acceptor} size="md" link />
+              <PublicUserCard user={task.assignee} size="md" link />
             </div>
           )}
 
@@ -179,10 +180,16 @@ export default function TaskDetailPage() {
             </div>
           </div>
 
-          {task.building && (
+          {task.deliveryBuilding && (
             <div className="side-section">
-              <div className="side-label">地点</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14 }}>{task.building}</div>
+              <div className="side-label">送达地点</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14 }}>{task.deliveryBuilding}</div>
+            </div>
+          )}
+          {task.pickupHint && (
+            <div className="side-section">
+              <div className="side-label">取件位置</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14 }}>{task.pickupHint}</div>
             </div>
           )}
 
@@ -191,8 +198,8 @@ export default function TaskDetailPage() {
           <ActionPanel
             task={task}
             currentUserId={currentUserId}
-            onAccept={() => acceptM.mutate()}
-            onCancel={() => cancelM.mutate()}
+            onAccept={() => acceptM.mutate(task.version)}
+            onCancel={() => cancelM.mutate(undefined)}
             onConfirm={() => confirmM.mutate()}
             onSubmitProof={(images, note) => submitProof(id, images, note).then(invalidateAll)}
             acceptLoading={acceptM.isPending}
@@ -221,9 +228,10 @@ function ActionPanel(props: {
 }) {
   const { task, currentUserId } = props
   const isPublisher = task.publisher.userId === currentUserId
-  const isAcceptor  = task.acceptor?.userId === currentUserId
+  const isAcceptor  = task.assignee?.userId === currentUserId
   const [showProof, setShowProof] = useState(false)
   const [proofNote, setProofNote] = useState('')
+  const [proofImages, setProofImages] = useState<string[]>([])
   const [proofUploading, setProofUploading] = useState(false)
   const [proofErr, setProofErr] = useState('')
 
@@ -268,6 +276,14 @@ function ActionPanel(props: {
       if (showProof) {
         return (
           <>
+            <ImageUploader
+              label="凭证图"
+              multiple
+              maxCount={9}
+              value={proofImages}
+              onChange={setProofImages}
+              hint="jpg/png/webp/gif，单张 ≤ 5MB，1-9 张"
+            />
             <textarea
               className="form-textarea"
               placeholder="请简要说明完成情况（最多 300 字）"
@@ -282,13 +298,17 @@ function ActionPanel(props: {
                   setProofErr('请填写完成说明')
                   return
                 }
+                if (proofImages.length === 0) {
+                  setProofErr('请上传至少 1 张凭证图')
+                  return
+                }
                 setProofErr('')
                 setProofUploading(true)
                 try {
-                  // mock：图片用一张 Open Doodles 占位
-                  await props.onSubmitProof(['/illustrations/coffee.png'], proofNote)
+                  await props.onSubmitProof(proofImages, proofNote)
                   setShowProof(false)
                   setProofNote('')
+                  setProofImages([])
                 } catch (err) {
                   setProofErr(err instanceof BizError ? err.message : '提交失败')
                 } finally {

@@ -1,5 +1,6 @@
 /**
- * 任务相关 VO/DTO — 与后端 task/vo/* 对齐
+ * 任务相关 VO/DTO — 与后端 task/vo/* + dto/* 字段名严格对齐
+ * （schema_audit A-5 / B-8 修复）
  */
 import type { PublicUserVO } from './user'
 
@@ -13,40 +14,39 @@ export type TaskStatus =
   | 'CANCELED'
   | 'EXPIRED'
 
+// 对齐后端 TaskListItemVO record
 export interface TaskListItemVO {
   taskId: string
-  taskType: TaskType
   title: string
+  taskType: TaskType
+  status: TaskStatus
   rewardPoint: number
   deadlineAt: string             // ISO 8601
-  status: TaskStatus
+  deliveryBuilding: string       // 原前端 building?，后端必返
   publisher: PublicUserVO
-  building?: string
   createdAt: string
 }
 
-export interface TaskAttachment {
-  url: string
-  kind: 'PROOF' | 'DETAIL'
-}
-
+// 对齐后端 TaskDetailVO record
 export interface TaskDetailVO extends TaskListItemVO {
-  detail: string
-  attachments: TaskAttachment[]
-  acceptor?: PublicUserVO | null
-  proofImages?: string[]
-  proofNote?: string
-  version: number                // 乐观锁
-  extendCount?: number
+  pickupHint: string             // 取件位置
+  remark: string                 // 原前端 detail
+  assignee?: PublicUserVO | null // 原前端 acceptor
+  attachmentUrls: string[]       // 原前端 attachments(TaskAttachment[])
+  version: number                // 乐观锁（accept/cancel 需传）
+  canAccept: boolean             // 后端推导：当前用户能否接单
+  isPublisher: boolean           // 后端推导：当前用户是否是发布者
 }
 
+// 对齐后端 TaskCreateDTO
 export interface TaskCreateDTO {
   taskType: TaskType
   title: string
-  detail: string
   rewardPoint: number
   deadlineAt: string
-  building?: string
+  pickupHint: string             // 必填
+  deliveryBuilding: string       // 必填
+  remark?: string                // 可选
 }
 
 export interface TaskSearchParams {

@@ -39,6 +39,9 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
+    /** 新用户启动积分（@JsonValue P2.7 修复） */
+    private static final int SIGNUP_BONUS_POINTS = 100;
+
     private final AuthUserRepository userRepo;
     private final UserProfileRepository profileRepo;
     private final SmsCodeVerifier smsVerifier;
@@ -47,6 +50,7 @@ public class AuthService {
     private final JwtUtil jwt;
     private final JwtProperties jwtProps;
     private final TokenBlacklist blacklist;
+    private final com.campushub.credit.api.CreditApi creditApi;
 
     public AuthService(AuthUserRepository userRepo,
                        UserProfileRepository profileRepo,
@@ -55,7 +59,8 @@ public class AuthService {
                        AesUtil aes,
                        JwtUtil jwt,
                        JwtProperties jwtProps,
-                       TokenBlacklist blacklist) {
+                       TokenBlacklist blacklist,
+                       com.campushub.credit.api.CreditApi creditApi) {
         this.userRepo = userRepo;
         this.profileRepo = profileRepo;
         this.smsVerifier = smsVerifier;
@@ -64,6 +69,12 @@ public class AuthService {
         this.jwt = jwt;
         this.jwtProps = jwtProps;
         this.blacklist = blacklist;
+        this.creditApi = creditApi;
+    }
+
+    /** 给新用户发启动积分（幂等，重复调用会被 bizKey 短路）。 */
+    private void grantSignupBonus(long userId) {
+        creditApi.award(userId, SIGNUP_BONUS_POINTS, "SIGNUP_BONUS", "user:" + userId + ":signup");
     }
 
     /**
@@ -79,6 +90,7 @@ public class AuthService {
             AuthUser fresh = new AuthUser(hmac, aes.encrypt(phone));
             AuthUser saved = userRepo.save(fresh);
             profileRepo.save(new UserProfile(saved.getId(), defaultNickname(phone)));
+            grantSignupBonus(saved.getId());
             log.info("新用户自动注册 userId={} phone={}", saved.getId(), PhoneMaskUtil.mask(phone));
             return saved;
         });
@@ -103,6 +115,7 @@ public class AuthService {
             AuthUser fresh = new AuthUser(hmac, aes.encrypt(phone));
             AuthUser saved = userRepo.save(fresh);
             profileRepo.save(new UserProfile(saved.getId(), defaultNickname(phone)));
+            grantSignupBonus(saved.getId());
             return saved;
         });
 
@@ -197,6 +210,7 @@ public class AuthService {
         String refresh = jwt.generateRefreshToken(user.getId(), user.getVerifyStatus().name());
         Instant now = Instant.now();
         return new TokenPairVO(
+                user.getId(),
                 access,
                 refresh,
                 now.plus(Duration.ofMinutes(jwtProps.getAccessTtlMinutes())),

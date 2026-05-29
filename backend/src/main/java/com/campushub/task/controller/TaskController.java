@@ -11,9 +11,7 @@ import com.campushub.task.vo.*;
 import com.campushub.user.api.UserApi;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -94,14 +92,15 @@ public class TaskController {
 
     // -- TASK-05 上传凭证 ----------------------------------------------
 
-    @PostMapping(value = "/api/tasks/{taskId}/proof",
-                 consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /**
+     * 提交任务凭证。schema_audit A-8 修复：原本是 multipart，改成 JSON + 预上传 URL。
+     */
+    @PostMapping("/api/tasks/{taskId}/proof")
     public ApiResponse<TaskProofVO> submitProof(
             @PathVariable long taskId,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            @RequestParam(value = "text", required = false) String text) {
+            @Valid @RequestBody TaskProofSubmitDTO dto) {
         long userId = CurrentUserHolder.getUserId();
-        return ApiResponse.success(taskService.submitProof(userId, taskId, images, text));
+        return ApiResponse.success(taskService.submitProof(userId, taskId, dto.getImages(), dto.getText()));
     }
 
     // -- TASK-05 确认完成 ----------------------------------------------

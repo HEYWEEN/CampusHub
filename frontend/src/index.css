@@ -45,3 +45,86 @@ input, textarea, select {
 #root {
   min-height: 100vh;
 }
+
+/* ============================================================
+ * ImageUploader 组件样式（全站共用）
+ * ============================================================ */
+.image-uploader { display: flex; flex-direction: column; gap: 8px; }
+.image-uploader-label {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.image-uploader-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.image-uploader-tile {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--cream);
+}
+.image-uploader-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.image-uploader-remove {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+.image-uploader-remove:hover { background: rgba(0, 0, 0, 0.75); }
+.image-uploader-add {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+}
+.image-uploader-add:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.image-uploader-add:disabled { opacity: .6; cursor: wait; }
+.image-uploader-plus { font-size: 24px; line-height: 1; font-weight: 300; }
+.image-uploader-add-hint { font-family: var(--font-body); }
+.image-uploader-error {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--danger);
+}
+.image-uploader-hint {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}

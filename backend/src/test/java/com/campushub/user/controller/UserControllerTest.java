@@ -207,7 +207,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.userId").value(u.getId()))
                 .andExpect(jsonPath("$.data.nickname").value("张三"))
-                .andExpect(jsonPath("$.data.verifiedTag").value(true))
+                .andExpect(jsonPath("$.data.verifiedTag").value("校园已认证"))
                 // 隐私字段一律不存在
                 .andExpect(jsonPath("$.data.phone").doesNotExist())
                 .andExpect(jsonPath("$.data.phoneCipher").doesNotExist())
@@ -224,7 +224,7 @@ class UserControllerTest {
         // 未带 Authorization 也能访问（白名单 /api/users/*/public）
         mockMvc().perform(get("/api/users/" + u.getId() + "/public"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.verifiedTag").value(false));
+                .andExpect(jsonPath("$.data.verifiedTag").isEmpty());
     }
 
     @Test

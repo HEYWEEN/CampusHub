@@ -4,7 +4,6 @@ import com.campushub.common.PublicUserVO;
 import com.campushub.common.enums.VerifyStatus;
 import com.campushub.common.exception.BizException;
 import com.campushub.common.exception.NotFoundException;
-import com.campushub.common.storage.ObjectStorage;
 import com.campushub.common.util.CurrentUserHolder;
 import com.campushub.credit.api.CreditApi;
 import com.campushub.task.api.TaskApi;
@@ -24,9 +23,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +42,6 @@ public class TaskServiceImpl implements TaskService, TaskApi {
     private final CreditApi creditApi;
     private final UserApi userApi;
     private final UserProfileRepository profileRepo;
-    private final ObjectStorage objectStorage;
     private final ApplicationEventPublisher events;
 
     public TaskServiceImpl(TaskRepository taskRepo,
@@ -54,7 +50,6 @@ public class TaskServiceImpl implements TaskService, TaskApi {
                            CreditApi creditApi,
                            UserApi userApi,
                            UserProfileRepository profileRepo,
-                           ObjectStorage objectStorage,
                            ApplicationEventPublisher events) {
         this.taskRepo = taskRepo;
         this.attachRepo = attachRepo;
@@ -62,7 +57,6 @@ public class TaskServiceImpl implements TaskService, TaskApi {
         this.creditApi = creditApi;
         this.userApi = userApi;
         this.profileRepo = profileRepo;
-        this.objectStorage = objectStorage;
         this.events = events;
     }
 
@@ -130,8 +124,7 @@ public class TaskServiceImpl implements TaskService, TaskApi {
             if (query.getTaskType() != null)
                 preds.add(cb.equal(root.get("taskType"), query.getTaskType()));
             if (query.getStatus() != null) {
-                TaskStatus s = TaskStatus.fromCode(query.getStatus());
-                preds.add(cb.equal(root.get("status"), s));
+                preds.add(cb.equal(root.get("status"), query.getStatus()));
             }
             if (query.getDeadlineFrom() != null)
                 preds.add(cb.greaterThanOrEqualTo(root.get("deadlineAt"), query.getDeadlineFrom()));
@@ -279,14 +272,15 @@ public class TaskServiceImpl implements TaskService, TaskApi {
     @Override
     @Transactional
     public TaskProofVO submitProof(long userId, long taskId,
-                                    List<MultipartFile> images, String text) {
+                                    List<String> imageUrls, String text) {
         Task task = findTask(taskId);
 
         if (task.getAssigneeId() == null || task.getAssigneeId() != userId) {
             throw new BizException(TaskErrorCode.NOT_ASSIGNEE, "仅接单者可上传凭证", 403);
         }
 
-        if (images != null && images.size() > MAX_PROOF_IMAGES) {
+        int imgCount = imageUrls == null ? 0 : imageUrls.size();
+        if (imgCount > MAX_PROOF_IMAGES) {
             throw new BizException(TaskErrorCode.PROOF_IMAGE_TOO_MANY,
                     "凭证图片最多 " + MAX_PROOF_IMAGES + " 张", 400);
         }
@@ -297,17 +291,13 @@ public class TaskServiceImpl implements TaskService, TaskApi {
 
         new TaskStateContext(task).submitProof();
 
+        // schema_audit A-8 修复：URL 由前端预先上传到 /api/uploads，service 直接落库
         List<String> urls = new ArrayList<>();
-        if (images != null) {
-            for (MultipartFile img : images) {
-                if (img.isEmpty()) continue;
-                try {
-                    ObjectStorage.PutResult r = objectStorage.put(img.getBytes(), img.getContentType());
-                    attachRepo.save(new TaskAttachment(taskId, r.url(), 0));
-                    urls.add(r.url());
-                } catch (IOException e) {
-                    throw new RuntimeException("图片上传失败", e);
-                }
+        if (imageUrls != null) {
+            for (String url : imageUrls) {
+                if (url == null || url.isBlank()) continue;
+                attachRepo.save(new TaskAttachment(taskId, url, 0));
+                urls.add(url);
             }
         }
 

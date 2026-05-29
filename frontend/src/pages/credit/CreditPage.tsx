@@ -29,10 +29,12 @@ export default function CreditPage() {
     queryKey: ['credit', 'me'],
     queryFn: () => getMyCredit(),
   })
-  const { data: records, isLoading: l2 } = useQuery({
+  const { data: recordsPage, isLoading: l2 } = useQuery({
     queryKey: ['credit', 'records'],
     queryFn: () => listMyRecords(),
   })
+  const records = recordsPage?.items ?? []
+  const totalRecords = recordsPage?.total ?? 0
 
   const isLoading = l1 || l2
 
@@ -101,10 +103,10 @@ export default function CreditPage() {
               <h3 className="me-card-title">
                 积分<span className="it">流水</span>
               </h3>
-              <span className="page-sub" style={{ margin: 0 }}>{records?.length ?? 0} 条记录</span>
+              <span className="page-sub" style={{ margin: 0 }}>{totalRecords} 条记录</span>
             </div>
 
-            {!records || records.length === 0 ? (
+            {records.length === 0 ? (
               <div className="task-empty" style={{ padding: '48px 0' }}>
                 还没有<span className="it">流水。</span>
               </div>

@@ -4,14 +4,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getMe, updateAcceptLimit, updatePrivacy, updateProfile } from '../../api/user'
 import type { PrivacySettings } from '../../types/user'
 import { BizError } from '../../types/api'
+import ImageUploader from '../../components/ImageUploader'
 import '../tasks/Tasks.css'
 import './User.css'
 
 const PRIVACY_LABELS: { key: keyof PrivacySettings; label: string; desc: string }[] = [
-  { key: 'hidePublishHist',   label: '隐藏我发布的任务', desc: '公开主页不显示发布历史列表' },
-  { key: 'hideAcceptHist',    label: '隐藏我接的任务',   desc: '公开主页不显示接单记录' },
-  { key: 'hideCourseReviews', label: '隐藏我的课程评价', desc: '我的课评在评价区匿名展示' },
-  { key: 'imOpen',            label: '接收私信',         desc: '关闭后陌生人不能给我发私信' },
+  { key: 'hidePublishHistory', label: '隐藏我发布的任务', desc: '公开主页不显示发布历史列表' },
+  { key: 'hideAcceptHistory',  label: '隐藏我接的任务',   desc: '公开主页不显示接单记录' },
+  { key: 'hideCourseReviews',  label: '隐藏我的课程评价', desc: '我的课评在评价区匿名展示' },
 ]
 
 export default function ProfileEditPage() {
@@ -27,10 +27,9 @@ export default function ProfileEditPage() {
   const [avatarUrl, setAvatarUrl] = useState('')
   const [acceptLimit, setAcceptLimit] = useState(2)
   const [privacy, setPrivacy] = useState<PrivacySettings>({
-    hidePublishHist: true,
-    hideAcceptHist: true,
+    hidePublishHistory: true,
+    hideAcceptHistory: true,
     hideCourseReviews: true,
-    imOpen: true,
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -41,7 +40,11 @@ export default function ProfileEditPage() {
       setNickname(me.nickname)
       setAvatarUrl(me.avatarUrl ?? '')
       setAcceptLimit(me.dailyAcceptLimit)
-      setPrivacy(me.privacy)
+      setPrivacy({
+        hidePublishHistory: me.hidePublishHistory,
+        hideAcceptHistory: me.hideAcceptHistory,
+        hideCourseReviews: me.hideCourseReviews,
+      })
     }
   }, [me])
 
@@ -110,16 +113,12 @@ export default function ProfileEditPage() {
         </div>
 
         <div className="form-field">
-          <label className="form-label" htmlFor="p-avatar">头像 URL（未来支持上传）</label>
-          <input
-            id="p-avatar"
-            className="form-input"
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://..."
+          <ImageUploader
+            label="头像"
+            value={avatarUrl || null}
+            onChange={(url) => setAvatarUrl(url ?? '')}
+            hint="jpg/png/webp/gif，≤ 5MB；留空使用首字母 fallback 头像"
           />
-          <div className="form-hint">留空使用首字母 fallback 头像</div>
         </div>
 
         <div className="form-field">
