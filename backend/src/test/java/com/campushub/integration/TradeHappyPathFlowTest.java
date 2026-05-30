@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * QA-02 正常流（trade 段）：注册 → 发商品 → 议价下单 → 双方确认 → 信用账户变化断言。
  *
  * <p>覆盖链路：A 的 auth + C 的 trade + D 的 credit + {@link com.campushub.credit.listener.TradeEventListener}。
- * task 段全链路 HappyPath 待 B 的 task 接口落地后再补（同文件追加用例即可）。
+ * task 段已在 {@link TaskHappyPathFlowTest} 单独落地（同 BaseIT 子类、同 Spring context 缓存命中）。
  *
  * <p>命名 *Test 是为了在当前 CI（surefire）下被执行——见 {@link BaseIT} 顶部说明。
  */
