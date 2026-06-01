@@ -148,8 +148,7 @@
 }
 
 .hall-cta { display: flex; gap: 12px; margin-top: 22px; }
-.hall-cta-primary,
-.hall-cta-ghost {
+.hall-cta-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -159,12 +158,11 @@
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
-  transition: transform .3s ease, background .3s ease, color .3s ease;
+  background: var(--accent);
+  color: var(--cream);
+  transition: transform .3s ease, background .3s ease;
 }
-.hall-cta-primary { background: var(--accent); color: var(--cream); }
 .hall-cta-primary:hover { transform: translateY(-2px); background: #c44b30; }
-.hall-cta-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
-.hall-cta-ghost:hover { background: var(--ink); color: var(--cream); }
 
 .hall-stats { display: flex; gap: 26px; flex: 0 0 auto; }
 .stat { display: flex; flex-direction: column; align-items: center; }

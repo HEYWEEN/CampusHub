@@ -80,8 +80,7 @@ export default function EduTutorHallPage() {
             </h1>
             <p className="hall-hero-sub">课程对口、信用透明，约一次靠谱的学业辅导。</p>
             <div className="hall-cta">
-              <a href="#hall-list" className="hall-cta-primary">浏览辅导 <span aria-hidden>→</span></a>
-              <Link to="/app/edu/tutor/new" className="hall-cta-ghost">发布辅导 <span aria-hidden>+</span></Link>
+              <Link to="/app/edu/tutor/new" className="hall-cta-primary">发布辅导 <span aria-hidden>+</span></Link>
             </div>
           </div>
 

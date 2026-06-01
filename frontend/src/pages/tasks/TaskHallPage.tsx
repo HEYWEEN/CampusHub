@@ -103,8 +103,7 @@ export default function TaskHallPage() {
             </h1>
             <p className="hall-hero-sub">发现校园里的需求，帮助同学，也让你的时间更有价值。</p>
             <div className="hall-cta">
-              <a href="#hall-list" className="hall-cta-primary">浏览任务 <span aria-hidden>→</span></a>
-              <Link to="/app/tasks/new" className="hall-cta-ghost">发布任务 <span aria-hidden>+</span></Link>
+              <Link to="/app/tasks/new" className="hall-cta-primary">发布任务 <span aria-hidden>+</span></Link>
             </div>
           </div>
 

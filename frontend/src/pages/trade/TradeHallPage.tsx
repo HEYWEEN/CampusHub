@@ -79,8 +79,7 @@ export default function TradeHallPage() {
             </h1>
             <p className="hall-hero-sub">同校面交、积分结算，把闲置流转给需要的人。</p>
             <div className="hall-cta">
-              <a href="#hall-list" className="hall-cta-primary">逛逛二手 <span aria-hidden>→</span></a>
-              <Link to="/app/trade/new" className="hall-cta-ghost">挂个出售 <span aria-hidden>+</span></Link>
+              <Link to="/app/trade/new" className="hall-cta-primary">挂个出售 <span aria-hidden>+</span></Link>
             </div>
           </div>
 
