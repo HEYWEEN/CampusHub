@@ -1,0 +1,62 @@
+/* 自定义下拉 · editorial 米色风（替代原生 select） */
+.ch-select {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.ch-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--cream);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .2s ease, background .2s ease;
+}
+.ch-select-btn:hover { border-color: var(--ink); }
+.ch-select.is-open .ch-select-btn { border-color: var(--ink); background: #fff; }
+
+.ch-select-caret {
+  color: var(--muted);
+  transition: transform .2s ease;
+}
+.ch-select.is-open .ch-select-caret { transform: rotate(180deg); }
+
+.ch-select-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  animation: ch-select-in .14s var(--ease-out);
+}
+@keyframes ch-select-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ch-select-opt {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.ch-select-opt:hover { background: var(--bg-2); color: var(--ink); }
+.ch-select-opt.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }

@@ -8,10 +8,10 @@ import type { TaskCreateDTO, TaskType } from '../../types/task'
 import { formatLocalDateTime } from '../../utils/format'
 import './Tasks.css'
 
+// 辅导(TUTOR) 走 edu 模块发布（/app/edu/tutor/new），此处只发跑腿/互助
 const TYPE_OPTIONS: { value: TaskType; label: string; tag: string }[] = [
   { value: 'ERRAND',      label: 'errand',  tag: '跑腿' },
   { value: 'MUTUAL_HELP', label: 'help',    tag: '互助' },
-  { value: 'TUTOR',       label: 'tutor',   tag: '辅导' },
 ]
 
 export default function TaskNewPage() {
@@ -24,8 +24,8 @@ export default function TaskNewPage() {
   const [title, setTitle] = useState('')
   const [remark, setRemark] = useState('')
   const [rewardPoint, setRewardPoint] = useState(10)
-  const [deadlineAt, setDeadlineAt] = useState(
-    // 默认截止时间 = 2 小时后
+  const [deadlineAt, setDeadlineAt] = useState(() =>
+    // 默认截止时间 = 2 小时后（惰性初始化，避免 render 期间调用 Date.now）
     formatLocalDateTime(new Date(Date.now() + 2 * 60 * 60_000)),
   )
   const [pickupHint, setPickupHint] = useState('')

@@ -96,6 +96,167 @@
 @media (max-width: 1100px) { .tasks-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 720px)  { .tasks-grid { grid-template-columns: 1fr; } }
 
+/* ============================================================
+ * 任务大厅 v2 · Hero 统计 + 右侧信息栏（对齐 demo mockup）
+ * ============================================================ */
+.hall-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+.hall-main { min-width: 0; }
+
+@media (max-width: 1080px) {
+  .hall-grid { grid-template-columns: 1fr; }
+  .hall-aside { display: none; }
+}
+
+/* 主列里网格：桌面宽度容 3 列，窄屏自动回落 */
+.hall-main .tasks-grid {
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+}
+
+/* ─── Hero ─── */
+.hall-hero {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  flex-wrap: wrap;
+  padding: 8px 0 28px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.hall-hero-lead { flex: 1 1 300px; }
+
+.hall-hero .page-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 60px);
+  font-weight: 400;
+  line-height: 1.0;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.hall-hero .page-title .it { font-style: italic; color: var(--accent); }
+
+.hall-hero-sub {
+  margin: 14px 0 0;
+  max-width: 34ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.hall-cta { display: flex; gap: 12px; margin-top: 22px; }
+.hall-cta-primary,
+.hall-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform .3s ease, background .3s ease, color .3s ease;
+}
+.hall-cta-primary { background: var(--accent); color: var(--cream); }
+.hall-cta-primary:hover { transform: translateY(-2px); background: #c44b30; }
+.hall-cta-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.hall-cta-ghost:hover { background: var(--ink); color: var(--cream); }
+
+.hall-stats { display: flex; gap: 26px; flex: 0 0 auto; }
+.stat { display: flex; flex-direction: column; align-items: center; }
+.stat-ic {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1;
+  color: var(--accent);
+}
+.stat-label {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* 插画（透明底线描） */
+.hall-illo-wrap { position: relative; flex: 0 0 auto; display: grid; place-items: center; }
+.hall-illo {
+  display: block;
+  height: 168px;
+  width: auto;
+  object-fit: contain;
+}
+@media (max-width: 860px) { .hall-illo-wrap { display: none; } }
+
+/* ─── 右侧信息栏 ─── */
+.hall-aside { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 90px; }
+
+.aside-card {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+.aside-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.aside-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--ink); }
+.aside-empty { font-size: 13px; color: var(--muted); padding: 6px 0; }
+
+/* 校园动态 */
+.feed-list { list-style: none; margin: 0; padding: 0; }
+.feed-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+}
+.feed-dot {
+  flex: 0 0 auto;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-1px);
+}
+.feed-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-time { flex: 0 0 auto; font-size: 12px; color: var(--muted); }
+
+/* 安全保障 */
+.safety-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+.safety-ic {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.safety-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+.safety-sub { margin-top: 2px; font-size: 11px; color: var(--muted); }
+
 /* ─── 通用状态 ─── */
 .task-loading,
 .task-empty,

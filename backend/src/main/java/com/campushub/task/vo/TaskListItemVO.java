@@ -10,6 +10,7 @@ import java.time.Instant;
 public record TaskListItemVO(
         Long taskId,
         String title,
+        String remark,
         TaskType taskType,
         TaskStatus status,
         int rewardPoint,
@@ -22,6 +23,7 @@ public record TaskListItemVO(
         return new TaskListItemVO(
                 task.getId(),
                 task.getTitle(),
+                task.getRemark(),
                 task.getTaskType(),
                 task.getStatus(),
                 task.getRewardPoint(),

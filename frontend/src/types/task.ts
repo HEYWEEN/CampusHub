@@ -18,6 +18,7 @@ export type TaskStatus =
 export interface TaskListItemVO {
   taskId: string
   title: string
+  remark: string                 // 一句话描述（卡片副标）
   taskType: TaskType
   status: TaskStatus
   rewardPoint: number
@@ -30,7 +31,6 @@ export interface TaskListItemVO {
 // 对齐后端 TaskDetailVO record
 export interface TaskDetailVO extends TaskListItemVO {
   pickupHint: string             // 取件位置
-  remark: string                 // 原前端 detail
   assignee?: PublicUserVO | null // 原前端 acceptor
   attachmentUrls: string[]       // 原前端 attachments(TaskAttachment[])
   version: number                // 乐观锁（accept/cancel 需传）
