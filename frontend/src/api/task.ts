@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPatch } from './client'
-import { BizError, type PageResponse } from '../types/api'
+import { type PageResponse } from '../types/api'
 import type {
   TaskCreateDTO,
   TaskDetailVO,
@@ -15,26 +15,7 @@ import {
   mockSearchTasks,
   mockSubmitProof,
 } from './_mock'
-
-/**
- * dev 模式下，API 调用失败时自动回退到 mock；
- * 生产环境直接 throw，保证联调时能暴露真实错误。
- */
-async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
-  if (!import.meta.env.DEV) return real()
-  try {
-    return await real()
-  } catch (err) {
-    if (err instanceof BizError && err.httpStatus !== undefined && err.httpStatus < 500) {
-      // 业务错码（400/403/409 等）保留真实错误，不用 mock 掩盖
-      throw err
-    }
-    // 网络错或 5xx：fallback 到 mock
-    // eslint-disable-next-line no-console
-    console.warn('[mock] 后端未响应，使用 mock 数据')
-    return mock()
-  }
-}
+import { withMock } from './withMock'
 
 export const searchTasks = (params: TaskSearchParams) =>
   withMock<PageResponse<TaskListItemVO>>(

@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 public class TaskController {
@@ -40,12 +39,10 @@ public class TaskController {
     @GetMapping("/api/search/tasks")
     public ApiResponse<PageResponse<TaskListItemVO>> search(@Valid TaskQueryDTO query) {
         Page<Task> page = taskService.search(query);
-        List<TaskListItemVO> items = page.getContent().stream().map(task -> {
+        return ApiResponse.success(PageResponse.of(page, task -> {
             PublicUserVO pub = userApi.getPublicUser(task.getPublisherId());
             return TaskListItemVO.from(task, pub);
-        }).toList();
-        return ApiResponse.success(PageResponse.of(items, page.getTotalElements(),
-                page.getNumber() + 1, page.getSize()));
+        }));
     }
 
     // -- TASK-06 详情 -------------------------------------------------

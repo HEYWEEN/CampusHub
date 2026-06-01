@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 /**
  * Credit 模块核心服务 —— 同时实现 {@link CreditApi} 给跨模块调用（CRD-01）。
@@ -177,11 +176,8 @@ public class CreditServiceImpl implements CreditApi {
         int s = Math.min(Math.max(size, 1), 100);
         Pageable pageable = PageRequest.of(p - 1, s);
         Page<CreditRecord> result = recordRepo.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        List<CreditRecordVO> items = result.getContent().stream()
-                .map(r -> new CreditRecordVO(r.getId(), r.getDirection().name(), r.getDelta(),
-                        r.getReasonCode(), r.getBizId(), r.getCreatedAt()))
-                .toList();
-        return PageResponse.of(items, result.getTotalElements(), p, s);
+        return PageResponse.of(result, r -> new CreditRecordVO(r.getId(), r.getDirection().name(),
+                r.getDelta(), r.getReasonCode(), r.getBizId(), r.getCreatedAt()));
     }
 
     // ---- 内部 ----

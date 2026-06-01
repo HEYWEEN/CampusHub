@@ -32,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService implements UserApi {
 
+    /** 已通过校园认证用户在公开资料里展示的标签。 */
+    private static final String VERIFIED_TAG = "校园已认证";
+
     private final UserProfileRepository profileRepo;
     private final AuthUserRepository userRepo;
     private final UserAuditLogRepository auditRepo;
@@ -63,7 +66,7 @@ public class UserService implements UserApi {
                 u.getId(),
                 p.getNickname(),
                 p.getAvatarUrl(),
-                u.getVerifyStatus() == VerifyStatus.APPROVED ? "校园已认证" : null
+                u.getVerifyStatus() == VerifyStatus.APPROVED ? VERIFIED_TAG : null
         );
     }
 
@@ -98,7 +101,7 @@ public class UserService implements UserApi {
                 u.getId(),
                 p.getNickname(),
                 p.getAvatarUrl(),
-                u.getVerifyStatus() == VerifyStatus.APPROVED ? "校园已认证" : null
+                u.getVerifyStatus() == VerifyStatus.APPROVED ? VERIFIED_TAG : null
         ));
     }
 

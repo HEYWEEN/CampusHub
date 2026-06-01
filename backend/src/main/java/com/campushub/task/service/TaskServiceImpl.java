@@ -35,6 +35,13 @@ public class TaskServiceImpl implements TaskService, TaskApi {
     private static final int MAX_EXTEND_MINUTES = 120;
     private static final int MAX_PROOF_IMAGES = 3;
     private static final int MAX_PROOF_TEXT_LEN = 300;
+    /** 发布/接单的信用分门槛。 */
+    private static final int MIN_CREDIT_SCORE = 60;
+
+    /** 接单押金：奖励积分的 1/5，最低 5 分。 */
+    private static int depositOf(int rewardPoint) {
+        return Math.max(rewardPoint / 5, 5);
+    }
 
     private final TaskRepository taskRepo;
     private final TaskAttachmentRepository attachRepo;
@@ -91,8 +98,8 @@ public class TaskServiceImpl implements TaskService, TaskApi {
         }
 
         int score = creditApi.getScoreOf(userId);
-        if (score < 60) {
-            throw new BizException(TaskErrorCode.CREDIT_TOO_LOW, "信用分不足 60，无法发布任务", 403);
+        if (score < MIN_CREDIT_SCORE) {
+            throw new BizException(TaskErrorCode.CREDIT_TOO_LOW, "信用分不足 " + MIN_CREDIT_SCORE + "，无法发布任务", 403);
         }
 
         Task task = taskRepo.save(new Task(
@@ -169,7 +176,7 @@ public class TaskServiceImpl implements TaskService, TaskApi {
         if (currentUserId != null) {
             isPublisher = currentUserId.equals(task.getPublisherId());
             if (!isPublisher && task.getStatus() == TaskStatus.PENDING_ACCEPT) {
-                canAccept = creditApi.getScoreOf(currentUserId) >= 60;
+                canAccept = creditApi.getScoreOf(currentUserId) >= MIN_CREDIT_SCORE;
             }
         }
 
@@ -211,7 +218,7 @@ public class TaskServiceImpl implements TaskService, TaskApi {
 
         Long assigneeId = task.getAssigneeId();
         int reward = task.getRewardPoint();
-        int deposit = Math.max(reward / 5, 5);
+        int deposit = depositOf(reward);
 
         new TaskStateContext(task).cancel();
         taskRepo.save(task);
@@ -233,8 +240,8 @@ public class TaskServiceImpl implements TaskService, TaskApi {
     @Transactional
     public void accept(long userId, long taskId, int expectedVersion) {
         int score = creditApi.getScoreOf(userId);
-        if (score < 60) {
-            throw new BizException(TaskErrorCode.CREDIT_TOO_LOW, "信用分不足 60，无法接单", 403);
+        if (score < MIN_CREDIT_SCORE) {
+            throw new BizException(TaskErrorCode.CREDIT_TOO_LOW, "信用分不足 " + MIN_CREDIT_SCORE + "，无法接单", 403);
         }
 
         Task task = findTask(taskId);
@@ -258,7 +265,7 @@ public class TaskServiceImpl implements TaskService, TaskApi {
         TaskStateContext ctx = new TaskStateContext(task);
         ctx.accept(userId);
 
-        int deposit = Math.max(task.getRewardPoint() / 5, 5);
+        int deposit = depositOf(task.getRewardPoint());
         creditApi.freeze(userId, deposit, "task:" + taskId + ":deposit");
 
         taskRepo.save(task);

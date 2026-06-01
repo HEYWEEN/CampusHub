@@ -117,10 +117,7 @@ public class TradeItemServiceImpl implements TradeItemService {
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
         var page = itemRepo.findAll(spec, pageable);
-        List<TradeItemVO> vos = page.getContent().stream()
-                .map(item -> toVo(item, loadUrls(item.getId())))
-                .toList();
-        return PageResponse.of(vos, page.getTotalElements(), query.getPage(), query.getSize());
+        return PageResponse.of(page, item -> toVo(item, loadUrls(item.getId())));
     }
 
     @Override

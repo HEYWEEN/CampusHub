@@ -5,6 +5,7 @@ import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import { formatRelativeTime } from '../../utils/format'
+import { TRADE_STATUS_LABEL } from '../../utils/labels'
 import '../tasks/Tasks.css'
 import './Trade.css'
 
@@ -12,12 +13,6 @@ const PICKUP_LABEL: Record<string, string> = {
   EXACT_DORM: '精确宿舍',
   BUILDING_RANGE: '楼栋范围',
   MEETUP: '面交',
-}
-
-const STATUS_LABEL = {
-  ON_SALE:  { text: '在售',   tone: 'pending' as const },
-  IN_TRADE: { text: '交易中', tone: 'progress' as const },
-  OFF_SALE: { text: '已下架', tone: 'canceled' as const },
 }
 
 export default function TradeDetailPage() {
@@ -36,7 +31,7 @@ export default function TradeDetailPage() {
     return <div className="wrap"><div className="task-error">{(error as Error)?.message ?? '商品不存在'}</div></div>
   }
 
-  const status = STATUS_LABEL[item.status]
+  const status = TRADE_STATUS_LABEL[item.status]
   const isSeller = item.seller.userId === myId
 
   return (

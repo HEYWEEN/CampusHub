@@ -1,5 +1,4 @@
 import { apiGet, apiPatch } from './client'
-import { BizError } from '../types/api'
 import type {
   PrivacySettings,
   ProfileUpdateDTO,
@@ -15,51 +14,46 @@ import {
   mockUpdateProfile,
   type PublicUserStats,
 } from './_mock'
-
-async function withMock<T>(real: () => Promise<T>, mock: () => T): Promise<T> {
-  if (!import.meta.env.DEV) return real()
-  try {
-    return await real()
-  } catch (err) {
-    if (err instanceof BizError && err.httpStatus !== undefined && err.httpStatus < 500) throw err
-    // eslint-disable-next-line no-console
-    console.warn('[mock] user API 后端未响应，使用 mock')
-    return mock()
-  }
-}
+import { withMock } from './withMock'
 
 export const getMe = () =>
   withMock<UserMeVO>(
     () => apiGet('/api/users/me'),
     () => mockGetMe(),
+    'user',
   )
 
 export const getPublicUser = (userId: string) =>
   withMock<PublicUserVO>(
     () => apiGet(`/api/users/${userId}/public`),
     () => mockGetPublicUser(userId),
+    'user',
   )
 
 export const getPublicStats = (userId: string) =>
   withMock<PublicUserStats>(
     () => apiGet(`/api/users/${userId}/public/stats`),
     () => mockGetPublicStats(userId),
+    'user',
   )
 
 export const updateProfile = (dto: ProfileUpdateDTO) =>
   withMock<UserMeVO>(
     () => apiPatch('/api/users/me/profile', dto),
     () => mockUpdateProfile(dto),
+    'user',
   )
 
 export const updatePrivacy = (privacy: Partial<PrivacySettings>) =>
   withMock<UserMeVO>(
     () => apiPatch('/api/users/me/privacy', privacy),
     () => mockUpdatePrivacy(privacy),
+    'user',
   )
 
 export const updateAcceptLimit = (dailyAcceptLimit: number) =>
   withMock<UserMeVO>(
     () => apiPatch('/api/users/me/accept-limit', { dailyAcceptLimit }),
     () => mockUpdateAcceptLimit(dailyAcceptLimit),
+    'user',
   )

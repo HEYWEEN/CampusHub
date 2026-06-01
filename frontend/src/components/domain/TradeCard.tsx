@@ -1,16 +1,11 @@
 import { Link } from 'react-router-dom'
 import type { TradeItemVO } from '../../types/trade'
 import PublicUserCard from './PublicUserCard'
+import { TRADE_STATUS_LABEL } from '../../utils/labels'
 import './Domain.css'
 
-const STATUS_LABEL: Record<TradeItemVO['status'], { text: string; tone: string }> = {
-  ON_SALE:  { text: '在售',   tone: 'pending' },
-  IN_TRADE: { text: '交易中', tone: 'progress' },
-  OFF_SALE: { text: '已下架', tone: 'canceled' },
-}
-
 export default function TradeCard({ item }: { item: TradeItemVO }) {
-  const status = STATUS_LABEL[item.status]
+  const status = TRADE_STATUS_LABEL[item.status]
   return (
     <Link to={`/app/trade/${item.id}`} className="trade-card">
       <div className="trade-card-img">

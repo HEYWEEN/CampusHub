@@ -2,6 +2,9 @@ package com.campushub.common.response;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+
+import org.springframework.data.domain.Page;
 
 /**
  * 分页出参（P3 §2.3 强制）：{items, total, page, size}
@@ -29,6 +32,15 @@ public class PageResponse<T> {
 
     public static <T> PageResponse<T> empty(int page, int size) {
         return new PageResponse<>(Collections.emptyList(), 0L, page, size);
+    }
+
+    /**
+     * 从 Spring Data {@link Page} 构造：自动把 0 基页号转为 1 基，并按 mapper 转换元素。
+     * 收敛各模块"stream().map() + 手填 page/size"的重复样板。
+     */
+    public static <E, T> PageResponse<T> of(Page<E> page, Function<E, T> mapper) {
+        List<T> items = page.getContent().stream().map(mapper).toList();
+        return new PageResponse<>(items, page.getTotalElements(), page.getNumber() + 1, page.getSize());
     }
 
     public List<T> getItems() { return items; }

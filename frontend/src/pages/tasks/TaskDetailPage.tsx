@@ -10,19 +10,14 @@ import {
 } from '../../api/task'
 import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
-import type { TaskDetailVO, TaskStatus, TaskType } from '../../types/task'
+import type { TaskDetailVO, TaskStatus } from '../../types/task'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import TaskStatusBadge from '../../components/domain/TaskStatusBadge'
 import ImageUploader from '../../components/ImageUploader'
 import { formatDeadline } from '../../utils/format'
+import { TASK_TYPE_LABEL } from '../../utils/labels'
 import './Tasks.css'
-
-const TYPE_LABEL: Record<TaskType, string> = {
-  ERRAND: '跑腿',
-  MUTUAL_HELP: '互助',
-  TUTOR: '辅导',
-}
 
 // 状态机 5 步定义
 const TIMELINE: { status: TaskStatus; label: string }[] = [
@@ -98,7 +93,7 @@ export default function TaskDetailPage() {
         <div className="detail-main">
           <div className="detail-tags">
             <span className={`task-type task-type-${task.taskType.toLowerCase()}`}>
-              {TYPE_LABEL[task.taskType]}
+              {TASK_TYPE_LABEL[task.taskType]}
             </span>
             <TaskStatusBadge status={task.status} />
           </div>

@@ -1,15 +1,10 @@
 import { Link } from 'react-router-dom'
-import type { TaskListItemVO, TaskType } from '../../types/task'
+import type { TaskListItemVO } from '../../types/task'
 import PublicUserCard from './PublicUserCard'
 import TaskStatusBadge from './TaskStatusBadge'
 import { formatDeadline } from '../../utils/format'
+import { TASK_TYPE_LABEL } from '../../utils/labels'
 import './Domain.css'
-
-const TYPE_LABEL: Record<TaskType, string> = {
-  ERRAND: '跑腿',
-  MUTUAL_HELP: '互助',
-  TUTOR: '辅导',
-}
 
 export default function TaskCard({ task }: { task: TaskListItemVO }) {
   const dl = formatDeadline(task.deadlineAt)
@@ -17,7 +12,7 @@ export default function TaskCard({ task }: { task: TaskListItemVO }) {
     <Link to={`/app/tasks/${task.taskId}`} className="task-card">
       <div className="task-card-head">
         <span className={`task-type task-type-${task.taskType.toLowerCase()}`}>
-          {TYPE_LABEL[task.taskType]}
+          {TASK_TYPE_LABEL[task.taskType]}
         </span>
         <TaskStatusBadge status={task.status} />
       </div>
