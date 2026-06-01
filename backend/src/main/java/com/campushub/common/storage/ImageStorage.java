@@ -1,6 +1,7 @@
 package com.campushub.common.storage;
 
 import com.campushub.common.exception.BizException;
+import com.campushub.common.util.ExifCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ import java.util.Set;
  *   - WebMvcConfig.addResourceHandlers 把 /uploads/** 映射到 file:./uploads/
  *   - UploadController POST /api/uploads → 调本类 put(file) → 返回 {url}
  *   - application.properties: spring.servlet.multipart.max-file-size=5MB
+ *   - 落盘前经 {@link ExifCleaner} 清洗 EXIF/GPS（TRADE-01 / P3 §03）
  *
  * 生产可替换为 OSS/Minio，但要保持「返回 HTTP URL，前端能 <img src> 直接拉」契约。
  */
@@ -58,7 +60,7 @@ public class ImageStorage {
     /**
      * 上传一个图片文件 → 返回可被浏览器访问的 URL。
      *
-     * 校验：非空、≤5MB、MIME 在白名单内。
+     * 校验：非空、≤5MB、MIME 在白名单内；JPEG/PNG 落盘前清洗 EXIF。
      */
     public String put(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -79,6 +81,7 @@ public class ImageStorage {
             throw new BizException(5001, "读取上传内容失败");
         }
 
+        bytes = ExifCleaner.clean(bytes, contentType);
         String sha = sha256(bytes);
         String ext = inferExtension(contentType);
         String relativePath = sha.substring(0, 2) + "/" + sha.substring(2, 4) + "/" + sha + ext;
