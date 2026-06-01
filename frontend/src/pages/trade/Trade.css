@@ -11,6 +11,11 @@
 @media (max-width: 880px)  { .trade-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px)  { .trade-grid { grid-template-columns: 1fr; } }
 
+/* 大厅有右栏时主列收窄，按宽度自适应列数 */
+.hall-main .trade-grid {
+  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
+}
+
 /* ─── Trade 详情 ─── */
 .trade-detail-layout {
   display: grid;

@@ -16,6 +16,7 @@ export default function TradeCard({ item }: { item: TradeItemVO }) {
       </div>
       <div className="trade-card-body">
         <h3 className="trade-card-title">{item.title}</h3>
+        {item.description && <p className="trade-card-desc">{item.description}</p>}
         <div className="trade-card-foot">
           <PublicUserCard user={item.seller} size="sm" />
           <span className="trade-price">
