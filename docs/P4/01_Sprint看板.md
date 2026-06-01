@@ -96,7 +96,7 @@
 | CRD-01 | P0 | credit | `CreditApi` 实现：freeze / unfreeze / settle / getScoreOf / **deduct** | 3h | D | ✅ | 14 个 service 单测全过；bizKey 幂等；余额/分数不出负；@Version 乐观锁 | INF-06 |
 | CRD-02 | P1 | credit | 双向评分 `POST /api/credit/reviews`（任务/交易完成后触发） | 2h | D | ✅ | 评分 1-5 校验；不可重复评 409；双方评完各 +1 信用分（幂等 bizKey） | CRD-01, TASK-05 |
 | CRD-03 | P1 | credit | 信用分计算 Strategy（按 P1 SRS：**1 加分 + 4 扣分**，看板早期"5+4"不准） | 2h | D | ✅ | 5 条 ScoreRule 全覆盖；变更写 `credit_score_log`（schema.sql 已补 DDL）；分数夹紧 [0,120] | CRD-02 |
-| CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | 🟡 | 🔴 BLOCKED on B 的 `TaskCompletedEvent/TaskCanceledEvent` payload 字段定稿；约定走 `unfreeze + settle` 两段调用以适配单 userId 的 settle 契约 | CRD-01, TASK-05 |
+| CRD-04 | P1 | credit | `credit/listener/TaskEventListener`（订阅 TaskCompleted/Canceled） | 1h | D | ✅ | task 段 listener `0f01e6f`；trade 段 listener `ebb3899`；TaskExpiredEvent noop+日志 `841870a`；event payload 字段已与 B 敲定（含 publisherId/accepterId/rewardPoint/depositPoint），走 `unfreeze + settle` 两段调用 | CRD-01, TASK-05 |
 | **F-CREDIT-01** | P0 | credit | **`GET /api/credits/me` 我的信用总览** | 0.5h | D | ✅ | 字段与前端 `types/credit.ts` 严格对齐；canPublish/canAccept/dailyAcceptLimit 按 SRS 派生 | CRD-01 |
 | **F-CREDIT-08** | P1 | credit | **`GET /api/credits/me/records` 积分流水分页** | 0.5h | D | ✅ | page/size 1-based + 上限 100；按 createdAt DESC；返回 PageResponse 标准结构 | CRD-01 |
 | NTF-01 | P1 | notify | 站内信发送 + 列表 + 已读 `GET /api/notify/messages` / `GET /unread-count` / `PATCH /{id}/read` / `POST /read-all` | 2h | **A** | ✅ | NotifyApi.appendLetter + bizKey 幂等（uk_notify_biz_key 兜底）；越权 markRead 返 403；6 个 service 测 + 6 个 controller 测全过 | INF-06 |
@@ -127,7 +127,7 @@
 | ID | 优先级 | 任务 | 工时 | 负责人 | 状态 | 完成标准 |
 |----|------|------|----:|------|:----:|--------|
 | QA-01 | P0 | 各自模块单元测试（每个 Service 至少 3 个用例：正常+边界+异常） | 各自 1.5h | 各模块 owner | ⬜ | 模块 line coverage ≥ 60% |
-| QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | 🟡 | 🔴 BLOCKED on B 的 task 接口 + C 的 trade 接口；BaseIT 基类已交（commit `13f1efc`） |
+| QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | ✅ | BaseIT 基类 `13f1efc`；task 段 `TaskHappyPathFlowTest` `e01a280`；trade 段 `TradeHappyPathFlowTest` `21f1cf4`；含信用结算断言（unfreeze + settle 守恒缺口已在技术债 §5.3.1 记录） |
 | QA-03 | P0 | 集成测试 #2：异常流 ×4（未登录访问 / 重复评 / 自评 / 评分越界） | 1.5h | **D** | ✅ | `CreditExceptionFlowTest` 4 个用例全过；ApiResponse 错误码结构正确；commit `8c8cc28` |
 | QA-04 | P0 | GitLab CI/CD 配置（依赖 / 静态检查 / 单测 / 集测 / 构建） | 2h | B | ⬜ | 至少 1 次绿色运行 |
 
