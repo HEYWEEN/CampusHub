@@ -127,22 +127,21 @@ class TaskHappyPathFlowTest extends BaseIT {
         //  publisher frozen 清零、balance 回到 INITIAL_BALANCE
         //   （与 TradeHappyPathFlowTest 一致的「unfreeze+settle 守恒缺口」，
         //    待 CreditApi 增加 transfer(payer,payee) 时同步收紧）
-        //  accepter balance += REWARD；deposit 暂仍冻结（见 TaskEventListener javadoc 已知缺口）
+        //  accepter deposit 由 TaskServiceImpl.confirmComplete 内联 unfreeze 退还，
+        //  frozen 清零，balance = INITIAL + REWARD
         CreditAccount pubFinal = accountRepo.findByUserId(publisher.userId()).orElseThrow();
         CreditAccount accFinal = accountRepo.findByUserId(accepter.userId()).orElseThrow();
         assertEquals(0, pubFinal.getPointFrozen(), "发布者冻结应被释放");
         assertEquals(INITIAL_BALANCE, pubFinal.getPointBalance(),
                 "按当前 unfreeze+settle 约定，发布者余额回到发任务前");
-        assertEquals(INITIAL_BALANCE - DEPOSIT + REWARD, accFinal.getPointBalance(),
-                "接单者应在启动积分基础上收到结算积分");
-        assertEquals(DEPOSIT, accFinal.getPointFrozen(),
-                "接单者押金当前在完成路径上不退（TaskCompletedEvent 不携带 depositPoint，"
-              + "见 TaskEventListener javadoc 已知缺口）");
+        assertEquals(INITIAL_BALANCE + REWARD, accFinal.getPointBalance(),
+                "接单者收到结算积分且押金已退还（deposit 由 confirm 内联 unfreeze）");
+        assertEquals(0, accFinal.getPointFrozen(), "接单者押金已在完成路径上退还");
 
         // HTTP /api/credits/me 视角（与前端一致）
         mockMvc.perform(get("/api/credits/me").header("Authorization", bearer(accepter.accessToken())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.pointBalance").value(INITIAL_BALANCE - DEPOSIT + REWARD))
-                .andExpect(jsonPath("$.data.pointFrozen").value(DEPOSIT));
+                .andExpect(jsonPath("$.data.pointBalance").value(INITIAL_BALANCE + REWARD))
+                .andExpect(jsonPath("$.data.pointFrozen").value(0));
     }
 }

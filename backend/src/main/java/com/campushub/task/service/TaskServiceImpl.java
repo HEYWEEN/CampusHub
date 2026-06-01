@@ -324,6 +324,11 @@ public class TaskServiceImpl implements TaskService, TaskApi {
         }
 
         new TaskStateContext(task).confirm();
+
+        int deposit = depositOf(task.getRewardPoint());
+        creditApi.unfreeze(task.getAssigneeId(), deposit,
+                "task:" + taskId + ":unfreeze_deposit");
+
         taskRepo.save(task);
 
         events.publishEvent(new TaskCompletedEvent(
