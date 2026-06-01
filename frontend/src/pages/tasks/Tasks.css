@@ -674,6 +674,49 @@
   font-size: 13.5px;
 }
 
+/* ─── 发布表单页：居中卡片 ─── */
+.form-page { max-width: 680px; margin: 0 auto; }
+
+.form-page-head { margin-bottom: 26px; }
+.form-page-head .page-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.form-page-head .page-title .it { font-style: italic; color: var(--accent); }
+.form-page-sub {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.task-form.form-card {
+  max-width: none;
+  margin: 0;
+  padding: 36px 40px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 720px) { .task-form.form-card { padding: 24px 20px; } }
+
+/* 表单内的自定义下拉：占满宽度、与 .form-input 视觉一致 */
+.form-field .ch-select { width: 100%; }
+.form-field .ch-select-btn {
+  width: 100%;
+  justify-content: space-between;
+  height: auto;
+  padding: 14px 18px;
+  border-width: 1.5px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
 /* ============================================================
  * 我的任务 tab
  * ============================================================ */

@@ -5,6 +5,7 @@ import { createItem } from '../../api/trade'
 import type { PickupLocationType, TradeItemCreateDTO } from '../../types/trade'
 import { BizError } from '../../types/api'
 import ImageUploader from '../../components/ImageUploader'
+import Select from '../../components/Select'
 import '../tasks/Tasks.css'
 import './Trade.css'
 
@@ -54,118 +55,113 @@ export default function TradeNewPage() {
 
   return (
     <div className="wrap">
-      <div className="page-head">
-        <h1 className="page-title">
-          挂个<span className="it">出售</span>。
-        </h1>
-        <div className="page-sub">F-TRADE-01 · 最多 9 图</div>
-      </div>
-
-      <form className="task-form" onSubmit={handleSubmit} noValidate>
-        <div className="form-field">
-          <ImageUploader
-            label="商品图"
-            multiple
-            maxCount={9}
-            value={imageUrls}
-            onChange={setImageUrls}
-            hint="jpg/png/webp/gif，单张 ≤ 5MB，最多 9 张"
-          />
+      <div className="form-page">
+        <div className="form-page-head">
+          <h1 className="page-title">
+            挂个<span className="it">出售</span>。
+          </h1>
+          <p className="form-page-sub">拍清楚、写明白，闲置更快出手。</p>
         </div>
 
-        <div className="form-field">
-          <label className="form-label" htmlFor="t-title">
-            标题 <span className="required">·</span>
-          </label>
-          <input
-            id="t-title"
-            className="form-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={200}
-            placeholder="例如：Kindle Paperwhite 4（无划痕）"
-          />
-          <div className="form-hint">{title.length} / 200</div>
-        </div>
-
-        <div className="form-row">
+        <form className="task-form form-card" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
-            <label className="form-label" htmlFor="t-price">
-              售价（积分） <span className="required">·</span>
-            </label>
-            <input
-              id="t-price"
-              className="form-input"
-              type="number"
-              min={1}
-              max={100000}
-              value={pricePoint}
-              onChange={(e) => setPricePoint(parseInt(e.target.value || '0', 10))}
+            <label className="form-label">商品图 <span className="required">·</span></label>
+            <ImageUploader
+              multiple
+              maxCount={9}
+              value={imageUrls}
+              onChange={setImageUrls}
+              hint="jpg/png/webp/gif，单张 ≤ 5MB，最多 9 张"
             />
           </div>
+
           <div className="form-field">
-            <label className="form-label">取货方式</label>
-            <select
+            <label className="form-label" htmlFor="t-title">标题 <span className="required">·</span></label>
+            <input
+              id="t-title"
               className="form-input"
-              value={pickupLocationType}
-              onChange={(e) => setPickupLocationType(e.target.value as PickupLocationType)}
-            >
-              {PICKUP_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <div className="form-hint">
-              {PICKUP_OPTIONS.find((o) => o.value === pickupLocationType)?.hint}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={200}
+              placeholder="例如：Kindle Paperwhite 4（无划痕）"
+            />
+            <div className="form-hint">{title.length} / 200</div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label className="form-label" htmlFor="t-price">售价（积分） <span className="required">·</span></label>
+              <input
+                id="t-price"
+                className="form-input"
+                type="number"
+                min={1}
+                max={100000}
+                value={pricePoint}
+                onChange={(e) => setPricePoint(parseInt(e.target.value || '0', 10))}
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label">取货方式</label>
+              <Select
+                value={pickupLocationType}
+                options={PICKUP_OPTIONS}
+                onChange={setPickupLocationType}
+                ariaLabel="取货方式"
+              />
+              <div className="form-hint">
+                {PICKUP_OPTIONS.find((o) => o.value === pickupLocationType)?.hint}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="form-field">
-          <label className="form-label" htmlFor="t-detail">具体位置（可选）</label>
-          <input
-            id="t-detail"
-            className="form-input"
-            value={pickupLocationDetail}
-            onChange={(e) => setPickupLocationDetail(e.target.value)}
-            maxLength={200}
-            placeholder="例如：仙林 14 号楼 / 鼓楼校区"
-          />
-        </div>
+          <div className="form-field">
+            <label className="form-label" htmlFor="t-detail">具体位置（可选）</label>
+            <input
+              id="t-detail"
+              className="form-input"
+              value={pickupLocationDetail}
+              onChange={(e) => setPickupLocationDetail(e.target.value)}
+              maxLength={200}
+              placeholder="例如：仙林 14 号楼 / 鼓楼校区"
+            />
+          </div>
 
-        <div className="form-field">
-          <label className="form-label" htmlFor="t-desc">描述（可选）</label>
-          <textarea
-            id="t-desc"
-            className="form-textarea"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={2000}
-            placeholder="新旧程度 / 购入时间 / 是否包邮 / 联系方式（IM 更安全）"
-          />
-          <div className="form-hint">{description.length} / 2000</div>
-        </div>
+          <div className="form-field">
+            <label className="form-label" htmlFor="t-desc">描述（可选）</label>
+            <textarea
+              id="t-desc"
+              className="form-textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={2000}
+              placeholder="新旧程度 / 购入时间 / 是否包邮 / 联系方式（IM 更安全）"
+            />
+            <div className="form-hint">{description.length} / 2000</div>
+          </div>
 
-        {error && <div className="form-error">{error}</div>}
+          {error && <div className="form-error">{error}</div>}
 
-        <div className="form-submit-row">
-          <button
-            type="submit"
-            className="action-btn action-btn-primary"
-            disabled={mutation.isPending}
-            style={{ width: 'auto', minWidth: 200 }}
-          >
-            {mutation.isPending ? '发布中…' : '挂个出售 →'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/app/trade')}
-            className="action-btn action-btn-ghost"
-            style={{ width: 'auto' }}
-          >
-            取消
-          </button>
-        </div>
-      </form>
+          <div className="form-submit-row">
+            <button
+              type="submit"
+              className="action-btn action-btn-primary"
+              disabled={mutation.isPending}
+              style={{ width: 'auto', minWidth: 200 }}
+            >
+              {mutation.isPending ? '发布中…' : '挂个出售 →'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/app/trade')}
+              className="action-btn action-btn-ghost"
+              style={{ width: 'auto' }}
+            >
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
