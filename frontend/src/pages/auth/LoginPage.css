@@ -147,6 +147,58 @@
   line-height: 1.4;
 }
 
+/* ---------- 登录方式切换 ---------- */
+.login-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 48px;
+  padding: 4px;
+  background: var(--cream);
+  border: 1.5px solid var(--ink);
+  border-radius: 9999px;
+  align-self: flex-start;
+}
+
+.login-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 9px 22px;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease;
+}
+
+.login-tab:hover:not(.active) {
+  color: var(--ink);
+}
+
+.login-tab.active {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+/* tabs 存在时表单顶距收窄，避免双重留白 */
+.login-tabs + .login-form {
+  margin-top: 20px;
+}
+
+/* 把文字按钮还原成 .login-flip 链接外观 */
+.login-linkbtn {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: inherit;
+  padding: 0 0 1px;
+}
+
 /* ---------- Form ---------- */
 .login-form {
   display: flex;
