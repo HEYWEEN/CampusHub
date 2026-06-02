@@ -1,7 +1,11 @@
 package com.campushub.auth.controller;
 
+import com.campushub.auth.entity.AuthUser;
+import com.campushub.auth.entity.Role;
+import com.campushub.auth.repository.AuthUserRepository;
 import com.campushub.auth.service.VerificationService;
 import com.campushub.auth.vo.VerificationStatusVO;
+import com.campushub.common.exception.NotFoundException;
 import com.campushub.common.response.ApiResponse;
 import com.campushub.common.util.CurrentUserHolder;
 import com.campushub.credit.api.CreditApi;
@@ -28,10 +32,24 @@ public class DevAuthController {
 
     private final VerificationService verificationService;
     private final CreditApi creditApi;
+    private final AuthUserRepository userRepo;
 
-    public DevAuthController(VerificationService verificationService, CreditApi creditApi) {
+    public DevAuthController(VerificationService verificationService, CreditApi creditApi,
+                            AuthUserRepository userRepo) {
         this.verificationService = verificationService;
         this.creditApi = creditApi;
+        this.userRepo = userRepo;
+    }
+
+    /** dev-only：把自己提升为 ADMIN，便于本地/演示进管理后台（生产不存在本端点）。 */
+    @PostMapping("/auth/me/dev-grant-admin")
+    public ApiResponse<Void> devGrantAdmin() {
+        long userId = CurrentUserHolder.getUserId();
+        AuthUser u = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
+        u.setRole(Role.ADMIN);
+        userRepo.save(u);
+        return ApiResponse.success();
     }
 
     /** dev-only：一键把自己最新 PENDING 认证置 APPROVED。 */

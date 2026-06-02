@@ -58,6 +58,10 @@ public class AuthUser {
     @Column(name = "banned", nullable = false)
     private boolean banned = false;
 
+    @Convert(converter = RoleConverter.class)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.USER;
+
     @Version
     @Column(name = "version", nullable = false)
     private Integer version = 0;
@@ -93,7 +97,10 @@ public class AuthUser {
         this.updatedAt = Instant.now();
     }
     public boolean isBanned() { return banned; }
-    public void setBanned(boolean banned) { this.banned = banned; }
+    public void setBanned(boolean banned) { this.banned = banned; this.updatedAt = Instant.now(); }
+    public Role getRole() { return role; }
+    public boolean isAdmin() { return role == Role.ADMIN; }
+    public void setRole(Role role) { this.role = role; this.updatedAt = Instant.now(); }
     public Integer getVersion() { return version; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

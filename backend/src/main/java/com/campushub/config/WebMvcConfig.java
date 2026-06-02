@@ -1,5 +1,6 @@
 package com.campushub.config;
 
+import com.campushub.common.interceptor.AdminAuthInterceptor;
 import com.campushub.common.interceptor.JwtAuthInterceptor;
 import com.campushub.common.interceptor.TraceIdInterceptor;
 import com.campushub.common.storage.ImageStorage;
@@ -25,13 +26,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final TraceIdInterceptor traceIdInterceptor;
     private final JwtAuthInterceptor jwtAuthInterceptor;
+    private final AdminAuthInterceptor adminAuthInterceptor;
     private final ImageStorage imageStorage;
 
     public WebMvcConfig(TraceIdInterceptor traceIdInterceptor,
                         JwtAuthInterceptor jwtAuthInterceptor,
+                        AdminAuthInterceptor adminAuthInterceptor,
                         ImageStorage imageStorage) {
         this.traceIdInterceptor = traceIdInterceptor;
         this.jwtAuthInterceptor = jwtAuthInterceptor;
+        this.adminAuthInterceptor = adminAuthInterceptor;
         this.imageStorage = imageStorage;
     }
 
@@ -44,6 +48,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtAuthInterceptor)
                 .addPathPatterns("/api/**")
                 .order(1);
+
+        // 管理端：先过 jwt(order 1) 拿到 userId，再校验 ADMIN
+        registry.addInterceptor(adminAuthInterceptor)
+                .addPathPatterns("/api/admin/**")
+                .order(2);
     }
 
     /**

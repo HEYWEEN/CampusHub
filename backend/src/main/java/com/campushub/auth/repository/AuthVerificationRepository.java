@@ -4,6 +4,7 @@ import com.campushub.auth.entity.AuthVerification;
 import com.campushub.auth.entity.VerificationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AuthVerificationRepository extends JpaRepository<AuthVerification, Long> {
@@ -13,4 +14,7 @@ public interface AuthVerificationRepository extends JpaRepository<AuthVerificati
 
     /** 是否存在 PENDING 中的申请（用于拒绝重复提交） */
     boolean existsByUserIdAndStatus(Long userId, VerificationStatus status);
+
+    /** admin 待审核队列（最早提交优先） */
+    List<AuthVerification> findByStatusOrderByCreatedAtAsc(VerificationStatus status);
 }

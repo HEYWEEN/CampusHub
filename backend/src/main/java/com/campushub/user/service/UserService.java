@@ -125,7 +125,7 @@ public class UserService implements UserApi {
             phoneMasked = null; // 加密失效不阻塞主页查询
         }
 
-        return new UserMeVO(
+        UserMeVO vo = new UserMeVO(
                 u.getId(),
                 p.getNickname(),
                 p.getAvatarUrl(),
@@ -134,6 +134,8 @@ public class UserService implements UserApi {
                 p.isHidePublishHistory(), p.isHideAcceptHistory(), p.isHideCourseReviews(),
                 p.getDailyAcceptLimit()
         );
+        vo.setRole(u.getRole());
+        return vo;
     }
 
     /**

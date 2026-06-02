@@ -1,5 +1,6 @@
 package com.campushub.user.vo;
 
+import com.campushub.auth.entity.Role;
 import com.campushub.common.enums.VerifyStatus;
 
 /**
@@ -27,6 +28,7 @@ public class UserMeVO {
     private boolean hideCourseReviews;
 
     private int dailyAcceptLimit;
+    private Role role = Role.USER;
 
     public UserMeVO() {}
 
@@ -54,4 +56,6 @@ public class UserMeVO {
     public boolean isHideAcceptHistory() { return hideAcceptHistory; }
     public boolean isHideCourseReviews() { return hideCourseReviews; }
     public int getDailyAcceptLimit() { return dailyAcceptLimit; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 }

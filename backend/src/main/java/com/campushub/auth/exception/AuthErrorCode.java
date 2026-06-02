@@ -22,4 +22,7 @@ public final class AuthErrorCode {
 
     /** 仅密码登录但用户未设密（验证码-only 用户） — 401 */
     public static final int PASSWORD_NOT_SET = 2005;
+
+    /** 认证申请不存在 / 已处理（admin 审核） — 409 */
+    public static final int VERIFICATION_NOT_PENDING = 2006;
 }
