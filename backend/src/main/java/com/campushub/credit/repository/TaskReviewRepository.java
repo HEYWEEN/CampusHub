@@ -14,4 +14,7 @@ public interface TaskReviewRepository extends JpaRepository<TaskReview, Long> {
     List<TaskReview> findByTaskId(long taskId);
 
     long countByTaskId(long taskId);
+
+    /** 我收到的评价（申诉入口列表）。 */
+    List<TaskReview> findByRevieweeIdOrderByCreatedAtDesc(long revieweeId);
 }

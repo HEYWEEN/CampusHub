@@ -19,4 +19,19 @@ public final class CreditErrorCode {
 
     /** 重复评价 / 不可重复评 — 409 */
     public static final int REVIEW_DUPLICATED = 10004;
+
+    /** 只能申诉自己收到的评价 — 403 */
+    public static final int APPEAL_NOT_REVIEWEE = 10005;
+
+    /** 只有差评（评分 ≤ 2）可申诉 — 400 */
+    public static final int APPEAL_NOT_NEGATIVE = 10006;
+
+    /** 申诉窗口已过（差评 7 日内） — 422 */
+    public static final int APPEAL_WINDOW_CLOSED = 10007;
+
+    /** 7 日内申诉次数超限（≤ 3） — 422 */
+    public static final int APPEAL_RATE_LIMIT = 10008;
+
+    /** 申诉不存在 / 已处理 — 409 */
+    public static final int APPEAL_NOT_PENDING = 10009;
 }

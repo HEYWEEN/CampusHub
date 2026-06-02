@@ -48,6 +48,10 @@ public class TaskReview {
     @Column(name = "comment", length = 500)
     private String comment;
 
+    /** 申诉通过后置 true，公开渲染时打码/撤销。 */
+    @Column(name = "voided", nullable = false)
+    private boolean voided = false;
+
     @Version
     @Column(name = "version", nullable = false)
     private Integer version = 0;
@@ -74,6 +78,8 @@ public class TaskReview {
     public Long getRevieweeId() { return revieweeId; }
     public int getRating() { return rating; }
     public String getComment() { return comment; }
+    public boolean isVoided() { return voided; }
+    public void markVoided() { this.voided = true; this.updatedAt = Instant.now(); }
     public Integer getVersion() { return version; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
