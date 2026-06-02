@@ -10,7 +10,7 @@ const SVG_BASE = {
   strokeLinejoin: 'round' as const,
 }
 
-export type StatIconName = 'clipboard' | 'clock' | 'check' | 'tag' | 'cart' | 'book'
+export type StatIconName = 'clipboard' | 'clock' | 'check' | 'tag' | 'cart' | 'book' | 'users' | 'flag'
 
 /** Hero 统计数字上方的圆角图标徽章。 */
 export function StatIcon({ name }: { name: StatIconName }) {
@@ -28,6 +28,10 @@ export function StatIcon({ name }: { name: StatIconName }) {
       return <svg {...p}><path d="M4 5h2l2 11h9l2-8H7" /><circle cx="9" cy="20" r="1.3" /><circle cx="17" cy="20" r="1.3" /></svg>
     case 'book':
       return <svg {...p}><path d="M5 4h9a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z" /><path d="M16 6h3v12a2 2 0 0 0-2 2H7" /></svg>
+    case 'users':
+      return <svg {...p}><circle cx="9" cy="8" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6" /><path d="M17.5 14.4A5.5 5.5 0 0 1 20.5 20" /></svg>
+    case 'flag':
+      return <svg {...p}><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></svg>
   }
 }
 

@@ -705,6 +705,73 @@
 }
 @media (max-width: 720px) { .task-form.form-card { padding: 24px 20px; } }
 
+/* 组队详情：申请列表 */
+.team-app-block { margin-top: 32px; }
+.team-app {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.team-app-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.team-app-credit { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.team-app-msg { margin: 8px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.team-app-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+.team-app-actions { display: inline-flex; gap: 10px; }
+
+/* 技能标签 chip 输入 */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  min-height: 50px;
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+}
+.tag-chips:focus-within { border-color: var(--ink); background: #fff; }
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+}
+.tag-chip-rm {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.tag-input {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink);
+}
+
 /* 表单内的自定义下拉：占满宽度、与 .form-input 视觉一致 */
 .form-field .ch-select { width: 100%; }
 .form-field .ch-select-btn {

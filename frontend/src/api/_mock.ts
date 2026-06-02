@@ -19,6 +19,12 @@ import type {
   TradeItemVO,
   TradeSearchParams,
 } from '../types/trade'
+import type {
+  TeamApplicationVO,
+  TeamRecruitCreateDTO,
+  TeamRecruitVO,
+  TeamSearchParams,
+} from '../types/team'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -314,7 +320,7 @@ export function mockAcceptTask(id: string, userId = MOCK_CURRENT_USER_ID): void 
   t.version += 1
 }
 
-export function mockSubmitProof(id: string, images: string[], _note: string): void {
+export function mockSubmitProof(id: string, images: string[]): void {
   const t = tasks.find((x) => x.taskId === id)
   if (!t) throw new BizError(404, '任务不存在')
   if (t.status !== 'IN_PROGRESS') throw new BizError(409, '当前状态无法上传凭证')
@@ -635,4 +641,75 @@ export function mockGetPublicStats(userId: string): PublicUserStats {
     acceptedCount: null,
     reviewsCount: null,
   }
+}
+
+// ───── team 组队 mock ─────
+const teamRecruits: TeamRecruitVO[] = [
+  {
+    recruitId: 901, title: '数模国赛三缺一', description: '冲国一，缺一个会编程的队友，每周两次讨论。',
+    skillTags: ['数学建模', 'Python', 'LaTeX'], totalSize: 3, currentSize: 2, status: 'RECRUITING',
+    creator: users.u4, createdAt: minutesAgo(40), isCreator: false, myApplicationStatus: null,
+  },
+  {
+    recruitId: 902, title: '软工二大作业组队', description: '校园互助平台方向，前后端都缺人。',
+    skillTags: ['React', 'Spring Boot', 'MySQL'], totalSize: 5, currentSize: 3, status: 'RECRUITING',
+    creator: users.u1, createdAt: minutesAgo(120), isCreator: true, myApplicationStatus: null,
+  },
+  {
+    recruitId: 903, title: '校园马拉松 4×100 接力', description: '找三个能跑的，周末校运会。',
+    skillTags: ['跑步', '4x100'], totalSize: 4, currentSize: 4, status: 'FULL',
+    creator: users.u3, createdAt: minutesAgo(1440), isCreator: false, myApplicationStatus: 'APPROVED',
+  },
+  {
+    recruitId: 904, title: '创新创业大赛找产品', description: '技术齐了，缺一个懂产品 / 商业的。',
+    skillTags: ['产品', '商业计划书', 'PPT'], totalSize: 4, currentSize: 2, status: 'RECRUITING',
+    creator: users.u5, createdAt: minutesAgo(300), isCreator: false, myApplicationStatus: 'PENDING',
+  },
+]
+
+const teamApplications: TeamApplicationVO[] = [
+  { applicationId: 7001, applicant: users.u2, creditScore: 96, message: '做过两次数模，会 Python', status: 'PENDING', createdAt: minutesAgo(30) },
+  { applicationId: 7002, applicant: users.u3, creditScore: 88, message: '想试试，态度好', status: 'PENDING', createdAt: minutesAgo(15) },
+  { applicationId: 7003, applicant: users.u5, creditScore: 100, message: '会 LaTeX 排版', status: 'APPROVED', createdAt: minutesAgo(200) },
+]
+
+export function mockSearchTeams(params: TeamSearchParams): PageResponse<TeamRecruitVO> {
+  let list = teamRecruits
+  if (params.status) list = list.filter((r) => r.status === params.status)
+  if (params.tag) list = list.filter((r) => r.skillTags.some((t) => t.includes(params.tag!)))
+  if (params.q) {
+    const q = params.q
+    list = list.filter((r) => r.title.includes(q) || (r.description ?? '').includes(q))
+  }
+  return { items: list, total: list.length, page: params.page ?? 1, size: params.size ?? 12 }
+}
+
+export function mockGetRecruit(id: number): TeamRecruitVO {
+  const r = teamRecruits.find((x) => x.recruitId === id)
+  if (!r) throw new BizError(404, '组队帖不存在', 404)
+  return r
+}
+
+export function mockCreateRecruit(dto: TeamRecruitCreateDTO, userId = MOCK_CURRENT_USER_ID): TeamRecruitVO {
+  const r: TeamRecruitVO = {
+    recruitId: Math.floor(Math.random() * 100000) + 1000,
+    title: dto.title, description: dto.description ?? null, skillTags: dto.skillTags,
+    totalSize: dto.totalSize, currentSize: 1, status: 'RECRUITING',
+    creator: users[userId] ?? users.u1, createdAt: new Date().toISOString(),
+    isCreator: true, myApplicationStatus: null,
+  }
+  teamRecruits.unshift(r)
+  return r
+}
+
+export function mockApplyTeam(): void {
+  // no-op：mock 下申请即视为提交成功
+}
+
+export function mockListApplications(): TeamApplicationVO[] {
+  return teamApplications
+}
+
+export function mockReviewApplication(): void {
+  // no-op
 }

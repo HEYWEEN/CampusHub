@@ -18,6 +18,9 @@ import TradeDetailPage from './pages/trade/TradeDetailPage'
 import TradeNewPage from './pages/trade/TradeNewPage'
 import EduTutorHallPage from './pages/edu/EduTutorHallPage'
 import EduTutorNewPage from './pages/edu/EduTutorNewPage'
+import TeamHallPage from './pages/team/TeamHallPage'
+import TeamNewPage from './pages/team/TeamNewPage'
+import TeamDetailPage from './pages/team/TeamDetailPage'
 import NotifyListPage from './pages/notify/NotifyListPage'
 import CreditPage from './pages/credit/CreditPage'
 
@@ -72,16 +75,10 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 组队
-      {
-        path: 'team',
-        element: (
-          <PlaceholderPage
-            title={<>找几个<span className="it">队友</span>。</>}
-            sub="比赛 / 课设组队 · F-TEAM-* · P1"
-          />
-        ),
-      },
+      // 组队 ✅ F-TEAM-01~04
+      { path: 'team',      element: <TeamHallPage /> },
+      { path: 'team/new',  element: <TeamNewPage /> },
+      { path: 'team/:id',  element: <TeamDetailPage /> },
 
       // 消息
       {

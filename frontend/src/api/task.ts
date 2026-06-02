@@ -45,7 +45,7 @@ export const acceptTask = (taskId: string, version: number) =>
 export const submitProof = (taskId: string, images: string[], text: string) =>
   withMock<void>(
     () => apiPost(`/api/tasks/${taskId}/proof`, { images, text }),
-    () => { mockSubmitProof(taskId, images, text) },
+    () => { mockSubmitProof(taskId, images) },
   )
 
 export const confirmTask = (taskId: string) =>
