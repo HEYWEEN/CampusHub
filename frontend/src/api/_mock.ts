@@ -25,6 +25,7 @@ import type {
   TeamRecruitVO,
   TeamSearchParams,
 } from '../types/team'
+import type { ImConversationVO, ImMessageType, ImMessageVO } from '../types/im'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -712,4 +713,53 @@ export function mockListApplications(): TeamApplicationVO[] {
 
 export function mockReviewApplication(): void {
   // no-op
+}
+
+// ───── im 私信 mock ─────
+const imConversations: ImConversationVO[] = [
+  { conversationId: 1, peer: users.u4, lastMessage: '好的，明天图书馆见～', lastContentType: 'TEXT', lastMsgAt: minutesAgo(8), unreadCount: 2 },
+  { conversationId: 2, peer: users.u2, lastMessage: '[图片]', lastContentType: 'IMAGE', lastMsgAt: minutesAgo(120), unreadCount: 0 },
+  { conversationId: 3, peer: users.u3, lastMessage: '任务已被接单，双方可在此沟通 🤝', lastContentType: 'SYSTEM', lastMsgAt: minutesAgo(1440), unreadCount: 0 },
+]
+
+const imMessages: Record<number, ImMessageVO[]> = {
+  1: [
+    { messageId: 11, senderId: 4, mine: false, contentType: 'SYSTEM', content: '任务已被接单，双方可在此沟通 🤝', createdAt: minutesAgo(60) },
+    { messageId: 12, senderId: 1, mine: true, contentType: 'TEXT', content: '学姐你好，关于高数辅导', createdAt: minutesAgo(40) },
+    { messageId: 13, senderId: 4, mine: false, contentType: 'TEXT', content: '可以呀，你想约什么时候？', createdAt: minutesAgo(30) },
+    { messageId: 14, senderId: 1, mine: true, contentType: 'TEXT', content: '明天下午方便吗', createdAt: minutesAgo(12) },
+    { messageId: 15, senderId: 4, mine: false, contentType: 'TEXT', content: '好的，明天图书馆见～', createdAt: minutesAgo(8) },
+  ],
+}
+
+export function mockListConversations(): ImConversationVO[] {
+  return imConversations
+}
+
+export function mockStartConversation(peerId: number): ImConversationVO {
+  const found = imConversations.find((c) => c.peer.userId === String(peerId))
+  if (found) return found
+  const conv: ImConversationVO = {
+    conversationId: Math.floor(Math.random() * 100000) + 100,
+    peer: users[`u${peerId}`] ?? users.u2,
+    lastMessage: null, lastContentType: null, lastMsgAt: new Date().toISOString(), unreadCount: 0,
+  }
+  imConversations.unshift(conv)
+  return conv
+}
+
+export function mockGetMessages(conversationId: number): PageResponse<ImMessageVO> {
+  const items = [...(imMessages[conversationId] ?? [])].reverse()  // 后端倒序返回
+  return { items, total: items.length, page: 1, size: 30 }
+}
+
+export function mockSendMessage(content: string, contentType: ImMessageType): ImMessageVO {
+  return {
+    messageId: Math.floor(Math.random() * 100000) + 1000,
+    senderId: 1, mine: true, contentType, content, createdAt: new Date().toISOString(),
+  }
+}
+
+export function mockGetUnread(): { count: number } {
+  return { count: imConversations.reduce((s, c) => s + c.unreadCount, 0) }
 }

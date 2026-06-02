@@ -57,6 +57,21 @@
   text-decoration: none;
   transition: background .25s ease, color .25s ease;
 }
+.app-nav-badge {
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
 .app-nav-link:hover { color: var(--ink); background: rgba(26, 24, 21, 0.06); }
 .app-nav-link.is-active {
   color: var(--accent);

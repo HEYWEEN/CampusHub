@@ -21,6 +21,8 @@ import EduTutorNewPage from './pages/edu/EduTutorNewPage'
 import TeamHallPage from './pages/team/TeamHallPage'
 import TeamNewPage from './pages/team/TeamNewPage'
 import TeamDetailPage from './pages/team/TeamDetailPage'
+import ImListPage from './pages/im/ImListPage'
+import ImChatPage from './pages/im/ImChatPage'
 import NotifyListPage from './pages/notify/NotifyListPage'
 import CreditPage from './pages/credit/CreditPage'
 
@@ -80,25 +82,9 @@ export const router = createBrowserRouter([
       { path: 'team/new',  element: <TeamNewPage /> },
       { path: 'team/:id',  element: <TeamDetailPage /> },
 
-      // 消息
-      {
-        path: 'im',
-        element: (
-          <PlaceholderPage
-            title={<>聊一<span className="it">聊</span>。</>}
-            sub="私信中心 · F-IM-*"
-          />
-        ),
-      },
-      {
-        path: 'im/:cid',
-        element: (
-          <PlaceholderPage
-            title={<>具体<span className="it">会话</span>。</>}
-            sub="F-IM-02 · 文本 / 图片 / 地点卡片"
-          />
-        ),
-      },
+      // 消息 ✅ F-IM-01/02/04
+      { path: 'im',      element: <ImListPage /> },
+      { path: 'im/:cid', element: <ImChatPage /> },
 
       // 通知 ✅ FE-F
       { path: 'notify', element: <NotifyListPage /> },

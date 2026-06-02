@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getPublicStats } from '../../api/user'
+import { startConversation } from '../../api/im'
 import { useAuthStore } from '../../stores/auth'
 import '../me/User.css'
 import '../tasks/Tasks.css'
@@ -15,6 +16,11 @@ export default function PublicUserPage() {
     queryKey: ['public-user', userId],
     queryFn: () => getPublicStats(userId),
     enabled: !!userId,
+  })
+
+  const startChat = useMutation({
+    mutationFn: (peerId: string) => startConversation(peerId),
+    onSuccess: (conv) => navigate(`/app/im/${conv.conversationId}`),
   })
 
   if (isLoading) return <div className="wrap"><div className="task-loading">加载中…</div></div>
@@ -50,9 +56,14 @@ export default function PublicUserPage() {
 
           {!isMe && isLoggedIn && (
             <div className="public-actions">
-              <Link to="/app/im" className="me-action-btn is-primary">
-                发起私信 →
-              </Link>
+              <button
+                type="button"
+                className="me-action-btn is-primary"
+                disabled={startChat.isPending}
+                onClick={() => startChat.mutate(user.userId)}
+              >
+                {startChat.isPending ? '打开中…' : '发起私信 →'}
+              </button>
               <button type="button" className="me-action-btn is-danger">举报这位用户</button>
             </div>
           )}

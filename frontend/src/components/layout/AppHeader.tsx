@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../../stores/auth'
 import { useNotifyStore } from '../../stores/notify'
 import { getUnreadCount } from '../../api/notify'
+import { getUnread as getImUnread } from '../../api/im'
 import { getMe } from '../../api/user'
 
 const NAV = [
@@ -45,6 +46,14 @@ export default function AppHeader() {
     if (data) setUnread(data.count)
   }, [data, setUnread])
 
+  const { data: imUnreadData } = useQuery({
+    queryKey: ['im-unread'],
+    queryFn: () => getImUnread(),
+    refetchInterval: 15_000,
+    enabled: isLoggedIn,
+  })
+  const imUnread = imUnreadData?.count ?? 0
+
   // 拉本人 me 用于 header 右上角昵称 + 头像（与 MePage 复用同一 queryKey 的缓存）
   const { data: me } = useQuery({
     queryKey: ['me'],
@@ -74,6 +83,9 @@ export default function AppHeader() {
                 className={({ isActive }) => `app-nav-link${isActive ? ' is-active' : ''}`}
               >
                 {n.label}
+                {n.to === '/app/im' && imUnread > 0 && (
+                  <span className="app-nav-badge">{imUnread > 99 ? '99+' : imUnread}</span>
+                )}
               </NavLink>
             ))}
           </nav>
