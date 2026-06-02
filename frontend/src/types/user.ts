@@ -24,6 +24,7 @@ export interface UserMeVO extends PublicUserVO, PrivacySettings {
   phoneMasked: string            // 138****1234 后端已脱敏
   verifyStatus: VerifyStatus
   dailyAcceptLimit: number       // 1~3，可调
+  role: 'USER' | 'ADMIN'         // 管理端入口/守卫用
 }
 
 export interface ProfileUpdateDTO {

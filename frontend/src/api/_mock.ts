@@ -13,7 +13,8 @@ import type {
   TaskSearchParams,
 } from '../types/task'
 import type { PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
-import type { CreditMeVO, CreditRecord, NotifyMessageVO } from '../types/credit'
+import type { CreditAppealVO, CreditMeVO, CreditRecord, NotifyMessageVO, ReceivedReviewVO } from '../types/credit'
+import type { AdminUserVO, AdminVerificationVO } from '../types/admin'
 import type {
   TradeItemCreateDTO,
   TradeItemVO,
@@ -362,6 +363,7 @@ const me: UserMeVO = {
   hideAcceptHistory: true,
   hideCourseReviews: true,
   dailyAcceptLimit: 2,
+  role: 'ADMIN',   // mock 下给 admin，方便 DEV 跳过登录后体验管理后台
 }
 
 const credit: CreditMeVO = {
@@ -762,4 +764,41 @@ export function mockSendMessage(content: string, contentType: ImMessageType): Im
 
 export function mockGetUnread(): { count: number } {
   return { count: imConversations.reduce((s, c) => s + c.unreadCount, 0) }
+}
+
+// ───── 信用申诉 mock ─────
+const receivedReviews: ReceivedReviewVO[] = [
+  { reviewId: 5001, taskId: 301, reviewer: users.u3, rating: 1, comment: '迟到又敷衍', voided: false, underAppeal: false, appealable: true, createdAt: minutesAgo(120) },
+  { reviewId: 5002, taskId: 302, reviewer: users.u2, rating: 5, comment: '靠谱，准时', voided: false, underAppeal: false, appealable: false, createdAt: minutesAgo(2880) },
+]
+const myAppeals: CreditAppealVO[] = [
+  { appealId: 6001, reviewId: 5003, reviewRating: 2, reviewComment: '态度一般', reason: '当时排队很久不是我的问题', evidenceUrls: [], status: 'PENDING', resolveNote: null, appellant: null, createdAt: minutesAgo(60) },
+]
+export function mockReceivedReviews(): ReceivedReviewVO[] { return receivedReviews }
+export function mockListMyAppeals(): CreditAppealVO[] { return myAppeals }
+export function mockSubmitAppeal(reviewId: number, reason: string): CreditAppealVO {
+  const a: CreditAppealVO = { appealId: Math.floor(Math.random() * 100000), reviewId, reviewRating: 1, reviewComment: '迟到又敷衍', reason, evidenceUrls: [], status: 'PENDING', resolveNote: null, appellant: null, createdAt: new Date().toISOString() }
+  myAppeals.unshift(a)
+  return a
+}
+
+// ───── admin mock ─────
+export function mockAdminVerifications(): AdminVerificationVO[] {
+  return [
+    { verificationId: 7001, userId: 4, realName: '李小冰', studentNo: 'MG2433001', idCard: null, attachmentUrls: ['/illustrations/nju-gate.png'], status: 'pending', createdAt: minutesAgo(30) },
+    { verificationId: 7002, userId: 5, realName: '王晓明', studentNo: 'MG2433066', idCard: null, attachmentUrls: ['/illustrations/beidalou.png'], status: 'pending', createdAt: minutesAgo(90) },
+  ]
+}
+export function mockAdminSearchUsers(q: string): AdminUserVO[] {
+  const all: AdminUserVO[] = [
+    { userId: 2, nickname: '李小冰', avatarUrl: null, verifyStatus: 'approved', banned: false, role: 'USER' },
+    { userId: 3, nickname: '王晓明', avatarUrl: null, verifyStatus: 'guest', banned: false, role: 'USER' },
+    { userId: 4, nickname: '阿白', avatarUrl: null, verifyStatus: 'approved', banned: true, role: 'USER' },
+  ]
+  return q ? all.filter((u) => u.nickname?.includes(q) || String(u.userId) === q) : all
+}
+export function mockAdminAppeals(): CreditAppealVO[] {
+  return [
+    { appealId: 6010, reviewId: 5101, reviewRating: 1, reviewComment: '没按时送达', reason: '驿站当时关门了，非我原因，有照片', evidenceUrls: ['/illustrations/coffee.png'], status: 'PENDING', resolveNote: null, appellant: users.u2, createdAt: minutesAgo(45) },
+  ]
 }

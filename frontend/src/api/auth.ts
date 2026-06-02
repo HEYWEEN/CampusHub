@@ -55,6 +55,10 @@ export const getMyVerification = () =>
 export const devApproveVerification = () =>
   apiPost<VerificationStatusVO>('/api/auth/verifications/me/dev-approve')
 
+/** Dev-only：把自己提升为 ADMIN（生产 404）。便于本地进管理后台。 */
+export const devGrantAdmin = () =>
+  apiPost<void>('/api/auth/me/dev-grant-admin')
+
 /**
  * 退出登录 — 传 refreshToken 让后端把 refresh jti 入黑名单
  * （schema_audit A-13 修复：原本不传，refresh token 14 天内可被重放）。

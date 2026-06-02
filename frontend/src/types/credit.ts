@@ -1,6 +1,36 @@
 /**
  * 信用 / 积分相关 VO/DTO
  */
+import type { PublicUserVO } from './user'
+
+export type CreditAppealStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+// 对齐后端 CreditAppealVO
+export interface CreditAppealVO {
+  appealId: number
+  reviewId: number
+  reviewRating: number | null
+  reviewComment: string | null
+  reason: string
+  evidenceUrls: string[]
+  status: CreditAppealStatus
+  resolveNote: string | null
+  appellant: PublicUserVO | null   // 仅 admin 视图
+  createdAt: string
+}
+
+// 对齐后端 ReceivedReviewVO（申诉入口）
+export interface ReceivedReviewVO {
+  reviewId: number
+  taskId: number
+  reviewer: PublicUserVO
+  rating: number
+  comment: string
+  voided: boolean
+  underAppeal: boolean
+  appealable: boolean
+  createdAt: string
+}
 
 export interface CreditMeVO {
   userId: string

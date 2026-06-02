@@ -25,6 +25,11 @@ import ImListPage from './pages/im/ImListPage'
 import ImChatPage from './pages/im/ImChatPage'
 import NotifyListPage from './pages/notify/NotifyListPage'
 import CreditPage from './pages/credit/CreditPage'
+import CreditAppealsPage from './pages/credit/CreditAppealsPage'
+import AdminLayout from './components/layout/AdminLayout'
+import AdminVerifyPage from './pages/admin/AdminVerifyPage'
+import AdminUserPage from './pages/admin/AdminUserPage'
+import AdminAppealPage from './pages/admin/AdminAppealPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -91,15 +96,7 @@ export const router = createBrowserRouter([
 
       // 信用 ✅ FE-F
       { path: 'credit',         element: <CreditPage /> },
-      {
-        path: 'credit/appeals',
-        element: (
-          <PlaceholderPage
-            title={<>申诉<span className="it">记录</span>。</>}
-            sub="F-CREDIT-05~07 · 联调阶段补"
-          />
-        ),
-      },
+      { path: 'credit/appeals', element: <CreditAppealsPage /> },
 
       // 我的 ✅ FE-D
       { path: 'me',      element: <MePage /> },
@@ -107,16 +104,20 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // ===== 管理端 /admin/**（FE-F 阶段实施 AdminLayout） =====
+  // ===== 管理端 /admin/**（F-ADMIN-01/02 + 申诉处理） =====
   {
-    path: '/admin/*',
+    path: '/admin',
     element: (
-      <PlaceholderPage
-        title={<>Admin <span className="it">console.</span></>}
-        sub="管理后台 · F-ADMIN-* / F-REPORT-*"
-        body={<>仲裁 · 认证审核 · 用户管理 · <span className="accent">FE-F 阶段</span></>}
-      />
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
     ),
+    children: [
+      { index: true, element: <Navigate to="/admin/verifications" replace /> },
+      { path: 'verifications', element: <AdminVerifyPage /> },
+      { path: 'users',         element: <AdminUserPage /> },
+      { path: 'appeals',       element: <AdminAppealPage /> },
+    ],
   },
 
   // ===== 404 兜底 =====

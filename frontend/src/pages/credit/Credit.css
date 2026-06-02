@@ -61,3 +61,24 @@
     border: 0;
   }
 }
+
+/* ─── 差评申诉页 ─── */
+.appeal-section { max-width: 680px; margin: 0 0 36px; }
+.appeal-h2 { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0 0 14px; color: var(--ink); }
+.appeal-review, .appeal-item {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream);
+  margin-bottom: 12px;
+}
+.appeal-review-top, .appeal-item-top { display: flex; align-items: center; gap: 12px; }
+.appeal-rating { color: var(--accent); font-size: 13px; letter-spacing: 1px; }
+.appeal-review-top .feed-time, .appeal-item-top .feed-time { margin-left: auto; }
+.appeal-comment { margin: 10px 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.appeal-comment.is-voided { color: var(--muted); text-decoration: line-through; }
+.appeal-review-foot { display: flex; gap: 10px; align-items: center; }
+.appeal-form { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+.appeal-reason { margin: 10px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.appeal-note { margin: 6px 0 0; font-size: 13px; color: var(--accent); }
+.appeal-empty { font-size: 13.5px; color: var(--muted); padding: 8px 0; }

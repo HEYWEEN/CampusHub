@@ -1,7 +1,13 @@
-import { apiGet } from './client'
+import { apiGet, apiPost } from './client'
 import { type PageResponse } from '../types/api'
-import type { CreditMeVO, CreditRecord } from '../types/credit'
-import { mockGetCredit, mockListCreditRecords } from './_mock'
+import type { CreditAppealVO, CreditMeVO, CreditRecord, ReceivedReviewVO } from '../types/credit'
+import {
+  mockGetCredit,
+  mockListCreditRecords,
+  mockListMyAppeals,
+  mockReceivedReviews,
+  mockSubmitAppeal,
+} from './_mock'
 import { withMock } from './withMock'
 
 export const getMyCredit = () =>
@@ -23,4 +29,27 @@ export const listMyRecords = (page = 1, size = 20) =>
       const items = mockListCreditRecords()
       return { items, total: items.length, page, size }
     },
+  )
+
+// ───── 信用申诉（F-CREDIT-05~07） ─────
+
+export const listReceivedReviews = () =>
+  withMock<ReceivedReviewVO[]>(
+    () => apiGet('/api/credit/reviews/received'),
+    () => mockReceivedReviews(),
+    'credit',
+  )
+
+export const submitAppeal = (reviewId: number, reason: string, evidenceUrls: string[]) =>
+  withMock<CreditAppealVO>(
+    () => apiPost('/api/credit/appeals', { reviewId, reason, evidenceUrls }),
+    () => mockSubmitAppeal(reviewId, reason),
+    'credit',
+  )
+
+export const listMyAppeals = () =>
+  withMock<CreditAppealVO[]>(
+    () => apiGet('/api/credit/appeals/me'),
+    () => mockListMyAppeals(),
+    'credit',
   )
