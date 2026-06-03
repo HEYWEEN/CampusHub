@@ -124,13 +124,12 @@ export default function AgentWidget() {
         aria-label="AI 助手"
       >
         <svg className="agent-mascot" viewBox="0 0 64 64" aria-hidden>
-          {/* 机器人屏幕脸 */}
-          <rect x="12" y="16" width="40" height="32" rx="13" fill="#211d1a" />
-          {/* 发光竖条眼 */}
-          <g className="agent-eyes">
-            <rect x="22.5" y="23" width="6.5" height="18" rx="3.25" fill="#fff" />
-            <rect x="35" y="23" width="6.5" height="18" rx="3.25" fill="#fff" />
+          {/* 弯弯笑眼 + 小嘴（白线条，无底块） */}
+          <g className="agent-eyes" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round">
+            <path d="M22 34 Q27 27 32 34" />
+            <path d="M36 34 Q41 27 46 34" />
           </g>
+          <path d="M28 42 q6 4 12 0" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
         </svg>
       </button>
 
