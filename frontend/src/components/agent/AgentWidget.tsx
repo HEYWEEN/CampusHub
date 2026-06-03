@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/auth'
 import type { AgentAction } from '../../types/agent'
 import TaskCard from '../domain/TaskCard'
 import { TASK_TYPE_LABEL } from '../../utils/labels'
+import { miniMarkdown } from '../../utils/miniMarkdown'
 import './Agent.css'
 
 interface Msg {
@@ -163,7 +164,9 @@ export default function AgentWidget() {
           <div className="agent-msgs" ref={scrollRef}>
             {msgs.map((m, i) => (
               <div key={i} className={`agent-row ${m.role}`}>
-                <div className="agent-bubble">{m.content}</div>
+                {m.role === 'assistant'
+                  ? <div className="agent-bubble agent-md" dangerouslySetInnerHTML={{ __html: miniMarkdown(m.content) }} />
+                  : <div className="agent-bubble">{m.content}</div>}
                 {m.actions?.map((a, j) => (
                   <div key={j} className="agent-action">
                     {a.type === 'task_results' && a.tasks && (
