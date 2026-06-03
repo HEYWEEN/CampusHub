@@ -49,7 +49,7 @@
 |---|---|---|
 | `b67e7e0` | `CI: 添加静态检查` | 在 `frontend-check` 加 `npm run lint` step，对齐 P4「静态检查」硬要求 |
 | `e98b93d` | 修 `react-hooks/set-state-in-effect` | 拆 `ProfileEditPage` → 父组件做数据获取，子组件用 props 初始化 state；首次 CI 跑 lint 时被 plugin 7.0 新规则拦下 |
-| _(待 push)_ | `ci: bump actions/* to v5` | `actions/checkout` / `setup-node` / `setup-java` 全部从 `@v4` 升 `@v5`，消除 GitHub 2025-09-19 起的 Node 20 deprecation warning（6-16 前迁完即可） |
+| `6a3631e` | `CI: 提升 actions/* 到 v5 (Node 24 兼容)` | `actions/checkout` / `setup-node` / `setup-java` 全部从 `@v4` 升 `@v5`，消除 GitHub 2025-09-19 起的 Node 20 deprecation warning（6-16 前迁完即可） |
 
 ---
 
