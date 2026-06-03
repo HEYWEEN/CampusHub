@@ -46,6 +46,7 @@ export default function AgentWidget() {
   const [input, setInput] = useState('')
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
   const [pos, setPos] = useState(loadPos)
+  const [expr, setExpr] = useState<'open' | 'blink' | 'wink' | 'happy'>('open')
   const loadedRef = useRef(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ sx: number; sy: number; ox: number; oy: number; moved: boolean } | null>(null)
@@ -67,6 +68,25 @@ export default function AgentWidget() {
     const onResize = () => setPos((p) => clamp(p.x, p.y))
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // 表情插播：默认睁眼，偶尔眨眼 / wink / 笑（异步定时，非 effect 内同步 setState）
+  useEffect(() => {
+    let alive = true
+    let t1: ReturnType<typeof setTimeout>
+    let t2: ReturnType<typeof setTimeout>
+    const loop = () => {
+      t1 = setTimeout(() => {
+        if (!alive) return
+        const r = Math.random()
+        const kind = r < 0.7 ? 'blink' : r < 0.86 ? 'wink' : 'happy'
+        const hold = kind === 'happy' ? 1300 : kind === 'wink' ? 520 : 160
+        setExpr(kind)
+        t2 = setTimeout(() => { if (!alive) return; setExpr('open'); loop() }, hold)
+      }, 2800 + Math.random() * 3500)
+    }
+    loop()
+    return () => { alive = false; clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   const send = useMutation({
@@ -123,13 +143,13 @@ export default function AgentWidget() {
         onPointerUp={onPointerUp}
         aria-label="AI 助手"
       >
-        <svg className="agent-mascot" viewBox="0 0 64 64" aria-hidden>
-          {/* 弯弯笑眼 + 小嘴（白线条，无底块） */}
-          <g className="agent-eyes" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round">
-            <path d="M22 34 Q27 27 32 34" />
-            <path d="M36 34 Q41 27 46 34" />
+        <svg className={`agent-mascot expr-${expr}`} viewBox="0 0 64 64" aria-hidden>
+          {/* 两条竖线大眼睛（白色发光，无底块）+ 笑时出现的小嘴 */}
+          <g className="agent-eyes">
+            <rect className="eye eye-l" x="23" y="21" width="7" height="22" rx="3.5" fill="#fff" />
+            <rect className="eye eye-r" x="34" y="21" width="7" height="22" rx="3.5" fill="#fff" />
           </g>
-          <path d="M28 42 q6 4 12 0" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+          <path className="agent-smile" d="M27 44 q5 4 10 0" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
         </svg>
       </button>
 

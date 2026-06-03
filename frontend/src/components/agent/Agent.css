@@ -27,20 +27,26 @@
   width: 48px;
   height: 48px;
   overflow: visible;
-  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, .85));   /* 柔光白线条 */
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, .85));   /* 发光白眼 */
   transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
 }
 .agent-fab:hover .agent-mascot { transform: scale(1.08); }
 
-/* 偶尔眨一下（弯眼短暂压扁，俏皮） */
-.agent-eyes {
+/* 两条竖线大眼睛 + 表情插播（眨眼 / wink / 笑） */
+.eye {
   transform-box: fill-box;
   transform-origin: center;
-  animation: agent-blink 5s infinite;
+  transition: transform .14s ease;
 }
-@keyframes agent-blink {
-  0%, 94%, 100% { transform: scaleY(1); }
-  97%           { transform: scaleY(.55); }
+.expr-blink .eye { transform: scaleY(.12); }   /* 双眼眨 */
+.expr-wink .eye-r { transform: scaleY(.12); }  /* 右眼 wink */
+.expr-happy .eye { transform: scaleY(.45); }   /* 笑：眯眼 */
+
+.agent-smile { opacity: 0; transition: opacity .2s ease; }
+.expr-happy .agent-smile { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .eye, .agent-smile { transition: none; }
 }
 
 @keyframes agent-bob {
