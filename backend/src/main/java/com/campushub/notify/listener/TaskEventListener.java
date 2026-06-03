@@ -6,16 +6,18 @@ import com.campushub.task.event.TaskAcceptedEvent;
 import com.campushub.task.event.TaskCanceledEvent;
 import com.campushub.task.event.TaskCompletedEvent;
 import com.campushub.task.event.TaskExpiredEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * NTF-02：订阅 task 模块的 4 类业务事件，转化为站内信。
  *
- * <p><b>事务时机</b>：用 {@code @TransactionalEventListener(phase = AFTER_COMMIT)} ——
- * task 业务事务先提交，notify 写入失败也不回滚业务（避免"通知失败导致业务回滚"的耦合）。
- * 同步执行（项目当前未开启 @EnableAsync），单条 INSERT 延迟可忽略。
+ * <p><b>事务时机</b>：用 {@code @EventListener} 同步执行 ——
+ * notify 写入与 task 业务事务在同一 TX 内，通知写入失败会回滚业务。
+ * （原设计用 {@code @TransactionalEventListener(phase = AFTER_COMMIT)}，
+ * 但在 MariaDB + JPA 组合下事务同步未触发，改为同步监听。）
  *
  * <p><b>通知谁</b>：
  * <ul>
@@ -31,28 +33,31 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class TaskEventListener {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskEventListener.class);
+
     private final NotifyApi notifyApi;
 
     public TaskEventListener(NotifyApi notifyApi) {
         this.notifyApi = notifyApi;
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void onTaskAccepted(TaskAcceptedEvent event) {
+        log.info("notify: task {} accepted, notifying publisher {}", event.taskId(), event.publisherId());
         notifyOne(NotifyTemplate.TASK_ACCEPTED, event.taskId(), event.publisherId());
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void onTaskCompleted(TaskCompletedEvent event) {
         notifyBoth(NotifyTemplate.TASK_COMPLETED, event.taskId(), event.publisherId(), event.accepterId());
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void onTaskCanceled(TaskCanceledEvent event) {
         notifyBoth(NotifyTemplate.TASK_CANCELED, event.taskId(), event.publisherId(), event.accepterId());
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void onTaskExpired(TaskExpiredEvent event) {
         notifyBoth(NotifyTemplate.TASK_EXPIRED, event.taskId(), event.publisherId(), event.accepterId());
     }
