@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getMe, updateAcceptLimit, updatePrivacy, updateProfile } from '../../api/user'
-import type { PrivacySettings } from '../../types/user'
+import type { PrivacySettings, UserMeVO } from '../../types/user'
 import { BizError } from '../../types/api'
 import ImageUploader from '../../components/ImageUploader'
 import '../tasks/Tasks.css'
@@ -15,38 +15,33 @@ const PRIVACY_LABELS: { key: keyof PrivacySettings; label: string; desc: string 
 ]
 
 export default function ProfileEditPage() {
-  const navigate = useNavigate()
-  const qc = useQueryClient()
-
   const { data: me, isLoading } = useQuery({
     queryKey: ['me'],
     queryFn: () => getMe(),
   })
 
-  const [nickname, setNickname] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
-  const [acceptLimit, setAcceptLimit] = useState(2)
+  if (isLoading || !me) {
+    return <div className="wrap"><div className="task-loading">加载中…</div></div>
+  }
+
+  return <ProfileEditForm me={me} />
+}
+
+function ProfileEditForm({ me }: { me: UserMeVO }) {
+  const navigate = useNavigate()
+  const qc = useQueryClient()
+
+  const [nickname, setNickname] = useState(me.nickname)
+  const [avatarUrl, setAvatarUrl] = useState(me.avatarUrl ?? '')
+  const [acceptLimit, setAcceptLimit] = useState(me.dailyAcceptLimit)
   const [privacy, setPrivacy] = useState<PrivacySettings>({
-    hidePublishHistory: true,
-    hideAcceptHistory: true,
-    hideCourseReviews: true,
+    hidePublishHistory: me.hidePublishHistory,
+    hideAcceptHistory: me.hideAcceptHistory,
+    hideCourseReviews: me.hideCourseReviews,
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (me) {
-      setNickname(me.nickname)
-      setAvatarUrl(me.avatarUrl ?? '')
-      setAcceptLimit(me.dailyAcceptLimit)
-      setPrivacy({
-        hidePublishHistory: me.hidePublishHistory,
-        hideAcceptHistory: me.hideAcceptHistory,
-        hideCourseReviews: me.hideCourseReviews,
-      })
-    }
-  }, [me])
 
   const profileM  = useMutation({ mutationFn: updateProfile })
   const privacyM  = useMutation({ mutationFn: updatePrivacy })
@@ -77,10 +72,6 @@ export default function ProfileEditPage() {
     } finally {
       setSaving(false)
     }
-  }
-
-  if (isLoading || !me) {
-    return <div className="wrap"><div className="task-loading">加载中…</div></div>
   }
 
   return (
