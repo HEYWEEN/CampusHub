@@ -146,10 +146,10 @@ export default function AgentWidget() {
         <svg className={`agent-mascot expr-${expr}`} viewBox="0 0 64 64" aria-hidden>
           {/* 两条竖线大眼睛（白色发光，无底块）+ 笑时出现的小嘴 */}
           <g className="agent-eyes">
-            <rect className="eye eye-l" x="23" y="21" width="7" height="22" rx="3.5" fill="#fff" />
-            <rect className="eye eye-r" x="34" y="21" width="7" height="22" rx="3.5" fill="#fff" />
+            <rect className="eye eye-l" x="16" y="20" width="8.5" height="24" rx="4.25" fill="#fff" />
+            <rect className="eye eye-r" x="39.5" y="20" width="8.5" height="24" rx="4.25" fill="#fff" />
           </g>
-          <path className="agent-smile" d="M27 44 q5 4 10 0" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
+          <path className="agent-smile" d="M25 47 q7 4 14 0" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
         </svg>
       </button>
 
