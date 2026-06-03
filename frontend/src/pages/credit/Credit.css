@@ -37,7 +37,7 @@
   font-weight: 400;
   color: var(--ink-2);
 }
-.credit-delta.is-positive { color: #047857; }
+.credit-delta.is-positive { color: var(--success-ink); }
 .credit-delta.is-negative { color: var(--danger); }
 
 .credit-time {

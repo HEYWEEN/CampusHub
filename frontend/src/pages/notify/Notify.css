@@ -2,6 +2,36 @@
  * NotifyListPage · 站内通知
  * ============================================================ */
 
+/* tab 栏：左侧 tab 组 + 右侧「全部标为已读」 */
+.notify-tabs-bar {
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.notify-tabs {
+  display: flex;
+  gap: 32px;
+}
+.notify-readall {
+  align-self: flex-end;
+  margin-bottom: 14px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.notify-readall:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+.notify-readall:disabled { opacity: .5; cursor: default; }
+
 .notify-list {
   list-style: none;
   margin: 0;

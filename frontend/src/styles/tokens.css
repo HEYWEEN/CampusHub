@@ -13,6 +13,7 @@
   --muted:     #7A6F63;   /* 辅助文字 */
   --line:      rgba(26, 24, 21, 0.14);
   --accent:    #E25A3C;   /* 主 accent 橙红 */
+  --accent-deep:   #c44b30;   /* accent hover 深橙（按钮/渐变 hover 事实标准色） */
   --accent-soft:   #FBE3DA;   /* 浅橙底（图标圆 / 头像底 / hover） */
   --accent-softer: #FCEEE7;   /* 更浅橙底（统计带 / 公告底） */
   --slate:     #2B3340;   /* 深色蓝灰（dark card 用） */
@@ -34,7 +35,8 @@
   --text-disabled:  #a3a3a3;
 
   /* ===== Semantic ===== */
-  --success: #10b981;
+  --success: #10b981;        /* 成功亮绿（进度条/填充） */
+  --success-ink: #047857;    /* 成功深绿（文字态，对比更高：已读/已完成/加分） */
   --warning: #f59e0b;
   --danger:  #C4533A;
   --info:    #3b82f6;

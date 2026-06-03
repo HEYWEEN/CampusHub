@@ -135,7 +135,7 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
         {/* 隐私 */}
         <div className="form-field">
           <label className="form-label">隐私开关（默认全开）</label>
-          <div className="privacy-list" style={{ marginTop: 8 }}>
+          <div className="privacy-list form-privacy-list">
             {PRIVACY_LABELS.map((p) => (
               <div className="privacy-item" key={p.key}>
                 <div className="privacy-text">
@@ -157,7 +157,7 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
 
         {error && <div className="form-error">{error}</div>}
         {savedAt && !saving && (
-          <div className="form-hint" style={{ color: '#047857' }}>
+          <div className="form-hint is-success">
             ✓ 已保存（{new Date(savedAt).toLocaleTimeString('zh-CN')}）
           </div>
         )}
@@ -167,7 +167,6 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
             type="submit"
             className="action-btn action-btn-primary"
             disabled={saving}
-            style={{ width: 'auto', minWidth: 200 }}
           >
             {saving ? '保存中…' : '保存修改 →'}
           </button>
@@ -175,7 +174,6 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
             type="button"
             onClick={() => navigate('/app/me')}
             className="action-btn action-btn-ghost"
-            style={{ width: 'auto' }}
           >
             取消
           </button>

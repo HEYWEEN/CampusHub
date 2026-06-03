@@ -59,13 +59,13 @@ export default function TeamDetailPage() {
       <div className="detail-layout">
         <div className="detail-main">
           <div className="detail-tags">
-            <span className="task-type" style={{ color: 'var(--accent)' }}>组队</span>
+            <span className="task-type task-type-team">组队</span>
             <span className={`status-badge status-${st.tone}`}>{st.text}</span>
           </div>
           <h1 className="detail-title">{recruit.title}</h1>
 
           {recruit.skillTags.length > 0 && (
-            <div className="team-tags" style={{ marginTop: 0 }}>
+            <div className="team-tags team-tags-flush">
               {recruit.skillTags.map((t) => <span key={t} className="team-tag">{t}</span>)}
             </div>
           )}
@@ -90,10 +90,10 @@ export default function TeamDetailPage() {
                     <span className="feed-time">{formatRelativeTime(a.createdAt)}</span>
                     {a.status === 'PENDING' ? (
                       <span className="team-app-actions">
-                        <button type="button" className="action-btn action-btn-primary" style={{ width: 'auto', padding: '8px 18px' }}
+                        <button type="button" className="action-btn action-btn-primary"
                           disabled={reviewMut.isPending}
                           onClick={() => reviewMut.mutate({ appId: a.applicationId, approve: true })}>同意</button>
-                        <button type="button" className="action-btn action-btn-ghost" style={{ width: 'auto', padding: '8px 18px' }}
+                        <button type="button" className="action-btn action-btn-ghost"
                           disabled={reviewMut.isPending}
                           onClick={() => reviewMut.mutate({ appId: a.applicationId, approve: false })}>拒绝</button>
                       </span>
@@ -135,11 +135,10 @@ export default function TeamDetailPage() {
               ) : (
                 <div className="side-section">
                   {recruit.myApplicationStatus === 'REJECTED' && (
-                    <div className="action-hint" style={{ marginBottom: 8 }}>上次申请未通过，可再试一次</div>
+                    <div className="action-hint is-spaced">上次申请未通过，可再试一次</div>
                   )}
                   <textarea
-                    className="form-textarea"
-                    style={{ minHeight: 90 }}
+                    className="form-textarea team-apply-textarea"
                     placeholder="一句话介绍自己 / 能贡献什么（选填）"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}

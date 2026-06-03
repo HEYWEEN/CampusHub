@@ -171,7 +171,7 @@ export default function TaskDetailPage() {
             }${formatDeadline(task.deadlineAt).expired ? ' expired' : ''}`}>
               {formatDeadline(task.deadlineAt).text}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+            <div className="side-text-meta">
               {new Date(task.deadlineAt).toLocaleString('zh-CN', { hour12: false })}
             </div>
           </div>
@@ -179,13 +179,13 @@ export default function TaskDetailPage() {
           {task.deliveryBuilding && (
             <div className="side-section">
               <div className="side-label">送达地点</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14 }}>{task.deliveryBuilding}</div>
+              <div className="side-text">{task.deliveryBuilding}</div>
             </div>
           )}
           {task.pickupHint && (
             <div className="side-section">
               <div className="side-label">取件位置</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14 }}>{task.pickupHint}</div>
+              <div className="side-text">{task.pickupHint}</div>
             </div>
           )}
 
@@ -255,7 +255,7 @@ function ActionPanel(props: {
             {props.cancelLoading ? '取消中…' : '取消任务'}
           </button>
           <p className="action-hint">等待同学接单中</p>
-          {props.actionError && <p className="action-hint" style={{ color: 'var(--danger)' }}>{props.actionError.message}</p>}
+          {props.actionError && <p className="action-hint is-error">{props.actionError.message}</p>}
         </>
       )
     }
@@ -287,12 +287,11 @@ function ActionPanel(props: {
               hint="jpg/png/webp/gif，单张 ≤ 5MB，1-9 张"
             />
             <textarea
-              className="form-textarea"
+              className="form-textarea side-proof-textarea"
               placeholder="请简要说明完成情况（最多 300 字）"
               value={proofNote}
               onChange={(e) => setProofNote(e.target.value)}
               maxLength={300}
-              style={{ minHeight: 96 }}
             />
             <button
               onClick={async () => {

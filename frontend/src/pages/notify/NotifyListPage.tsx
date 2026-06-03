@@ -50,8 +50,8 @@ export default function NotifyListPage() {
         <div className="page-sub">站内通知 · 任务 · 积分 · 系统</div>
       </div>
 
-      <div className="my-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div style={{ display: 'flex', gap: 32 }}>
+      <div className="my-tabs notify-tabs-bar">
+        <div className="notify-tabs">
           {(['all', 'unread', 'read'] as Tab[]).map((t) => (
             <button
               key={t}
@@ -66,8 +66,7 @@ export default function NotifyListPage() {
         <button
           type="button"
           onClick={() => markAllM.mutate()}
-          className="me-action-btn is-ghost"
-          style={{ width: 'auto', marginBottom: 14, padding: '8px 16px' }}
+          className="notify-readall"
           disabled={markAllM.isPending}
         >
           {markAllM.isPending ? '处理中…' : '全部标为已读'}

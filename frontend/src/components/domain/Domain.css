@@ -35,7 +35,7 @@ img.puc-avatar { object-fit: cover; }
 .puc.puc-lg .puc-avatar { width: 48px; height: 48px; font-size: 22px; }
 
 .puc-fallback {
-  background: linear-gradient(135deg, var(--accent) 0%, #c44b30 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
   color: var(--cream);
 }
 
@@ -90,7 +90,7 @@ a.puc:hover .puc-name {
 .status-pending   { color: var(--accent); }
 .status-progress  { color: #2563eb; }
 .status-wait      { color: #b45309; background: rgba(245, 158, 11, .08); }
-.status-done      { color: #047857; background: rgba(16, 185, 129, .08); }
+.status-done      { color: var(--success-ink); background: rgba(16, 185, 129, .08); }
 .status-canceled  { color: var(--muted); }
 .status-expired   { color: var(--danger); background: rgba(196, 83, 58, .08); }
 
@@ -119,7 +119,7 @@ a.puc:hover .puc-name {
   opacity: .7;
 }
 .credit-gold    { color: #b45309; background: rgba(245, 158, 11, .10); }
-.credit-silver  { color: #047857; background: rgba(16, 185, 129, .08); }
+.credit-silver  { color: var(--success-ink); background: rgba(16, 185, 129, .08); }
 .credit-bronze  { color: var(--ink-2); background: rgba(26, 24, 21, .06); }
 .credit-low     { color: var(--danger); background: rgba(196, 83, 58, .10); }
 .credit-md .credit-num { font-size: 22px; }
@@ -161,6 +161,7 @@ a.puc:hover .puc-name {
 .task-type-errand { color: var(--accent); }
 .task-type-mutual_help { color: #2563eb; }
 .task-type-tutor { color: #7c3aed; }
+.task-type-team { color: var(--accent); }
 
 .task-card-title {
   font-family: var(--font-display);
@@ -280,7 +281,7 @@ a.puc:hover .puc-name {
   border-color: var(--accent);
   color: var(--cream);
 }
-.task-card:hover .task-card-action.is-primary { background: #c44b30; }
+.task-card:hover .task-card-action.is-primary { background: var(--accent-deep); }
 .task-card:hover .task-card-action:not(.is-primary) { background: var(--ink); color: var(--cream); }
 
 /* ─── TradeCard ─── */

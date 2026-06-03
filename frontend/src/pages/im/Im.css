@@ -158,5 +158,5 @@
   cursor: pointer;
   transition: background .25s ease, transform .25s ease;
 }
-.im-send-btn:hover:not(:disabled) { background: #c44b30; transform: translateY(-1px); }
+.im-send-btn:hover:not(:disabled) { background: var(--accent-deep); transform: translateY(-1px); }
 .im-send-btn:disabled { opacity: .5; cursor: default; }

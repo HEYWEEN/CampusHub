@@ -82,7 +82,7 @@
 }
 .toolbar-new-btn:hover {
   transform: translateY(-2px);
-  background: #c44b30;
+  background: var(--accent-deep);
 }
 .toolbar-new-btn .arr { transition: transform .3s ease; display: inline-block; }
 .toolbar-new-btn:hover .arr { transform: translateX(4px); }
@@ -162,7 +162,7 @@
   color: var(--cream);
   transition: transform .3s ease, background .3s ease;
 }
-.hall-cta-primary:hover { transform: translateY(-2px); background: #c44b30; }
+.hall-cta-primary:hover { transform: translateY(-2px); background: var(--accent-deep); }
 
 .hall-stats { display: flex; gap: 26px; flex: 0 0 auto; }
 .stat { display: flex; flex-direction: column; align-items: center; }
@@ -474,6 +474,10 @@
   text-transform: uppercase;
   color: var(--muted);
 }
+/* 右栏正文/次要文本（取代散落内联样式） */
+.side-text { font-family: var(--font-body); font-size: 14px; color: var(--ink); }
+.side-text-meta { font-size: 12px; color: var(--muted); }
+.side-proof-textarea { min-height: 96px; }
 .side-reward {
   font-family: var(--font-display);
   font-style: italic;
@@ -527,8 +531,8 @@
   border-color: var(--accent);
 }
 .action-btn-primary:hover:not(:disabled) {
-  background: #c44b30;
-  border-color: #c44b30;
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
   transform: translateY(-2px);
 }
 .action-btn-secondary {
@@ -561,6 +565,7 @@
   text-align: center;
   line-height: 1.5;
 }
+.action-hint.is-error { color: var(--danger); }
 
 /* ============================================================
  * 任务发布 / 编辑表单
@@ -613,6 +618,7 @@
   color: var(--muted);
 }
 .form-hint.warning { color: var(--accent); }
+.form-hint.is-success { color: var(--success-ink); }
 
 .type-pills {
   display: flex;
@@ -663,6 +669,9 @@
   border-top: 1px solid var(--line);
   flex-wrap: wrap;
 }
+/* 提交行内按钮按内容宽度排列（覆盖 action-btn 默认 width:100%） */
+.form-submit-row .action-btn { width: auto; }
+.form-submit-row .action-btn-primary { min-width: 200px; }
 
 .form-error {
   padding: 12px 18px;
@@ -727,6 +736,11 @@
   margin-top: 10px;
 }
 .team-app-actions { display: inline-flex; gap: 10px; }
+/* 申请审核小按钮：按内容宽度（覆盖 action-btn 默认 width:100%） */
+.team-app-actions .action-btn { width: auto; padding: 8px 18px; }
+.team-tags.team-tags-flush { margin-top: 0; }
+.team-apply-textarea { min-height: 90px; }
+.action-hint.is-spaced { margin-bottom: 8px; }
 
 /* 技能标签 chip 输入 */
 .tag-chips {
