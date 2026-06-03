@@ -1,0 +1,209 @@
+/* ============================================================
+ * AgentWidget · 悬浮球 + 聊天面板
+ * ============================================================ */
+
+/* ─── 悬浮球 ─── */
+.agent-fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 120;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--cream);
+  cursor: pointer;
+  box-shadow: 0 12px 28px -8px rgba(226, 90, 60, .55);
+  display: grid;
+  place-items: center;
+  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), background .25s ease, box-shadow .25s ease;
+  animation: agent-bob 3.2s ease-in-out infinite;
+}
+.agent-fab:hover {
+  transform: scale(1.12) rotate(-6deg);
+  background: var(--accent-deep);
+  box-shadow: 0 18px 34px -10px rgba(226, 90, 60, .65);
+}
+.agent-fab.is-open {
+  background: var(--ink);
+  animation: none;
+}
+.agent-fab-face {
+  font-size: 24px;
+  line-height: 1;
+  transition: transform .3s ease;
+}
+.agent-fab:hover .agent-fab-face { transform: scale(1.15); }
+
+@keyframes agent-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@media (max-width: 720px) { .agent-fab { right: 16px; bottom: 16px; } }
+
+/* ─── 面板 ─── */
+.agent-panel {
+  position: fixed;
+  right: 28px;
+  bottom: 98px;
+  z-index: 120;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 560px;
+  max-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 40px 90px -30px rgba(26, 24, 21, .5);
+  animation: agent-pop .28s cubic-bezier(.2, .7, .2, 1);
+}
+@keyframes agent-pop {
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 720px) { .agent-panel { right: 16px; left: 16px; width: auto; bottom: 88px; } }
+
+.agent-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--cream);
+}
+.agent-panel-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--ink);
+}
+.agent-panel-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+.agent-panel-close:hover { color: var(--ink); }
+
+/* ─── 消息流 ─── */
+.agent-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.agent-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100%;
+}
+.agent-row.user { align-items: flex-end; }
+.agent-row.assistant { align-items: flex-start; }
+
+.agent-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.agent-row.assistant .agent-bubble {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+.agent-row.user .agent-bubble {
+  background: var(--accent);
+  color: var(--cream);
+  border-bottom-right-radius: 4px;
+}
+.agent-typing { letter-spacing: 2px; color: var(--muted); }
+
+/* 行内卡片 */
+.agent-action { width: 100%; }
+.agent-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.agent-empty-tip { font-size: 13px; color: var(--muted); }
+
+.agent-draft {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.agent-draft-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.agent-draft-meta {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.agent-draft-go {
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: none;
+  background: var(--accent);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .25s ease;
+}
+.agent-draft-go:hover { background: var(--accent-deep); }
+
+/* ─── 输入栏 ─── */
+.agent-input-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: var(--cream);
+}
+.agent-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s ease;
+}
+.agent-input:focus { border-color: var(--ink); }
+.agent-send {
+  padding: 0 18px;
+  border-radius: 9999px;
+  border: none;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+.agent-send:hover:not(:disabled) { background: var(--slate); }
+.agent-send:disabled { opacity: .5; cursor: default; }

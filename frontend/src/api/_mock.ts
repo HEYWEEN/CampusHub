@@ -28,6 +28,7 @@ import type {
 } from '../types/team'
 import type { ImConversationVO, ImMessageType, ImMessageVO } from '../types/im'
 import type { ReportCaseVO, ReportCreateDTO } from '../types/report'
+import type { AgentChatResponse, AgentMessageVO } from '../types/agent'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -832,6 +833,37 @@ export function mockAdminReports(): ReportCaseVO[] {
 
 export function mockMyReports(): ReportCaseVO[] {
   return reportCases.map((c) => ({ ...c, reporter: null }))
+}
+
+// ───── AI 助手 mock（后端未接/未配 key 时回退） ─────
+export function mockAgentHistory(): AgentMessageVO[] {
+  return []
+}
+
+export function mockAgentChat(message: string): AgentChatResponse {
+  const wantPost = /发布|发个|帮我发|发条|发布个/.test(message)
+  if (wantPost) {
+    return {
+      conversationId: 1,
+      reply: '（演示）我整理了一份草稿，点「去发布」确认或修改～',
+      actions: [{
+        type: 'task_draft',
+        draft: {
+          title: message.replace(/帮我|发布|发个/g, '').trim().slice(0, 20) || '新任务',
+          taskType: 'ERRAND',
+          rewardPoint: 5,
+          deadlineIso: new Date(Date.now() + 86400000).toISOString(),
+          deliveryBuilding: '紫金楼',
+          remark: '',
+        },
+      }],
+    }
+  }
+  return {
+    conversationId: 1,
+    reply: '（演示）帮你找到这些待接单的任务：',
+    actions: [{ type: 'task_results', tasks: mockRecommendedTasks(4) }],
+  }
 }
 
 export function mockSubmitReport(dto: ReportCreateDTO): ReportCaseVO {

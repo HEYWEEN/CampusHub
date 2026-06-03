@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createTask } from '../../api/task'
 import { useCreditStore } from '../../stores/credit'
 import { BizError } from '../../types/api'
 import type { TaskCreateDTO, TaskType } from '../../types/task'
+import type { TaskDraftVO } from '../../types/agent'
 import { formatLocalDateTime } from '../../utils/format'
 import './Tasks.css'
 
@@ -17,21 +18,25 @@ export default function TaskNewPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [params] = useSearchParams()
+  const location = useLocation()
   const isTutor = params.get('type') === 'TUTOR'
+
+  // AI 助手发单草稿（经悬浮球「去发布」带过来），仅作预填，用户仍可改
+  const draft = (location.state as { draft?: TaskDraftVO } | null)?.draft
 
   const creditScore = useCreditStore((s) => s.score)
   const canPublish = useCreditStore((s) => s.canPublish)
 
-  const [type, setType] = useState<TaskType>(isTutor ? 'TUTOR' : 'ERRAND')
-  const [title, setTitle] = useState('')
-  const [remark, setRemark] = useState('')
-  const [rewardPoint, setRewardPoint] = useState(isTutor ? 50 : 10)
+  const [type, setType] = useState<TaskType>(draft?.taskType ?? (isTutor ? 'TUTOR' : 'ERRAND'))
+  const [title, setTitle] = useState(draft?.title ?? '')
+  const [remark, setRemark] = useState(draft?.remark ?? '')
+  const [rewardPoint, setRewardPoint] = useState(draft?.rewardPoint ?? (isTutor ? 50 : 10))
   const [deadlineAt, setDeadlineAt] = useState(() =>
-    // 默认截止时间 = 2 小时后（惰性初始化，避免 render 期间调用 Date.now）
-    formatLocalDateTime(new Date(Date.now() + 2 * 60 * 60_000)),
+    // 草稿带 ISO 时间则用之，否则默认 2 小时后（惰性初始化，避免 render 期间调用 Date.now）
+    formatLocalDateTime(draft?.deadlineIso ? new Date(draft.deadlineIso) : new Date(Date.now() + 2 * 60 * 60_000)),
   )
   const [pickupHint, setPickupHint] = useState('')
-  const [deliveryBuilding, setDeliveryBuilding] = useState('')
+  const [deliveryBuilding, setDeliveryBuilding] = useState(draft?.deliveryBuilding ?? '')
   const [error, setError] = useState('')
 
   const mutation = useMutation({

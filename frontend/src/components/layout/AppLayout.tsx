@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import AppHeader from './AppHeader'
+import AgentWidget from '../agent/AgentWidget'
 import './AppLayout.css'
 
 /**
@@ -20,6 +21,7 @@ export default function AppLayout() {
       <main className="app-main">
         <Outlet />
       </main>
+      <AgentWidget />
     </div>
   )
 }
