@@ -129,7 +129,7 @@
 | QA-01 | P0 | 各自模块单元测试（每个 Service 至少 3 个用例：正常+边界+异常） | 各自 1.5h | 各模块 owner | 🟡 | 模块 line coverage ≥ 60%；**D credit ✅ 91.1% (265/291 行；service 95.7% / strategy 95.8% / listener 100%)**，2026-06-01 jacoco 自查；A/B/C 待自查 |
 | QA-02 | P0 | 集成测试 #1：完整正常流（注册→发任务→接单→完成→评价） | 2h | D | ✅ | BaseIT 基类 `13f1efc`；task 段 `TaskHappyPathFlowTest` `e01a280`；trade 段 `TradeHappyPathFlowTest` `21f1cf4`；含信用结算断言（unfreeze + settle 守恒缺口已在技术债 §5.3.1 记录） |
 | QA-03 | P0 | 集成测试 #2：异常流 ×4（未登录访问 / 重复评 / 自评 / 评分越界） | 1.5h | **D** | ✅ | `CreditExceptionFlowTest` 4 个用例全过；ApiResponse 错误码结构正确；commit `8c8cc28` |
-| QA-04 | P0 | GitLab CI/CD 配置（依赖 / 静态检查 / 单测 / 集测 / 构建） | 2h | B | ⬜ | 至少 1 次绿色运行 |
+| QA-04 | P0 | GitLab CI/CD 配置（依赖 / 静态检查 / 单测 / 集测 / 构建） | 2h | **a 接手**（原 B） | ✅ | GitHub Actions `.github/workflows/main.yml`：`npm ci` + `npm run lint` + `npm run build` + `mvnw clean install`（含集测，MySQL 8 service container）；最近绿色 run `e98b93d`；运行记录见 [`CI运行记录.md`](./CI运行记录.md) |
 
 **QA 小计：~11.5h**（含各自的 1.5h）
 
