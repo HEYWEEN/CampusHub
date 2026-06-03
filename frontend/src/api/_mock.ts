@@ -28,7 +28,7 @@ import type {
 } from '../types/team'
 import type { ImConversationVO, ImMessageType, ImMessageVO } from '../types/im'
 import type { ReportCaseVO, ReportCreateDTO } from '../types/report'
-import type { AgentChatResponse, AgentMessageVO } from '../types/agent'
+import type { AgentChatResponse, AgentHistory } from '../types/agent'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -836,8 +836,8 @@ export function mockMyReports(): ReportCaseVO[] {
 }
 
 // ───── AI 助手 mock（后端未接/未配 key 时回退） ─────
-export function mockAgentHistory(): AgentMessageVO[] {
-  return []
+export function mockAgentHistory(): AgentHistory {
+  return { conversationId: null, messages: [] }
 }
 
 export function mockAgentChat(message: string): AgentChatResponse {

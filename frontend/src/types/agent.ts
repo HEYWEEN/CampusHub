@@ -28,3 +28,8 @@ export interface AgentMessageVO {
   content: string
   createdAt: string
 }
+
+export interface AgentHistory {
+  conversationId: number | null
+  messages: AgentMessageVO[]
+}

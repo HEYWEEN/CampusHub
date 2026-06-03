@@ -53,7 +53,12 @@ class AgentServiceTest {
         AgentConversation conv = new AgentConversation(USER, "对话");
         ReflectionTestUtils.setField(conv, "id", 7L);
         when(convRepo.findFirstByUserIdOrderByUpdatedAtDesc(USER)).thenReturn(Optional.of(conv));
-        when(convRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+        // 新建会话时回填自增 id（真实运行 save 后非空）
+        when(convRepo.save(any())).thenAnswer(i -> {
+            AgentConversation c = i.getArgument(0);
+            ReflectionTestUtils.setField(c, "id", 7L);
+            return c;
+        });
         when(msgRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(msgRepo.findByConversationIdOrderByCreatedAtDesc(eq(7L), any(Pageable.class)))
                 .thenReturn(List.of(new AgentMessage(7L, AgentRole.USER, "我想接个取快递的单")));
@@ -72,7 +77,7 @@ class AgentServiceTest {
         when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any()))
                 .thenReturn(new ToolResult("found 2", AgentAction.taskResults(List.of())));
 
-        AgentChatResponse resp = service.chat(USER, "我想接个取快递的单");
+        AgentChatResponse resp = service.chat(USER, null, "我想接个取快递的单");
 
         assertEquals("帮你找到了这些单", resp.reply());
         assertEquals(1, resp.actions().size());
@@ -85,7 +90,7 @@ class AgentServiceTest {
     @Test
     void chat_noToolCall_returnsPlainText() {
         when(deepSeek.chat(anyList(), anyList())).thenReturn(ChatMessage.assistant("你好呀"));
-        AgentChatResponse resp = service.chat(USER, "你好");
+        AgentChatResponse resp = service.chat(USER, null, "你好");
         assertEquals("你好呀", resp.reply());
         assertTrue(resp.actions().isEmpty());
         verify(toolExecutor, never()).execute(anyString(), any());
@@ -97,7 +102,7 @@ class AgentServiceTest {
         when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any()))
                 .thenReturn(new ToolResult("recent", AgentAction.taskResults(List.of())));
 
-        AgentChatResponse resp = service.chat(USER, "帮我找个取快递的单");
+        AgentChatResponse resp = service.chat(USER, null, "帮我找个取快递的单");
 
         assertTrue(resp.reply().contains("暂时不可用"));
         assertEquals(1, resp.actions().size()); // 降级也给了搜索结果
@@ -106,7 +111,7 @@ class AgentServiceTest {
     @Test
     void chat_apiDown_postIntent_returnsGuidanceNoSearch() {
         when(deepSeek.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
-        AgentChatResponse resp = service.chat(USER, "帮我发布一个跑腿任务");
+        AgentChatResponse resp = service.chat(USER, null, "帮我发布一个跑腿任务");
         assertTrue(resp.reply().contains("发布"));
         assertTrue(resp.actions().isEmpty());
         verify(toolExecutor, never()).execute(anyString(), any());
@@ -118,7 +123,7 @@ class AgentServiceTest {
                 .thenReturn(List.of(
                         new AgentMessage(7L, AgentRole.USER, "hi"),
                         new AgentMessage(7L, AgentRole.ASSISTANT, "hello")));
-        var vos = service.history(USER);
+        var vos = service.latestHistory(USER).messages();
         assertEquals(2, vos.size());
         assertEquals("user", vos.get(0).role());
         assertEquals("assistant", vos.get(1).role());

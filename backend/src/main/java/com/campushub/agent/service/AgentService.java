@@ -14,6 +14,7 @@ import com.campushub.agent.tool.ToolResult;
 import com.campushub.agent.tool.ToolSpecs;
 import com.campushub.agent.vo.AgentAction;
 import com.campushub.agent.vo.AgentChatResponse;
+import com.campushub.agent.vo.AgentHistoryVO;
 import com.campushub.agent.vo.AgentMessageVO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,9 +56,8 @@ public class AgentService {
         this.json = json;
     }
 
-    public AgentChatResponse chat(long userId, String userMessage) {
-        AgentConversation conv = convRepo.findFirstByUserIdOrderByUpdatedAtDesc(userId)
-                .orElseGet(() -> convRepo.save(new AgentConversation(userId, truncate(userMessage))));
+    public AgentChatResponse chat(long userId, Long conversationId, String userMessage) {
+        AgentConversation conv = resolveConversation(userId, conversationId, userMessage);
         msgRepo.save(new AgentMessage(conv.getId(), AgentRole.USER, userMessage));
 
         List<AgentAction> actions = new ArrayList<>();
@@ -74,11 +74,22 @@ public class AgentService {
         return new AgentChatResponse(conv.getId(), reply, actions);
     }
 
-    public List<AgentMessageVO> history(long userId) {
+    /** 最近一条会话(id + 消息);用于打开面板时恢复上次对话。 */
+    public AgentHistoryVO latestHistory(long userId) {
         return convRepo.findFirstByUserIdOrderByUpdatedAtDesc(userId)
-                .map(c -> msgRepo.findByConversationIdOrderByCreatedAtAsc(c.getId()).stream()
-                        .map(AgentMessageVO::from).toList())
-                .orElseGet(List::of);
+                .map(c -> new AgentHistoryVO(c.getId(),
+                        msgRepo.findByConversationIdOrderByCreatedAtAsc(c.getId()).stream()
+                                .map(AgentMessageVO::from).toList()))
+                .orElseGet(() -> new AgentHistoryVO(null, List.of()));
+    }
+
+    /** 续聊指定会话(校验归属);为空或不归本人则新建会话。 */
+    private AgentConversation resolveConversation(long userId, Long conversationId, String firstMsg) {
+        if (conversationId != null) {
+            AgentConversation c = convRepo.findById(conversationId).orElse(null);
+            if (c != null && c.getUserId() == userId) return c;
+        }
+        return convRepo.save(new AgentConversation(userId, truncate(firstMsg)));
     }
 
     // ==================== LLM 工具循环 ====================

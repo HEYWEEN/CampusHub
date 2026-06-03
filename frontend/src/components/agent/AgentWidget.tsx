@@ -46,6 +46,7 @@ export default function AgentWidget() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
+  const [convId, setConvId] = useState<number | null>(null)
   const [pos, setPos] = useState(loadPos)
   const [expr, setExpr] = useState<'open' | 'blink' | 'wink' | 'happy'>('open')
   const loadedRef = useRef(false)
@@ -56,7 +57,12 @@ export default function AgentWidget() {
     if (!open || loadedRef.current) return
     loadedRef.current = true
     getAgentHistory()
-      .then((h) => { if (h.length > 0) setMsgs(h.map((m) => ({ role: m.role, content: m.content }))) })
+      .then((h) => {
+        if (h.messages.length > 0) {
+          setMsgs(h.messages.map((m) => ({ role: m.role, content: m.content })))
+          setConvId(h.conversationId)
+        }
+      })
       .catch(() => { /* 保留问候语 */ })
   }, [open])
 
@@ -91,10 +97,19 @@ export default function AgentWidget() {
   }, [])
 
   const send = useMutation({
-    mutationFn: (text: string) => sendAgentMessage(text),
-    onSuccess: (resp) => setMsgs((p) => [...p, { role: 'assistant', content: resp.reply, actions: resp.actions }]),
+    mutationFn: (text: string) => sendAgentMessage(text, convId),
+    onSuccess: (resp) => {
+      setConvId(resp.conversationId)
+      setMsgs((p) => [...p, { role: 'assistant', content: resp.reply, actions: resp.actions }])
+    },
     onError: () => setMsgs((p) => [...p, { role: 'assistant', content: '出错了，请稍后再试 🥲' }]),
   })
+
+  const newChat = () => {
+    if (send.isPending) return
+    setMsgs([GREETING])
+    setConvId(null)
+  }
 
   if (!accessToken) return null
 
@@ -158,7 +173,10 @@ export default function AgentWidget() {
         <div className="agent-panel">
           <div className="agent-panel-head">
             <span className="agent-panel-title">校园助手</span>
-            <button type="button" className="agent-panel-close" onClick={() => setOpen(false)} aria-label="关闭">×</button>
+            <div className="agent-panel-tools">
+              <button type="button" className="agent-newchat" onClick={newChat} title="开启新对话">+ 新对话</button>
+              <button type="button" className="agent-panel-close" onClick={() => setOpen(false)} aria-label="关闭">×</button>
+            </div>
           </div>
 
           <div className="agent-msgs" ref={scrollRef}>
