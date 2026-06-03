@@ -34,14 +34,12 @@
 
 | 项 | 值 |
 |---|---|
-| Commit | `e98b93dd631942ef903a25fe2e17a4483679235e` |
-| 提交标题 | `[AI-assisted] 解决 ProfileEditPage 中的 react-hooks/set-state-in-effect` |
-| 触发分支 | `main` |
-| 运行结果 | ✅ 绿（frontend-check + backend-check 均通过） |
-| Actions Run URL | <!-- TODO: 填入 https://github.com/HEYWEEN/CampusHub/actions/runs/<runId> --> |
-| 运行时间 | <!-- TODO: 填入 yyyy-mm-dd HH:MM --> |
-
-> 💡 **如何找 Run URL：** GitHub 仓库 → Actions → 选 `CampusHub CI` workflow → 找到 commit `e98b93d` 对应的 run → 复制浏览器地址栏 URL。
+| Commit | 6a3631e6061421474f5fc53f8426235682befa73 |
+| 提交标题 | CI: 提升actions/*到v5(Node 24兼容) |
+| 触发分支 | main |
+| 运行结果 | ✅ 绿（frontend-check + backend-check 均通过，且无 Node 20 deprecation warning） |
+| Actions Run URL | https://github.com/HEYWEEN/CampusHub/actions/runs/26864530708 |
+| 运行时间 | 2026-6-3 12:54 |
 
 ---
 
@@ -51,6 +49,7 @@
 |---|---|---|
 | `b67e7e0` | `CI: 添加静态检查` | 在 `frontend-check` 加 `npm run lint` step，对齐 P4「静态检查」硬要求 |
 | `e98b93d` | 修 `react-hooks/set-state-in-effect` | 拆 `ProfileEditPage` → 父组件做数据获取，子组件用 props 初始化 state；首次 CI 跑 lint 时被 plugin 7.0 新规则拦下 |
+| _(待 push)_ | `ci: bump actions/* to v5` | `actions/checkout` / `setup-node` / `setup-java` 全部从 `@v4` 升 `@v5`，消除 GitHub 2025-09-19 起的 Node 20 deprecation warning（6-16 前迁完即可） |
 
 ---
 
