@@ -554,3 +554,31 @@ header.scrolled {
 }
 .cursor.lg { width: 60px; height: 60px; }
 @media (pointer: coarse) { .cursor { display: none; } }
+
+/* ─────────── 为你推荐（P2 智能匹配） ─────────── */
+.home-recommend { margin: 8px 0 28px; }
+.home-recommend-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.home-recommend-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.home-recommend-more {
+  font-size: 13px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+.home-recommend-more:hover { color: var(--accent); }
+.home-recommend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (max-width: 760px) { .home-recommend-grid { grid-template-columns: 1fr; } }

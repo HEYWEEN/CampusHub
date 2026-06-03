@@ -283,6 +283,14 @@ export function mockSearchTasks(params: TaskSearchParams): PageResponse<TaskList
   return pageOf(filtered, page, size)
 }
 
+export function mockRecommendedTasks(limit = 8): TaskListItemVO[] {
+  // 离线 mock：取待接单任务，按悬赏高 + 较新粗排，返回前 limit 条
+  return [...tasks]
+    .filter((t) => t.status === 'PENDING_ACCEPT')
+    .sort((a, b) => b.rewardPoint - a.rewardPoint || b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit)
+}
+
 export function mockGetTask(id: string): TaskDetailVO {
   const t = tasks.find((x) => x.taskId === id)
   if (!t) throw new BizError(404, '任务不存在')

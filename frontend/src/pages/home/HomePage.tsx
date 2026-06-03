@@ -1,7 +1,41 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import AppHeader from '../../components/layout/AppHeader'
+import TaskCard from '../../components/domain/TaskCard'
+import { getRecommendedTasks } from '../../api/recommend'
+import { useAuthStore } from '../../stores/auth'
 import './HomePage.css'
+
+/* ─────────── 为你推荐（仅登录态；空/未登录自隐藏） ─────────── */
+function HomeRecommend() {
+  const accessToken = useAuthStore((s) => s.accessToken)
+  const isLoggedIn = !!accessToken
+  const { data } = useQuery({
+    queryKey: ['recommend', 'tasks'],
+    queryFn: () => getRecommendedTasks(8),
+    enabled: isLoggedIn,
+    staleTime: 60_000,
+  })
+
+  if (!isLoggedIn || !data || data.length === 0) return null
+
+  return (
+    <section className="home-recommend">
+      <div className="home-recommend-head">
+        <h2 className="home-recommend-title">为你推荐</h2>
+        <Link to="/app/tasks" className="home-recommend-more">
+          查看全部 <span aria-hidden>→</span>
+        </Link>
+      </div>
+      <div className="home-recommend-grid">
+        {data.map((t) => (
+          <TaskCard key={t.taskId} task={t} />
+        ))}
+      </div>
+    </section>
+  )
+}
 
 /* ─────────── 4 大功能 Tile ─────────── */
 type TileIcon = 'run' | 'bag' | 'cap' | 'team'
@@ -300,6 +334,9 @@ export default function HomePage() {
             </Link>
           ))}
         </section>
+
+        {/* ─────────── 为你推荐（P2 智能匹配，登录可见） ─────────── */}
+        <HomeRecommend />
 
         {/* ─────────── 公告条 ─────────── */}
         {/* TODO: F-NOTICE-01 - 接 /api/announcements/latest 拉真实数据 */}
