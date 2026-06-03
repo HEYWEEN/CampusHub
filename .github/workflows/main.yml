@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest # 在最新的 Linux 虚拟机上运行
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # 第一步：拉取仓库代码
+        uses: actions/checkout@v5 # 第一步：拉取仓库代码
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # 第二步：安装 Node 环境
+        uses: actions/setup-node@v5 # 第二步：安装 Node 环境
         with:
           node-version: '20'
           cache: 'npm'
@@ -56,10 +56,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java
-        uses: actions/setup-java@v4 # 第二步：安装 Java 17 环境
+        uses: actions/setup-java@v5 # 第二步：安装 Java 17 环境
         with:
           distribution: 'temurin'
           java-version: '17'
