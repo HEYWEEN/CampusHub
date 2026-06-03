@@ -2,46 +2,55 @@
  * AgentWidget · 悬浮球 + 聊天面板
  * ============================================================ */
 
-/* ─── 悬浮球 ─── */
+/* ─── 悬浮球（可拖拽吉祥物） ─── */
 .agent-fab {
   position: fixed;
-  right: 28px;
-  bottom: 28px;
   z-index: 120;
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
+  padding: 0;
   border-radius: 50%;
-  border: none;
-  background: var(--accent);
-  color: var(--cream);
-  cursor: pointer;
-  box-shadow: 0 12px 28px -8px rgba(226, 90, 60, .55);
+  border: 2px solid var(--cream);
+  background: radial-gradient(circle at 32% 28%, #ff8b6e 0%, var(--accent) 55%, var(--accent-deep) 100%);
+  cursor: grab;
+  touch-action: none;             /* 触屏可拖 */
+  box-shadow: 0 14px 30px -8px rgba(226, 90, 60, .6);
   display: grid;
   place-items: center;
-  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), background .25s ease, box-shadow .25s ease;
-  animation: agent-bob 3.2s ease-in-out infinite;
+  animation: agent-bob 3.4s ease-in-out infinite;
+  transition: box-shadow .25s ease;
 }
-.agent-fab:hover {
-  transform: scale(1.12) rotate(-6deg);
-  background: var(--accent-deep);
-  box-shadow: 0 18px 34px -10px rgba(226, 90, 60, .65);
+.agent-fab:active { cursor: grabbing; }
+.agent-fab:hover { box-shadow: 0 20px 38px -10px rgba(226, 90, 60, .7); }
+
+.agent-mascot {
+  width: 48px;
+  height: 48px;
+  overflow: visible;
+  transform: rotate(-6deg);          /* 俏皮歪头 */
+  transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
 }
-.agent-fab.is-open {
-  background: var(--ink);
-  animation: none;
+.agent-fab:hover .agent-mascot { transform: rotate(0deg) scale(1.06); }
+
+/* 发光竖条眼 + 眨眼 */
+.agent-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 2.5px rgba(255, 255, 255, .9));
+  animation: agent-blink 4.8s infinite;
 }
-.agent-fab-face {
-  font-size: 24px;
-  line-height: 1;
-  transition: transform .3s ease;
+@keyframes agent-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96%           { transform: scaleY(.12); }
 }
-.agent-fab:hover .agent-fab-face { transform: scale(1.15); }
 
 @keyframes agent-bob {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-5px); }
 }
-@media (max-width: 720px) { .agent-fab { right: 16px; bottom: 16px; } }
+@media (prefers-reduced-motion: reduce) {
+  .agent-fab, .agent-eyes { animation: none; }
+}
 
 /* ─── 面板 ─── */
 .agent-panel {

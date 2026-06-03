@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import AppHeader from '../../components/layout/AppHeader'
+import AgentWidget from '../../components/agent/AgentWidget'
 import TaskCard from '../../components/domain/TaskCard'
 import { getRecommendedTasks } from '../../api/recommend'
 import { useAuthStore } from '../../stores/auth'
@@ -393,6 +394,7 @@ export default function HomePage() {
           </div>
         </footer>
       </main>
+      <AgentWidget />
     </>
   )
 }
