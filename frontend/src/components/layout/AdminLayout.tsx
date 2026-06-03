@@ -7,6 +7,7 @@ const ADMIN_NAV = [
   { to: '/admin/verifications', label: '认证审核' },
   { to: '/admin/users', label: '用户管理' },
   { to: '/admin/appeals', label: '申诉处理' },
+  { to: '/admin/reports', label: '举报仲裁' },
 ]
 
 export default function AdminLayout() {

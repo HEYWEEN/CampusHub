@@ -30,6 +30,7 @@ import AdminLayout from './components/layout/AdminLayout'
 import AdminVerifyPage from './pages/admin/AdminVerifyPage'
 import AdminUserPage from './pages/admin/AdminUserPage'
 import AdminAppealPage from './pages/admin/AdminAppealPage'
+import AdminReportPage from './pages/admin/AdminReportPage'
 
 /**
  * 路由树（与 docs/P4/04_前端架构设计.md §二 对齐）
@@ -117,6 +118,7 @@ export const router = createBrowserRouter([
       { path: 'verifications', element: <AdminVerifyPage /> },
       { path: 'users',         element: <AdminUserPage /> },
       { path: 'appeals',       element: <AdminAppealPage /> },
+      { path: 'reports',       element: <AdminReportPage /> },
     ],
   },
 

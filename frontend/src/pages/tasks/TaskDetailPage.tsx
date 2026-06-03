@@ -13,6 +13,7 @@ import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import type { TaskDetailVO, TaskStatus } from '../../types/task'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import ReportButton from '../../components/domain/ReportButton'
 import TaskStatusBadge from '../../components/domain/TaskStatusBadge'
 import ImageUploader from '../../components/ImageUploader'
 import { formatDeadline } from '../../utils/format'
@@ -202,6 +203,12 @@ export default function TaskDetailPage() {
             confirmLoading={confirmM.isPending}
             actionError={acceptM.error || cancelM.error || confirmM.error}
           />
+
+          {!task.isPublisher && (
+            <div className="side-report">
+              <ReportButton targetType="TASK" targetId={Number(task.taskId)} />
+            </div>
+          )}
         </aside>
       </div>
     </div>

@@ -27,6 +27,7 @@ import type {
   TeamSearchParams,
 } from '../types/team'
 import type { ImConversationVO, ImMessageType, ImMessageVO } from '../types/im'
+import type { ReportCaseVO, ReportCreateDTO } from '../types/report'
 
 // ───── 假用户 ─────
 export const MOCK_CURRENT_USER_ID = 'u1'
@@ -809,4 +810,41 @@ export function mockAdminAppeals(): CreditAppealVO[] {
   return [
     { appealId: 6010, reviewId: 5101, reviewRating: 1, reviewComment: '没按时送达', reason: '驿站当时关门了，非我原因，有照片', evidenceUrls: ['/illustrations/coffee.png'], status: 'PENDING', resolveNote: null, appellant: users.u2, createdAt: minutesAgo(45) },
   ]
+}
+
+// ───── 举报 / 仲裁 mock ─────
+const reportCases: ReportCaseVO[] = [
+  {
+    caseId: 7001, reporter: users.u2, targetType: 'USER', targetId: 3,
+    reasonCategory: 'HARASSMENT', description: '私信骚扰，言语不当', evidenceUrls: ['/illustrations/coffee.png'],
+    status: 'PENDING', decisionType: null, createdAt: minutesAgo(30),
+  },
+  {
+    caseId: 7002, reporter: users.u3, targetType: 'TASK', targetId: 1010,
+    reasonCategory: 'FRAUD', description: '任务描述与实际不符，疑似骗积分', evidenceUrls: [],
+    status: 'PENDING', decisionType: null, createdAt: minutesAgo(120),
+  },
+]
+
+export function mockAdminReports(): ReportCaseVO[] {
+  return reportCases.filter((c) => c.status === 'PENDING')
+}
+
+export function mockMyReports(): ReportCaseVO[] {
+  return reportCases.map((c) => ({ ...c, reporter: null }))
+}
+
+export function mockSubmitReport(dto: ReportCreateDTO): ReportCaseVO {
+  return {
+    caseId: Math.floor(Math.random() * 9000 + 1000),
+    reporter: null,
+    targetType: dto.targetType,
+    targetId: dto.targetId,
+    reasonCategory: dto.reasonCategory,
+    description: dto.description ?? null,
+    evidenceUrls: dto.evidenceUrls ?? [],
+    status: 'PENDING',
+    decisionType: null,
+    createdAt: new Date().toISOString(),
+  }
 }
