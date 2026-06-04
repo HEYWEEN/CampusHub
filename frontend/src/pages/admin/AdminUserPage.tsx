@@ -62,7 +62,7 @@ export default function AdminUserPage() {
             )}
 
             {/* 分派管理员：仅超级管理员可见，且不能动超级管理员自身 */}
-            {isSuperAdmin && u.role !== 'SUPER_ADMIN' && u.userId !== me?.userId && (
+            {isSuperAdmin && u.role !== 'SUPER_ADMIN' && String(u.userId) !== me?.userId && (
               u.role === 'ADMIN' ? (
                 <button type="button" className="action-btn action-btn-ghost" style={{ width: 'auto' }}
                   disabled={role.isPending} onClick={() => role.mutate({ userId: u.userId, admin: false })}>取消管理员</button>

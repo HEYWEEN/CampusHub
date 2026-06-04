@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -40,10 +42,15 @@ class AdminUserServiceTest {
     }
 
     @Test
-    void search_blank_returnsEmpty() {
-        assertTrue(service.search("   ").isEmpty());
-        assertTrue(service.search(null).isEmpty());
-        verifyNoInteractions(userRepo, profileRepo);
+    void search_blank_returnsAllUsers() {
+        // 空查询 → 列出全部用户（按 id 升序）。mock 须先建好再 thenReturn，避免嵌套 stubbing
+        AuthUser u1 = mockUser(1L);
+        AuthUser u2 = mockUser(2L);
+        when(userRepo.findAll(any(Sort.class))).thenReturn(List.of(u1, u2));
+        when(profileRepo.findAll()).thenReturn(List.of());
+
+        assertEquals(2, service.search("   ").size());
+        assertEquals(2, service.search(null).size());
     }
 
     @Test
