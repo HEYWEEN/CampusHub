@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useMutation } from '@tanstack/react-query'
 import { submitReport } from '../../api/report'
 import type { ReportTargetType } from '../../types/report'
@@ -45,7 +46,7 @@ export default function ReportButton({
         举报
       </button>
 
-      {open && (
+      {open && createPortal(
         <div className="report-overlay" onClick={() => setOpen(false)}>
           <div className="report-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="report-modal-title">举报该{targetType === 'USER' ? '用户' : targetType === 'TASK' ? '任务' : '商品'}</h3>
@@ -84,7 +85,8 @@ export default function ReportButton({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

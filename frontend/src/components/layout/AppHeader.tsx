@@ -91,7 +91,7 @@ export default function AppHeader() {
           </nav>
 
           <div className="app-header-right">
-            {me?.role === 'ADMIN' && (
+            {(me?.role === 'ADMIN' || me?.role === 'SUPER_ADMIN') && (
               <Link to="/admin" className="app-admin-link">管理后台</Link>
             )}
             <NavLink to="/app/notify" className="app-icon-btn" aria-label="通知">

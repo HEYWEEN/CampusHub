@@ -135,6 +135,8 @@ public class UserService implements UserApi {
                 p.getDailyAcceptLimit()
         );
         vo.setRole(u.getRole());
+        vo.setJoinedAt(u.getCreatedAt());
+        vo.setHasPassword(u.hasPassword());
         return vo;
     }
 

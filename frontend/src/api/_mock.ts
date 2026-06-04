@@ -12,7 +12,7 @@ import type {
   TaskListItemVO,
   TaskSearchParams,
 } from '../types/task'
-import type { PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
+import type { MeStatsVO, PrivacySettings, ProfileUpdateDTO, PublicUserVO, UserMeVO } from '../types/user'
 import type { CreditAppealVO, CreditMeVO, CreditRecord, NotifyMessageVO, ReceivedReviewVO } from '../types/credit'
 import type { AdminUserVO, AdminVerificationVO } from '../types/admin'
 import type {
@@ -374,6 +374,8 @@ const me: UserMeVO = {
   hideCourseReviews: true,
   dailyAcceptLimit: 2,
   role: 'ADMIN',   // mock 下给 admin，方便 DEV 跳过登录后体验管理后台
+  joinedAt: '2024-01-26T08:00:00Z',
+  hasPassword: true,
 }
 
 const credit: CreditMeVO = {
@@ -653,6 +655,21 @@ export function mockGetPublicStats(userId: string): PublicUserStats {
     publishedCount: null,
     acceptedCount: null,
     reviewsCount: null,
+  }
+}
+
+/** 本人个人主页统计（真实计数，不受隐私开关影响）。 */
+export function mockGetMyStats(): MeStatsVO {
+  const inProgress = (s: string) => s === 'IN_PROGRESS' || s === 'WAIT_CONFIRM'
+  const mine = tasks.filter((t) => t.publisher.userId === me.userId)
+  const taken = tasks.filter((t) => t.assignee?.userId === me.userId)
+  return {
+    publishedCount: mine.length,
+    acceptedCount: taken.length,
+    reviewsCount: 12,
+    publishedInProgress: mine.filter((t) => inProgress(t.status)).length,
+    acceptedInProgress: taken.filter((t) => inProgress(t.status)).length,
+    goodRate: 92,
   }
 }
 

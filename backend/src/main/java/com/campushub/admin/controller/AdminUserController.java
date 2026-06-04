@@ -1,6 +1,7 @@
 package com.campushub.admin.controller;
 
 import com.campushub.admin.dto.AdminBanDTO;
+import com.campushub.admin.dto.AdminRoleDTO;
 import com.campushub.admin.service.AdminUserService;
 import com.campushub.admin.vo.AdminUserVO;
 import com.campushub.common.response.ApiResponse;
@@ -36,5 +37,12 @@ public class AdminUserController {
     public ApiResponse<AdminUserVO> ban(@PathVariable("id") long userId,
                                          @Valid @RequestBody AdminBanDTO dto) {
         return ApiResponse.success(adminUserService.setBan(userId, dto.getBanned(), dto.getReason()));
+    }
+
+    /** 分派 / 撤销管理员：仅超级管理员可调用（service 内部校验调用者）。 */
+    @PatchMapping("/{id}/role")
+    public ApiResponse<AdminUserVO> setRole(@PathVariable("id") long userId,
+                                            @Valid @RequestBody AdminRoleDTO dto) {
+        return ApiResponse.success(adminUserService.setAdminRole(userId, dto.getAdmin()));
     }
 }

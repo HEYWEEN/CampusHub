@@ -9,8 +9,10 @@ import jakarta.validation.constraints.Size;
  */
 public class LoginByPasswordDTO {
 
+    // 正常用户为 11 位手机号；额外放行字面量 "admin" 作为内置超级管理员账号的登录标识
+    // （超管无法走验证码登录，故仅此密码登录入口需要放开）。
     @NotBlank
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    @Pattern(regexp = "^(1[3-9]\\d{9}|admin)$", message = "手机号格式不正确")
     private String phone;
 
     @NotBlank

@@ -154,6 +154,28 @@ public class AuthService {
     }
 
     /**
+     * 登录态修改 / 设置密码（POST /api/users/me/password）。
+     *   - 已有密码：必须校验 oldPassword（错误 → 401）
+     *   - 验证码-only 用户（无密码）：oldPassword 忽略，直接设置
+     */
+    @Transactional
+    public void changePassword(long userId, String oldPassword, String newPassword) {
+        PasswordPolicy.validate(newPassword);
+        AuthUser user = userRepo.findById(userId).orElseThrow(() ->
+                new BizException(AuthErrorCode.CREDENTIALS_INVALID, "用户不存在", 401));
+
+        if (user.hasPassword()) {
+            if (oldPassword == null || !passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+                throw new BizException(AuthErrorCode.CREDENTIALS_INVALID, "原密码错误", 401);
+            }
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+        log.info("用户修改密码 userId={}", userId);
+    }
+
+    /**
      * POST /api/auth/token/refresh  用 refresh token 换新 access+refresh。
      * 旧 refresh 的 jti 立即入黑（refresh-rotation 防重放）。
      */

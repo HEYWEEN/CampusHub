@@ -60,7 +60,7 @@
 .admin-denied .it { font-style: italic; color: var(--accent); }
 
 /* 管理页通用 */
-.admin-page-title { font-family: var(--font-display); font-size: 34px; font-weight: 400; margin: 0 0 6px; }
+.admin-page-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; margin: 0 0 6px; }
 .admin-page-title .it { font-style: italic; color: var(--accent); }
 .admin-page-sub { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; margin-bottom: 28px; }
 
@@ -76,6 +76,8 @@
 .admin-kv { font-size: 13.5px; color: var(--ink-2); margin: 4px 0; }
 .admin-kv b { color: var(--ink); }
 .admin-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+/* 管理端卡片内动作按钮：复用 .action-btn 但收小一号（全站 action-btn 高 56px 在此过大） */
+.admin-actions .action-btn { width: auto; height: 36px; padding: 0 16px; font-size: 13px; }
 .admin-thumbs { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
 .admin-thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
 .admin-search { display: flex; gap: 10px; margin-bottom: 20px; max-width: 460px; }

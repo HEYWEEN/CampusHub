@@ -1,5 +1,6 @@
-import { apiGet, apiPatch } from './client'
+import { apiGet, apiPatch, apiPost } from './client'
 import type {
+  MeStatsVO,
   PrivacySettings,
   ProfileUpdateDTO,
   PublicUserVO,
@@ -7,6 +8,7 @@ import type {
 } from '../types/user'
 import {
   mockGetMe,
+  mockGetMyStats,
   mockGetPublicStats,
   mockGetPublicUser,
   mockUpdateAcceptLimit,
@@ -20,6 +22,13 @@ export const getMe = () =>
   withMock<UserMeVO>(
     () => apiGet('/api/users/me'),
     () => mockGetMe(),
+    'user',
+  )
+
+export const getMyStats = () =>
+  withMock<MeStatsVO>(
+    () => apiGet('/api/users/me/stats'),
+    () => mockGetMyStats(),
     'user',
   )
 
@@ -55,5 +64,13 @@ export const updateAcceptLimit = (dailyAcceptLimit: number) =>
   withMock<UserMeVO>(
     () => apiPatch('/api/users/me/accept-limit', { dailyAcceptLimit }),
     () => mockUpdateAcceptLimit(dailyAcceptLimit),
+    'user',
+  )
+
+// 设置 / 修改密码：oldPassword 仅在已设密码时需要
+export const changePassword = (newPassword: string, oldPassword?: string) =>
+  withMock<void>(
+    () => apiPost('/api/users/me/password', { newPassword, oldPassword }),
+    () => undefined,
     'user',
   )

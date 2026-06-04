@@ -17,4 +17,13 @@ public interface TaskReviewRepository extends JpaRepository<TaskReview, Long> {
 
     /** 我收到的评价（申诉入口列表）。 */
     List<TaskReview> findByRevieweeIdOrderByCreatedAtDesc(long revieweeId);
+
+    /** 我收到的评价数（个人主页统计 GET /api/users/me/stats）。 */
+    long countByRevieweeId(long revieweeId);
+
+    /** 有效评价总数（排除已作废）—— 好评率分母。 */
+    long countByRevieweeIdAndVoidedFalse(long revieweeId);
+
+    /** 好评数（rating ≥ minRating 且未作废）—— 好评率分子。 */
+    long countByRevieweeIdAndRatingGreaterThanEqualAndVoidedFalse(long revieweeId, int minRating);
 }

@@ -45,6 +45,14 @@ export const adminSetBan = (userId: number, banned: boolean, reason?: string) =>
     'admin',
   )
 
+// 分派 / 撤销管理员（仅超级管理员可用，后端二次校验）
+export const adminSetRole = (userId: number, admin: boolean) =>
+  withMock<AdminUserVO>(
+    () => apiPatch(`/api/admin/users/${userId}/role`, { admin }),
+    () => ({ userId, nickname: 'mock', avatarUrl: null, verifyStatus: 'approved', banned: false, role: admin ? 'ADMIN' : 'USER' }),
+    'admin',
+  )
+
 // 申诉裁决
 export const adminListAppeals = () =>
   withMock<CreditAppealVO[]>(

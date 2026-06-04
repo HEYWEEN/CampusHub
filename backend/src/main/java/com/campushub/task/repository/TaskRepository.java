@@ -29,4 +29,18 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     List<Task> findTop50ByPublisherIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long publisherId);
 
     List<Task> findTop50ByAssigneeIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long assigneeId);
+
+    // ── 个人主页统计（GET /api/users/me/stats）：发布 / 接单计数 ──
+    long countByPublisherIdAndDeletedAtIsNull(long publisherId);
+
+    long countByAssigneeIdAndDeletedAtIsNull(long assigneeId);
+
+    // 进行中口径 = IN_PROGRESS(1) + WAIT_CONFIRM(2)，未删除
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.publisherId = :userId " +
+           "AND t.status IN (1, 2) AND t.deletedAt IS NULL")
+    long countPublishedInProgress(@Param("userId") long userId);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.assigneeId = :userId " +
+           "AND t.status IN (1, 2) AND t.deletedAt IS NULL")
+    long countAcceptedInProgress(@Param("userId") long userId);
 }

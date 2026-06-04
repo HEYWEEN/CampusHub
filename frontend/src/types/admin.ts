@@ -18,5 +18,5 @@ export interface AdminUserVO {
   avatarUrl: string | null
   verifyStatus: VerifyStatus
   banned: boolean
-  role: 'USER' | 'ADMIN'
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN'
 }

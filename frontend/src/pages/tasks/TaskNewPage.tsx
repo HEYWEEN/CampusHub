@@ -14,12 +14,13 @@ const TYPE_OPTIONS: { value: TaskType; label: string; emoji: string }[] = [
   { value: 'MUTUAL_HELP', label: '互助', emoji: '🤝' },
 ]
 
-export default function TaskNewPage() {
+export default function TaskNewPage({ tutor = false }: { tutor?: boolean }) {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [params] = useSearchParams()
   const location = useLocation()
-  const isTutor = params.get('type') === 'TUTOR'
+  // 辅导模式：由 /app/edu/tutor/new 直接渲染（tutor prop），或旧的 ?type=TUTOR 入口
+  const isTutor = tutor || params.get('type') === 'TUTOR'
 
   // AI 助手发单草稿（经悬浮球「去发布」带过来），仅作预填，用户仍可改
   const draft = (location.state as { draft?: TaskDraftVO } | null)?.draft
@@ -43,7 +44,8 @@ export default function TaskNewPage() {
     mutationFn: (dto: TaskCreateDTO) => createTask(dto),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['tasks'] })
-      navigate(`/app/tasks/${data.taskId}`, { replace: true })
+      // 辅导单无独立详情页，发布后回辅导大厅；普通任务进任务详情
+      navigate(isTutor ? '/app/edu/tutor' : `/app/tasks/${data.taskId}`, { replace: true })
     },
     onError: (err) => {
       setError(err instanceof BizError ? err.message : '发布失败')

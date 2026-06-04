@@ -99,7 +99,10 @@ public class AuthUser {
     public boolean isBanned() { return banned; }
     public void setBanned(boolean banned) { this.banned = banned; this.updatedAt = Instant.now(); }
     public Role getRole() { return role; }
-    public boolean isAdmin() { return role == Role.ADMIN; }
+    /** ADMIN 与 SUPER_ADMIN 都视为管理员（可进 /api/admin/**）。 */
+    public boolean isAdmin() { return role == Role.ADMIN || role == Role.SUPER_ADMIN; }
+    /** 仅超级管理员：唯一能分派他人为管理员的角色。 */
+    public boolean isSuperAdmin() { return role == Role.SUPER_ADMIN; }
     public void setRole(Role role) { this.role = role; this.updatedAt = Instant.now(); }
     public Integer getVersion() { return version; }
     public Instant getCreatedAt() { return createdAt; }

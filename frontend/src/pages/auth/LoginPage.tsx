@@ -61,7 +61,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!PHONE_RE.test(phone)) {
+    // 内置超级管理员用 phone 标识 "admin" 密码登录；其余一律要求 11 位手机号
+    const phoneOk = PHONE_RE.test(phone) || (mode === 'password' && phone === 'admin')
+    if (!phoneOk) {
       setError('请输入有效的 11 位手机号')
       return
     }

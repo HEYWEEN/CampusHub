@@ -1,12 +1,16 @@
 package com.campushub.user.controller;
 
+import com.campushub.auth.service.AuthService;
 import com.campushub.common.PublicUserVO;
 import com.campushub.common.response.ApiResponse;
 import com.campushub.common.util.CurrentUserHolder;
 import com.campushub.common.util.IpUtil;
+import com.campushub.user.dto.ChangePasswordDTO;
 import com.campushub.user.dto.PrivacyPatchDTO;
 import com.campushub.user.dto.ProfilePatchDTO;
+import com.campushub.user.service.MeStatsService;
 import com.campushub.user.service.UserService;
+import com.campushub.user.vo.MeStatsVO;
 import com.campushub.user.vo.PublicUserStatsVO;
 import com.campushub.user.vo.UserMeVO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +18,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,9 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final MeStatsService meStatsService;
+    private final AuthService authService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, MeStatsService meStatsService, AuthService authService) {
         this.userService = userService;
+        this.meStatsService = meStatsService;
+        this.authService = authService;
     }
 
     /** USER-04 个人主页（仅本人） */
@@ -42,6 +51,13 @@ public class UserController {
     public ApiResponse<UserMeVO> getMe() {
         long userId = CurrentUserHolder.getUserId();
         return ApiResponse.success(userService.getMe(userId));
+    }
+
+    /** USER-04 个人主页三项统计（仅本人，真实计数，不受隐私开关影响） */
+    @GetMapping("/me/stats")
+    public ApiResponse<MeStatsVO> getMyStats() {
+        long userId = CurrentUserHolder.getUserId();
+        return ApiResponse.success(meStatsService.getMyStats(userId));
     }
 
     /** USER-01 改资料：昵称（敏感词 400）/ 头像 */
@@ -60,6 +76,14 @@ public class UserController {
         long userId = CurrentUserHolder.getUserId();
         String ip = IpUtil.resolve(request);
         return ApiResponse.success(userService.updatePrivacy(userId, dto, ip));
+    }
+
+    /** 登录态设置 / 修改密码：已有密码需传 oldPassword 校验。 */
+    @PostMapping("/me/password")
+    public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
+        long userId = CurrentUserHolder.getUserId();
+        authService.changePassword(userId, dto.getOldPassword(), dto.getNewPassword());
+        return ApiResponse.success(null);
     }
 
     /** USER-03 公开主页（任意人可查，但只返回 PublicUserVO） */

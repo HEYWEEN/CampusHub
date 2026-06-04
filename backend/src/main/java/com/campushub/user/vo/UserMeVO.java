@@ -3,6 +3,8 @@ package com.campushub.user.vo;
 import com.campushub.auth.entity.Role;
 import com.campushub.common.enums.VerifyStatus;
 
+import java.time.Instant;
+
 /**
  * GET /api/users/me  全字段返回（仅本人）。
  *
@@ -29,6 +31,8 @@ public class UserMeVO {
 
     private int dailyAcceptLimit;
     private Role role = Role.USER;
+    private Instant joinedAt;   // 注册时间（个人主页「加入 N 天」用）
+    private boolean hasPassword; // 是否已设密码（前端区分「设置密码」vs「修改密码」）
 
     public UserMeVO() {}
 
@@ -58,4 +62,8 @@ public class UserMeVO {
     public int getDailyAcceptLimit() { return dailyAcceptLimit; }
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+    public Instant getJoinedAt() { return joinedAt; }
+    public void setJoinedAt(Instant joinedAt) { this.joinedAt = joinedAt; }
+    public boolean isHasPassword() { return hasPassword; }
+    public void setHasPassword(boolean hasPassword) { this.hasPassword = hasPassword; }
 }

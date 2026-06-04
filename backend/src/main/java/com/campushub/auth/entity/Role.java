@@ -2,7 +2,9 @@ package com.campushub.auth.entity;
 
 public enum Role {
     USER(0),
-    ADMIN(1);
+    ADMIN(1),
+    /** 超级管理员：拥有全部 admin 权限，且是唯一能分派/撤销他人管理员身份的角色。 */
+    SUPER_ADMIN(2);
 
     private final int code;
 

@@ -22,6 +22,9 @@ const GREETING: Msg = {
 
 const FAB_SIZE = 64
 const POS_KEY = 'agent-fab-pos'
+// 标记「用户已手动开启新对话」：组件会在 / ↔ /app 间重挂载，
+// 没有这个标记的话 load effect 会用 latestHistory 把旧会话拉回来。
+const FRESH_KEY = 'campushub.agent.fresh'
 
 function loadPos(): { x: number; y: number } {
   try {
@@ -56,6 +59,8 @@ export default function AgentWidget() {
   useEffect(() => {
     if (!open || loadedRef.current) return
     loadedRef.current = true
+    // 用户刚开了新对话（还没发消息）→ 保留问候语，别把旧会话拉回来
+    if (localStorage.getItem(FRESH_KEY) === '1') return
     getAgentHistory()
       .then((h) => {
         if (h.messages.length > 0) {
@@ -99,6 +104,8 @@ export default function AgentWidget() {
   const send = useMutation({
     mutationFn: (text: string) => sendAgentMessage(text, convId),
     onSuccess: (resp) => {
+      // 发出首条消息后已是真实会话，清除「新对话」标记（刷新可正常续聊）
+      localStorage.removeItem(FRESH_KEY)
       setConvId(resp.conversationId)
       setMsgs((p) => [...p, { role: 'assistant', content: resp.reply, actions: resp.actions }])
     },
@@ -107,6 +114,7 @@ export default function AgentWidget() {
 
   const newChat = () => {
     if (send.isPending) return
+    localStorage.setItem(FRESH_KEY, '1')
     setMsgs([GREETING])
     setConvId(null)
   }

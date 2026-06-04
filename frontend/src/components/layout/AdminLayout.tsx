@@ -15,7 +15,7 @@ export default function AdminLayout() {
   const { data: me, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => getMe(), staleTime: 60_000 })
 
   if (isLoading) return <div className="admin-shell"><div className="admin-loading">加载中…</div></div>
-  if (me && me.role !== 'ADMIN') {
+  if (me && me.role !== 'ADMIN' && me.role !== 'SUPER_ADMIN') {
     return (
       <div className="admin-shell">
         <div className="admin-denied">
