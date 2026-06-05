@@ -63,9 +63,9 @@ public class AgentService {
         List<AgentAction> actions = new ArrayList<>();
         String reply;
         try {
-            reply = runLlmLoop(conv.getId(), actions);
+            reply = runLlmLoop(conv.getId(), actions, userId);
         } catch (AgentUnavailableException e) {
-            reply = ruleFallback(userMessage, actions);
+            reply = ruleFallback(userMessage, actions, userId);
         }
 
         msgRepo.save(new AgentMessage(conv.getId(), AgentRole.ASSISTANT, reply));
@@ -94,7 +94,7 @@ public class AgentService {
 
     // ==================== LLM 工具循环 ====================
 
-    private String runLlmLoop(long conversationId, List<AgentAction> actions) {
+    private String runLlmLoop(long conversationId, List<AgentAction> actions, long userId) {
         List<ChatMessage> msgs = new ArrayList<>();
         msgs.add(ChatMessage.system(systemPrompt()));
         for (AgentMessage h : recentHistory(conversationId)) {
@@ -110,7 +110,7 @@ public class AgentService {
             }
             msgs.add(out); // 把 assistant 的 tool_calls 加入上下文
             for (ToolCall tc : out.toolCalls()) {
-                ToolResult r = toolExecutor.execute(tc.function().name(), parseArgs(tc.function().arguments()));
+                ToolResult r = toolExecutor.execute(tc.function().name(), parseArgs(tc.function().arguments()), userId);
                 if (r.action() != null) actions.add(r.action());
                 msgs.add(ChatMessage.tool(tc.id(), r.contentForModel()));
             }
@@ -123,10 +123,14 @@ public class AgentService {
         String now = ZonedDateTime.now(ZONE).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         return """
                 你是 CampusHub 校园互助平台的 AI 助手，用简洁友好的中文回答。
-                能力：① 用户想找单/接单 → 调用 search_tasks；② 用户想发单 → 调用 draft_task 生成草稿（不会自动发布）。
+                平台有四类内容：任务（跑腿/互助/辅导）、二手交易、组队招募。
+                能力：
+                ① 找任务/接单 → search_tasks；② 发任务 → draft_task 生成草稿（不会自动发布）；
+                ③ 找二手商品 → search_trade；④ 找组队/找队友 → search_team。
+                注意：代发功能目前仅支持任务（draft_task）；发二手/发组队暂不能代发，可引导用户去对应页面手动发布。
                 找单时把口语映射成结构化参数，并在 keywords 里做同义词扩展，让结果更全。
-                发单草稿里的 deadlineIso 需根据「当前时间」换算。当前时间：%s。
-                没有合适结果时如实说明，不要编造任务。回答尽量短。
+                draft_task 里的 deadlineIso 需根据「当前时间」换算。当前时间：%s。
+                没有合适结果时如实说明，不要编造内容。回答尽量短。
                 """.formatted(now);
     }
 
@@ -149,7 +153,7 @@ public class AgentService {
 
     // ==================== 规则降级（DeepSeek 不可用） ====================
 
-    private String ruleFallback(String userMessage, List<AgentAction> actions) {
+    private String ruleFallback(String userMessage, List<AgentAction> actions, long userId) {
         String m = userMessage == null ? "" : userMessage;
         boolean wantPost = m.contains("发布") || m.contains("发个") || m.contains("帮我发");
         boolean wantFind = m.contains("找") || m.contains("搜") || m.contains("接单") || m.contains("接个") || m.contains("有没有");
@@ -159,7 +163,7 @@ public class AgentService {
         }
         // 默认按「找单」降级：返回最新待接单任务（不依赖 LLM）
         ObjectNode args = json.createObjectNode(); // 空参 → 返回最新候选
-        ToolResult r = toolExecutor.execute(ToolSpecs.SEARCH_TASKS, args);
+        ToolResult r = toolExecutor.execute(ToolSpecs.SEARCH_TASKS, args, userId);
         if (r.action() != null) actions.add(r.action());
         return "AI 助手暂时不可用，先按最新任务为你列几个：";
     }

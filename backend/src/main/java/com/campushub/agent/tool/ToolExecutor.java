@@ -10,6 +10,12 @@ import com.campushub.task.entity.TaskStatus;
 import com.campushub.task.entity.TaskType;
 import com.campushub.task.repository.TaskRepository;
 import com.campushub.task.vo.TaskListItemVO;
+import com.campushub.team.dto.TeamRecruitQueryDTO;
+import com.campushub.team.service.TeamService;
+import com.campushub.team.vo.TeamRecruitVO;
+import com.campushub.trade.dto.TradeItemQueryDTO;
+import com.campushub.trade.service.TradeItemService;
+import com.campushub.trade.vo.TradeItemVO;
 import com.campushub.user.api.UserApi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +33,7 @@ import java.util.Map;
  * <ul>
  *   <li>search_tasks：复用候选查询 + {@link TaskScorer} 排序 + 关键词命中加权（不死匹配）</li>
  *   <li>draft_task：仅归一化成草稿，<b>不落库</b></li>
+ *   <li>search_trade / search_team：复用各自 service 的 list/search（VO 含图片/卖家/队长，零重复）</li>
  * </ul>
  */
 @Component
@@ -40,21 +47,28 @@ public class ToolExecutor {
     private final TaskScorer scorer;
     private final UserApi userApi;
     private final CreditApi creditApi;
+    private final TradeItemService tradeItemService;
+    private final TeamService teamService;
     private final ObjectMapper json;
 
     public ToolExecutor(TaskRepository taskRepo, TaskScorer scorer, UserApi userApi,
-                        CreditApi creditApi, ObjectMapper json) {
+                        CreditApi creditApi, TradeItemService tradeItemService,
+                        TeamService teamService, ObjectMapper json) {
         this.taskRepo = taskRepo;
         this.scorer = scorer;
         this.userApi = userApi;
         this.creditApi = creditApi;
+        this.tradeItemService = tradeItemService;
+        this.teamService = teamService;
         this.json = json;
     }
 
-    public ToolResult execute(String toolName, JsonNode args) {
+    public ToolResult execute(String toolName, JsonNode args, long userId) {
         return switch (toolName) {
             case ToolSpecs.SEARCH_TASKS -> searchTasks(args);
             case ToolSpecs.DRAFT_TASK -> draftTask(args);
+            case ToolSpecs.SEARCH_TRADE -> searchTrade(args);
+            case ToolSpecs.SEARCH_TEAM -> searchTeam(args, userId);
             default -> new ToolResult("未知工具: " + toolName, null);
         };
     }
@@ -152,7 +166,66 @@ public class ToolExecutor {
         return new ToolResult("已生成发单草稿，等待用户在发布页确认。", AgentAction.taskDraft(draft));
     }
 
+    // ==================== search_trade ====================
+
+    private ToolResult searchTrade(JsonNode args) {
+        TradeItemQueryDTO q = new TradeItemQueryDTO();
+        q.setQ(text(args, "keyword"));       // null 时不过滤，返回最新在售
+        q.setSize(limit(args));              // 默认仅 ON_SALE（DTO 内置）
+        List<TradeItemVO> items = tradeItemService.listItems(q).getItems();
+        return new ToolResult(tradeSummary(items), AgentAction.tradeResults(items));
+    }
+
+    private String tradeSummary(List<TradeItemVO> items) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (TradeItemVO v : items) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", v.id());
+            m.put("title", v.title());
+            m.put("price", v.pricePoint());
+            rows.add(m);
+        }
+        try {
+            return "找到 " + items.size() + " 个在售商品：" + json.writeValueAsString(rows);
+        } catch (Exception e) {
+            return "找到 " + items.size() + " 个在售商品";
+        }
+    }
+
+    // ==================== search_team ====================
+
+    private ToolResult searchTeam(JsonNode args, long userId) {
+        TeamRecruitQueryDTO q = new TeamRecruitQueryDTO();
+        q.setQ(text(args, "keyword"));
+        q.setTag(text(args, "tag"));
+        q.setSize(limit(args));              // status 为空 → 默认仅「招募中」（DTO 内置）
+        List<TeamRecruitVO> teams = teamService.search(q, userId).getItems();
+        return new ToolResult(teamSummary(teams), AgentAction.teamResults(teams));
+    }
+
+    private String teamSummary(List<TeamRecruitVO> teams) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (TeamRecruitVO v : teams) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("recruitId", v.recruitId());
+            m.put("title", v.title());
+            m.put("size", v.currentSize() + "/" + v.totalSize());
+            m.put("tags", v.skillTags());
+            rows.add(m);
+        }
+        try {
+            return "找到 " + teams.size() + " 个招募中组队：" + json.writeValueAsString(rows);
+        } catch (Exception e) {
+            return "找到 " + teams.size() + " 个招募中组队";
+        }
+    }
+
     // ==================== helpers ====================
+
+    private static int limit(JsonNode args) {
+        return args.hasNonNull("limit")
+                ? Math.min(Math.max(args.get("limit").asInt(), 1), MAX_LIMIT) : DEFAULT_LIMIT;
+    }
 
     private static TaskType parseType(String s) {
         if (s == null || s.isBlank()) return null;

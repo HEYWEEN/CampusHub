@@ -5,6 +5,8 @@ import { sendAgentMessage, getAgentHistory } from '../../api/agent'
 import { useAuthStore } from '../../stores/auth'
 import type { AgentAction } from '../../types/agent'
 import TaskCard from '../domain/TaskCard'
+import TradeCard from '../domain/TradeCard'
+import TeamCard from '../domain/TeamCard'
 import { TASK_TYPE_LABEL } from '../../utils/labels'
 import { miniMarkdown } from '../../utils/miniMarkdown'
 import './Agent.css'
@@ -121,18 +123,20 @@ export default function AgentWidget() {
     onError: () => setMsgs((p) => [...p, { role: 'assistant', content: '出错了，请稍后再试 🥲' }]),
   })
 
-  // 打字机推进：每 tick 揭示一批字符；完成后落地为正式消息（带 actions）
+  // 打字机推进：每 tick 揭示一批字符；完成后落地为正式消息（带 actions）。
+  // setState 全部放进 setTimeout 回调（异步），避免在 effect body 同步 setState。
   useEffect(() => {
     if (!stream) return
-    if (stream.shown >= stream.full.length) {
-      setMsgs((p) => [...p, { role: 'assistant', content: stream.full, actions: stream.actions }])
-      setStream(null)
-      return
-    }
+    const done = stream.shown >= stream.full.length
     const step = Math.max(1, Math.round(stream.full.length / 80)) // 总时长 ~固定，长文更快
     const t = setTimeout(() => {
-      setStream((s) => (s ? { ...s, shown: Math.min(s.full.length, s.shown + step) } : s))
-    }, 18)
+      if (done) {
+        setMsgs((p) => [...p, { role: 'assistant', content: stream.full, actions: stream.actions }])
+        setStream(null)
+      } else {
+        setStream((s) => (s ? { ...s, shown: Math.min(s.full.length, s.shown + step) } : s))
+      }
+    }, done ? 120 : 18)
     return () => clearTimeout(t)
   }, [stream])
 
@@ -249,6 +253,20 @@ export default function AgentWidget() {
                         {a.tasks.length === 0
                           ? <div className="agent-empty-tip">暂时没有匹配的任务</div>
                           : a.tasks.map((t) => <TaskCard key={t.taskId} task={t} />)}
+                      </div>
+                    )}
+                    {a.type === 'trade_results' && a.items && (
+                      <div className="agent-cards">
+                        {a.items.length === 0
+                          ? <div className="agent-empty-tip">暂时没有匹配的商品</div>
+                          : a.items.map((it) => <TradeCard key={it.id} item={it} />)}
+                      </div>
+                    )}
+                    {a.type === 'team_results' && a.teams && (
+                      <div className="agent-cards">
+                        {a.teams.length === 0
+                          ? <div className="agent-empty-tip">暂时没有匹配的组队</div>
+                          : a.teams.map((t) => <TeamCard key={t.recruitId} recruit={t} />)}
                       </div>
                     )}
                     {a.type === 'task_draft' && a.draft && (

@@ -8,6 +8,8 @@ import com.campushub.task.entity.Task;
 import com.campushub.task.entity.TaskStatus;
 import com.campushub.task.entity.TaskType;
 import com.campushub.task.repository.TaskRepository;
+import com.campushub.team.service.TeamService;
+import com.campushub.trade.service.TradeItemService;
 import com.campushub.user.api.UserApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,13 +37,16 @@ class ToolExecutorTest {
     @Mock TaskRepository taskRepo;
     @Mock UserApi userApi;
     @Mock CreditApi creditApi;
+    @Mock TradeItemService tradeItemService;
+    @Mock TeamService teamService;
 
     ToolExecutor executor;
     final ObjectMapper json = new ObjectMapper();
 
     @BeforeEach
     void setup() {
-        executor = new ToolExecutor(taskRepo, new TaskScorer(), userApi, creditApi, json);
+        executor = new ToolExecutor(taskRepo, new TaskScorer(), userApi, creditApi,
+                tradeItemService, teamService, json);
         when(userApi.getPublicUser(anyLong()))
                 .thenAnswer(i -> new PublicUserVO(i.getArgument(0), "发布者", null, null));
         when(creditApi.getScoreOf(anyLong())).thenReturn(80);
@@ -67,7 +72,7 @@ class ToolExecutorTest {
         ArrayNode kw = args.putArray("keywords");
         kw.add("取快递");
 
-        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args);
+        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args, 1L);
 
         assertNotNull(r.action());
         assertEquals("task_results", r.action().type());
@@ -81,7 +86,7 @@ class ToolExecutorTest {
         ObjectNode args = json.createObjectNode();
         args.put("taskType", "TUTOR");
 
-        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args);
+        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args, 1L);
 
         assertFalse(r.action().tasks().isEmpty()); // 放宽后仍有结果
     }
@@ -94,7 +99,7 @@ class ToolExecutorTest {
         ObjectNode args = json.createObjectNode();
         args.put("minReward", 50);
 
-        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args);
+        ToolResult r = executor.execute(ToolSpecs.SEARCH_TASKS, args, 1L);
         assertEquals(1, r.action().tasks().size());
         assertEquals("t2", r.action().tasks().get(0).title());
     }
@@ -107,7 +112,7 @@ class ToolExecutorTest {
         args.put("rewardPoint", 5);
         args.put("deadlineIso", "2026-06-04T18:00:00+08:00");
 
-        ToolResult r = executor.execute(ToolSpecs.DRAFT_TASK, args);
+        ToolResult r = executor.execute(ToolSpecs.DRAFT_TASK, args, 1L);
 
         assertEquals("task_draft", r.action().type());
         TaskDraftVO d = r.action().draft();
@@ -124,7 +129,7 @@ class ToolExecutorTest {
         args.put("rewardPoint", 3);
         args.put("deadlineIso", "2026-06-04T18:00:00+08:00");
 
-        ToolResult r = executor.execute(ToolSpecs.DRAFT_TASK, args);
+        ToolResult r = executor.execute(ToolSpecs.DRAFT_TASK, args, 1L);
         assertEquals(TaskType.ERRAND, r.action().draft().taskType()); // 缺省 ERRAND
     }
 }

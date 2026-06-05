@@ -11,11 +11,13 @@ public final class ToolSpecs {
 
     public static final String SEARCH_TASKS = "search_tasks";
     public static final String DRAFT_TASK = "draft_task";
+    public static final String SEARCH_TRADE = "search_trade";
+    public static final String SEARCH_TEAM = "search_team";
 
     private static final List<String> TASK_TYPES = List.of("ERRAND", "MUTUAL_HELP", "TUTOR");
 
     public static List<ToolDef> all() {
-        return List.of(searchTasks(), draftTask());
+        return List.of(searchTasks(), draftTask(), searchTrade(), searchTeam());
     }
 
     private static ToolDef searchTasks() {
@@ -53,6 +55,36 @@ public final class ToolSpecs {
                                 "remark", Map.of("type", "string", "description", "补充说明（可选）")
                         ),
                         "required", List.of("title", "taskType", "rewardPoint", "deadlineIso")
+                ));
+    }
+
+    private static ToolDef searchTrade() {
+        return ToolDef.fn(SEARCH_TRADE,
+                "检索校园二手「在售」商品。用户想买东西 / 找二手 / 看商品时调用。",
+                Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                                "keyword", Map.of("type", "string",
+                                        "description", "商品关键词，如「自行车」「考研英语书」「显示器」"),
+                                "limit", Map.of("type", "integer", "description", "返回条数，默认 6")
+                        ),
+                        "required", List.of()
+                ));
+    }
+
+    private static ToolDef searchTeam() {
+        return ToolDef.fn(SEARCH_TEAM,
+                "检索校园「招募中」的组队帖。用户想找队友 / 找比赛队伍 / 找搭子时调用。",
+                Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                                "keyword", Map.of("type", "string",
+                                        "description", "组队关键词，如「数学建模」「篮球」「创业」"),
+                                "tag", Map.of("type", "string",
+                                        "description", "技能标签筛选（可选），如「前端」「Python」「设计」"),
+                                "limit", Map.of("type", "integer", "description", "返回条数，默认 6")
+                        ),
+                        "required", List.of()
                 ));
     }
 }

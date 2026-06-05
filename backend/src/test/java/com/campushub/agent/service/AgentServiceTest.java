@@ -74,7 +74,7 @@ class AgentServiceTest {
     void chat_toolCallThenFinalText_collectsActionAndPersists() {
         when(deepSeek.chat(anyList(), anyList()))
                 .thenReturn(toolCallMsg(), ChatMessage.assistant("帮你找到了这些单"));
-        when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any()))
+        when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any(), anyLong()))
                 .thenReturn(new ToolResult("found 2", AgentAction.taskResults(List.of())));
 
         AgentChatResponse resp = service.chat(USER, null, "我想接个取快递的单");
@@ -93,13 +93,13 @@ class AgentServiceTest {
         AgentChatResponse resp = service.chat(USER, null, "你好");
         assertEquals("你好呀", resp.reply());
         assertTrue(resp.actions().isEmpty());
-        verify(toolExecutor, never()).execute(anyString(), any());
+        verify(toolExecutor, never()).execute(anyString(), any(), anyLong());
     }
 
     @Test
     void chat_apiDown_findIntent_fallsBackToRuleSearch() {
         when(deepSeek.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
-        when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any()))
+        when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any(), anyLong()))
                 .thenReturn(new ToolResult("recent", AgentAction.taskResults(List.of())));
 
         AgentChatResponse resp = service.chat(USER, null, "帮我找个取快递的单");
@@ -114,7 +114,7 @@ class AgentServiceTest {
         AgentChatResponse resp = service.chat(USER, null, "帮我发布一个跑腿任务");
         assertTrue(resp.reply().contains("发布"));
         assertTrue(resp.actions().isEmpty());
-        verify(toolExecutor, never()).execute(anyString(), any());
+        verify(toolExecutor, never()).execute(anyString(), any(), anyLong());
     }
 
     @Test
