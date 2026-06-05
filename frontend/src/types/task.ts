@@ -58,4 +58,6 @@ export interface TaskSearchParams {
   deadlineFrom?: string
   deadlineTo?: string
   q?: string
+  publisherId?: number   // 我发布的
+  assigneeId?: number    // 我接的
 }

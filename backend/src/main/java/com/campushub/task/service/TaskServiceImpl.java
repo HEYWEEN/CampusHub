@@ -133,6 +133,10 @@ public class TaskServiceImpl implements TaskService, TaskApi {
             if (query.getStatus() != null) {
                 preds.add(cb.equal(root.get("status"), query.getStatus()));
             }
+            if (query.getPublisherId() != null)
+                preds.add(cb.equal(root.get("publisherId"), query.getPublisherId()));
+            if (query.getAssigneeId() != null)
+                preds.add(cb.equal(root.get("assigneeId"), query.getAssigneeId()));
             if (query.getDeadlineFrom() != null)
                 preds.add(cb.greaterThanOrEqualTo(root.get("deadlineAt"), query.getDeadlineFrom()));
             if (query.getDeadlineTo() != null)

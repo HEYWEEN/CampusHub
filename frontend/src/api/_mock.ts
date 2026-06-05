@@ -270,10 +270,13 @@ function pageOf<T>(items: T[], page: number, size: number): PageResponse<T> {
 }
 
 export function mockSearchTasks(params: TaskSearchParams): PageResponse<TaskListItemVO> {
-  const { page = 1, size = 12, taskType, status, q } = params
+  const { page = 1, size = 12, taskType, status, q, publisherId, assigneeId } = params
   let filtered = [...tasks]
   if (taskType) filtered = filtered.filter((t) => t.taskType === taskType)
   if (status) filtered = filtered.filter((t) => t.status === status)
+  if (publisherId != null) filtered = filtered.filter((t) => t.publisher.userId === String(publisherId))
+  // mock 列表项不带接单者信息，「我接的」离线下统一空态
+  if (assigneeId != null) filtered = []
   if (q) {
     const kw = q.toLowerCase()
     filtered = filtered.filter(

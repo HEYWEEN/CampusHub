@@ -18,6 +18,9 @@ public class TaskQueryDTO {
     private Instant deadlineFrom;
     private Instant deadlineTo;
     private String q;
+    // 「我的任务」过滤：publisherId=我发布的；assigneeId=我接的
+    private Long publisherId;
+    private Long assigneeId;
 
     public int getPage() { return page; }
     public void setPage(int page) { this.page = Math.max(1, page); }
@@ -37,4 +40,8 @@ public class TaskQueryDTO {
     public void setDeadlineTo(Instant v) { this.deadlineTo = v; }
     public String getQ() { return q; }
     public void setQ(String q) { this.q = q; }
+    public Long getPublisherId() { return publisherId; }
+    public void setPublisherId(Long v) { this.publisherId = v; }
+    public Long getAssigneeId() { return assigneeId; }
+    public void setAssigneeId(Long v) { this.assigneeId = v; }
 }

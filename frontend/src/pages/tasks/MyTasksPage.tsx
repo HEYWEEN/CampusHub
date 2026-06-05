@@ -11,18 +11,19 @@ type Tab = 'published' | 'accepted'
 export default function MyTasksPage() {
   const [tab, setTab] = useState<Tab>('published')
   const currentUserId = useAuthStore((s) => s.userId) ?? MOCK_CURRENT_USER_ID
+  const meId = Number(currentUserId)
 
-  // mock 后端没有"我的任务"专用接口，前端拉一个大列表后端过滤
+  // 服务端按发布者/接单者过滤（避免拉大列表客户端筛、超页漏数据）
   const { data, isLoading } = useQuery({
-    queryKey: ['tasks-all'],
-    queryFn: () => searchTasks({ page: 1, size: 50 }),
+    queryKey: ['tasks-mine', tab, meId],
+    queryFn: () => searchTasks(
+      tab === 'published'
+        ? { page: 1, size: 50, publisherId: meId }
+        : { page: 1, size: 50, assigneeId: meId },
+    ),
   })
 
-  const filtered = (data?.items ?? []).filter((t) =>
-    tab === 'published'
-      ? t.publisher.userId === currentUserId
-      : false, // mock list item 不带 acceptor 信息，UI 显示空态
-  )
+  const filtered = data?.items ?? []
 
   return (
     <div className="wrap">
@@ -57,7 +58,7 @@ export default function MyTasksPage() {
           这里很<span className="it">安静。</span>{' '}
           {tab === 'published'
             ? '你还没发过任务。去 → 任务大厅 → 发布新任务'
-            : '后端接口尚未提供"我接的"过滤，FE-C 联调阶段补'}
+            : '你还没接过任务。去 → 任务大厅 → 接单帮同学一把'}
         </div>
       )}
 
