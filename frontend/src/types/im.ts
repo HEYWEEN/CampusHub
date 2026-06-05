@@ -3,7 +3,7 @@
  */
 import type { PublicUserVO } from './user'
 
-export type ImMessageType = 'TEXT' | 'IMAGE' | 'SYSTEM'
+export type ImMessageType = 'TEXT' | 'IMAGE' | 'SYSTEM' | 'ORDER'
 
 export interface ImConversationVO {
   conversationId: number

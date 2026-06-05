@@ -4,6 +4,7 @@ import { getItem } from '../../api/trade'
 import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import { useSendOrderCard } from '../../components/domain/useSendOrderCard'
 import { formatRelativeTime } from '../../utils/format'
 import { TRADE_STATUS_LABEL } from '../../utils/labels'
 import '../tasks/Tasks.css'
@@ -25,6 +26,7 @@ export default function TradeDetailPage() {
     queryFn: () => getItem(id),
     enabled: !!id,
   })
+  const sendOrder = useSendOrderCard()
 
   if (isLoading) return <div className="wrap"><div className="task-loading">加载中…</div></div>
   if (error || !item) {
@@ -86,8 +88,21 @@ export default function TradeDetailPage() {
             </button>
           ) : item.status === 'ON_SALE' ? (
             <>
-              <button className="action-btn action-btn-primary">
-                联系卖家 · 议价 →
+              <button
+                className="action-btn action-btn-primary"
+                disabled={sendOrder.isPending}
+                onClick={() => sendOrder.mutate({
+                  peerId: item.seller.userId,
+                  card: {
+                    kind: 'TRADE',
+                    id: item.id,
+                    title: item.title,
+                    cover: item.imageUrls[0] ?? null,
+                    pricePoint: item.pricePoint,
+                  },
+                })}
+              >
+                {sendOrder.isPending ? '发起中…' : '联系卖家 · 议价 →'}
               </button>
               <p className="action-hint">
                 议价 / 下单都通过私信完成，下单后会冻结你 {item.pricePoint} 积分作为押金

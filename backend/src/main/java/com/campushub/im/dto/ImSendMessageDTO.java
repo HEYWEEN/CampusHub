@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 /** POST /api/im/conversations/{id}/messages — 发送消息（F-IM-02）。 */
 public class ImSendMessageDTO {
 
-    /** TEXT / IMAGE（SYSTEM 仅后端内部产生）。默认 TEXT。 */
+    /** TEXT / IMAGE / ORDER（SYSTEM 仅后端内部产生）。默认 TEXT。 */
     private ImMessageType contentType = ImMessageType.TEXT;
 
     @NotBlank

@@ -508,6 +508,24 @@
   margin: 4px 0;
 }
 
+/* 右栏「私信 TA」按钮（发布者/卖家卡片下方） */
+.side-im-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--accent-deep);
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+.side-im-btn:hover:not(:disabled) { background: var(--accent); color: #fff; transform: translateY(-1px); }
+.side-im-btn:disabled { opacity: .6; cursor: default; }
+
 /* 操作按钮 */
 .action-btn {
   display: inline-flex;

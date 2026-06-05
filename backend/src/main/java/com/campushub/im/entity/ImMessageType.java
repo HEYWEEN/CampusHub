@@ -3,7 +3,9 @@ package com.campushub.im.entity;
 public enum ImMessageType {
     TEXT(0),
     IMAGE(1),
-    SYSTEM(2);
+    SYSTEM(2),
+    /** 订单卡片：content 存任务/二手商品的 JSON 快照，由前端渲染为可点击卡片。 */
+    ORDER(3);
 
     private final int code;
 

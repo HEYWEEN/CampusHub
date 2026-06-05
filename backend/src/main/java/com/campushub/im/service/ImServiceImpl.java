@@ -128,6 +128,7 @@ public class ImServiceImpl implements ImService {
         ImMessage last = msgRepo.findFirstByConversationIdOrderByCreatedAtDesc(conv.getId()).orElse(null);
         String preview = last == null ? null : switch (last.getContentType()) {
             case IMAGE -> "[图片]";
+            case ORDER -> "[订单卡片]";
             default -> last.getContent();
         };
         return new ImConversationVO(

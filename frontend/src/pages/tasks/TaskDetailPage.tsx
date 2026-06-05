@@ -13,6 +13,7 @@ import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import type { TaskDetailVO, TaskStatus } from '../../types/task'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import { useSendOrderCard } from '../../components/domain/useSendOrderCard'
 import ReportButton from '../../components/domain/ReportButton'
 import TaskStatusBadge from '../../components/domain/TaskStatusBadge'
 import ImageUploader from '../../components/ImageUploader'
@@ -66,6 +67,7 @@ export default function TaskDetailPage() {
     mutationFn: () => confirmTask(id),
     onSuccess: invalidateAll,
   })
+  const sendOrder = useSendOrderCard()
 
   if (isLoading) {
     return (
@@ -146,6 +148,25 @@ export default function TaskDetailPage() {
           <div className="side-section">
             <div className="side-label">发布者</div>
             <PublicUserCard user={task.publisher} size="lg" link />
+            {!task.isPublisher && (
+              <button
+                type="button"
+                className="side-im-btn"
+                disabled={sendOrder.isPending}
+                onClick={() => sendOrder.mutate({
+                  peerId: task.publisher.userId,
+                  card: {
+                    kind: 'TASK',
+                    id: Number(task.taskId),
+                    title: task.title,
+                    cover: task.attachmentUrls?.[0] ?? null,
+                    pricePoint: task.rewardPoint,
+                  },
+                })}
+              >
+                {sendOrder.isPending ? '发起中…' : '私信 TA · 聊这单 →'}
+              </button>
+            )}
           </div>
 
           {task.assignee && (
