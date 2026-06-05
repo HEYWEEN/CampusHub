@@ -16,6 +16,7 @@ import PublicUserPage from './pages/u/PublicUserPage'
 import TradeHallPage from './pages/trade/TradeHallPage'
 import TradeDetailPage from './pages/trade/TradeDetailPage'
 import TradeNewPage from './pages/trade/TradeNewPage'
+import MyTradesPage from './pages/trade/MyTradesPage'
 import EduTutorHallPage from './pages/edu/EduTutorHallPage'
 import EduTutorNewPage from './pages/edu/EduTutorNewPage'
 import TeamHallPage from './pages/team/TeamHallPage'
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
       // 二手 ✅ FE-E
       { path: 'trade',      element: <TradeHallPage /> },
       { path: 'trade/new',  element: <TradeNewPage /> },
+      { path: 'trade/mine', element: <MyTradesPage /> },
       { path: 'trade/:id',  element: <TradeDetailPage /> },
 
       // 教育 ✅ FE-E

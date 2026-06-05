@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { getItem } from '../../api/trade'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { getItem, createOrder, createOffer } from '../../api/trade'
 import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
+import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import { useSendOrderCard } from '../../components/domain/useSendOrderCard'
 import { formatRelativeTime } from '../../utils/format'
@@ -27,6 +29,21 @@ export default function TradeDetailPage() {
     enabled: !!id,
   })
   const sendOrder = useSendOrderCard()
+
+  const [showOffer, setShowOffer] = useState(false)
+  const [offerPrice, setOfferPrice] = useState('')
+  const [actErr, setActErr] = useState('')
+
+  const buyMut = useMutation({
+    mutationFn: (price: number) => createOrder(Number(id), price),
+    onSuccess: () => navigate('/app/trade/mine'),
+    onError: (e) => setActErr(e instanceof BizError ? e.message : '下单失败'),
+  })
+  const offerMut = useMutation({
+    mutationFn: (price: number) => createOffer(Number(id), price),
+    onSuccess: () => navigate('/app/trade/mine'),
+    onError: (e) => setActErr(e instanceof BizError ? e.message : '出价失败'),
+  })
 
   if (isLoading) return <div className="wrap"><div className="task-loading">加载中…</div></div>
   if (error || !item) {
@@ -90,6 +107,49 @@ export default function TradeDetailPage() {
             <>
               <button
                 className="action-btn action-btn-primary"
+                disabled={buyMut.isPending}
+                onClick={() => { setActErr(''); buyMut.mutate(item.pricePoint) }}
+              >
+                {buyMut.isPending ? '下单中…' : `立即购买 · ${item.pricePoint} 积分`}
+              </button>
+
+              {!showOffer ? (
+                <button
+                  className="action-btn action-btn-ghost"
+                  onClick={() => { setActErr(''); setOfferPrice(String(item.pricePoint)); setShowOffer(true) }}
+                >
+                  出价砍价
+                </button>
+              ) : (
+                <div className="trade-offer-form">
+                  <div className="trade-offer-input-row">
+                    <input
+                      className="trade-offer-input"
+                      type="number"
+                      min={1}
+                      value={offerPrice}
+                      onChange={(e) => setOfferPrice(e.target.value)}
+                      placeholder="你的出价"
+                    />
+                    <span className="trade-offer-unit">积分</span>
+                  </div>
+                  <div className="trade-offer-actions">
+                    <button
+                      className="action-btn action-btn-primary"
+                      disabled={!Number(offerPrice) || offerMut.isPending}
+                      onClick={() => { setActErr(''); offerMut.mutate(Number(offerPrice)) }}
+                    >
+                      {offerMut.isPending ? '提交中…' : '提交出价'}
+                    </button>
+                    <button className="action-btn action-btn-ghost" onClick={() => setShowOffer(false)}>
+                      取消
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                className="action-btn action-btn-ghost"
                 disabled={sendOrder.isPending}
                 onClick={() => sendOrder.mutate({
                   peerId: item.seller.userId,
@@ -102,10 +162,12 @@ export default function TradeDetailPage() {
                   },
                 })}
               >
-                {sendOrder.isPending ? '发起中…' : '联系卖家 · 议价 →'}
+                {sendOrder.isPending ? '发起中…' : '联系卖家 · 随便聊聊'}
               </button>
+
+              {actErr && <p className="form-error">{actErr}</p>}
               <p className="action-hint">
-                议价 / 下单都通过私信完成，下单后会冻结你 {item.pricePoint} 积分作为押金
+                立即购买/出价成交后会冻结相应积分作为押金，在「我的交易」里确认收货
               </p>
             </>
           ) : (

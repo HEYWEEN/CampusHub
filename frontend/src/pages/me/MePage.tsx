@@ -211,6 +211,26 @@ export default function MePage() {
               </Link>
             </div>
           </section>
+
+          {/* 二手交易 */}
+          <section className="me-card">
+            <div className="me-card-head">
+              <h3 className="me-card-title">
+                我的<span className="it">交易</span>
+              </h3>
+              <Link to="/app/trade/mine" className="me-card-link">全部 →</Link>
+            </div>
+            <div className="me-stats-row">
+              <Link to="/app/trade/mine" className="me-stat-link">
+                <span className="me-stat-label">砍价 / 订单</span>
+                <span className="me-stat-sub">出价、还价、确认收货</span>
+              </Link>
+              <Link to="/app/trade" className="me-stat-link">
+                <span className="me-stat-label">去二手大厅</span>
+                <span className="me-stat-sub">逛逛在售好物</span>
+              </Link>
+            </div>
+          </section>
         </div>
       </div>
     </div>

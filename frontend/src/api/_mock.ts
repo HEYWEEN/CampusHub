@@ -19,6 +19,8 @@ import type {
   TradeItemCreateDTO,
   TradeItemVO,
   TradeSearchParams,
+  TradeOrderVO,
+  TradeOfferVO,
 } from '../types/trade'
 import type {
   TeamApplicationVO,
@@ -626,6 +628,123 @@ export function mockCreateItem(dto: TradeItemCreateDTO, userId = MOCK_CURRENT_US
   }
   items.unshift(newItem)
   return newItem
+}
+
+// ─────────────────────────────────────────────
+// 二手 订单 / 砍价（离线 mock — 真后端为主路径，此处仅 dev fallback）
+// ─────────────────────────────────────────────
+
+const orders: TradeOrderVO[] = []
+const offers: TradeOfferVO[] = []
+const MOCK_ME_NUM = 1
+const MOCK_PEER_NUM = 2
+
+export function mockCreateOrder(itemId: number, negotiatedPricePoint: number): TradeOrderVO {
+  const order: TradeOrderVO = {
+    id: Math.floor(Math.random() * 9000 + 1000),
+    itemId,
+    buyerId: MOCK_ME_NUM,
+    sellerId: MOCK_PEER_NUM,
+    status: 'IN_TRADE',
+    negotiatedPricePoint,
+    freezePoint: negotiatedPricePoint,
+    buyerConfirmed: false,
+    sellerConfirmed: false,
+    createdAt: new Date().toISOString(),
+  }
+  orders.unshift(order)
+  return order
+}
+
+export function mockGetOrder(orderId: number): TradeOrderVO {
+  const o = orders.find((x) => x.id === orderId)
+  if (!o) throw new BizError(404, '订单不存在')
+  return o
+}
+
+export function mockConfirmOrder(orderId: number): TradeOrderVO {
+  const o = mockGetOrder(orderId)
+  o.buyerConfirmed = true
+  o.status = o.sellerConfirmed ? 'COMPLETED' : 'BUYER_CONFIRMED'
+  return o
+}
+
+export function mockCancelOrder(orderId: number): TradeOrderVO {
+  const o = mockGetOrder(orderId)
+  o.status = 'CANCELED'
+  return o
+}
+
+export function mockListMyOrders(): TradeOrderVO[] {
+  return [...orders]
+}
+
+function mockOfferShell(itemId: number, pricePoint: number): TradeOfferVO {
+  const item = items.find((x) => x.id === itemId)
+  return {
+    id: Math.floor(Math.random() * 9000 + 1000),
+    itemId,
+    itemTitle: item?.title ?? `商品 #${itemId}`,
+    itemPricePoint: item?.pricePoint ?? pricePoint,
+    buyer: users[MOCK_CURRENT_USER_ID] ?? users.u1,
+    seller: item?.seller ?? users.u2,
+    pricePoint,
+    status: 'PENDING',
+    awaitingRole: 'SELLER',
+    isBuyer: true,
+    myTurn: false,
+    orderId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+export function mockCreateOffer(itemId: number, pricePoint: number): TradeOfferVO {
+  const offer = mockOfferShell(itemId, pricePoint)
+  offers.unshift(offer)
+  return offer
+}
+
+function findOffer(offerId: number): TradeOfferVO {
+  const o = offers.find((x) => x.id === offerId)
+  if (!o) throw new BizError(404, '报价不存在')
+  return o
+}
+
+export function mockCounterOffer(offerId: number, pricePoint: number): TradeOfferVO {
+  const o = findOffer(offerId)
+  o.pricePoint = pricePoint
+  o.awaitingRole = o.awaitingRole === 'BUYER' ? 'SELLER' : 'BUYER'
+  o.myTurn = o.isBuyer ? o.awaitingRole === 'BUYER' : o.awaitingRole === 'SELLER'
+  o.updatedAt = new Date().toISOString()
+  return o
+}
+
+export function mockAcceptOffer(offerId: number): TradeOfferVO {
+  const o = findOffer(offerId)
+  o.status = 'ACCEPTED'
+  o.myTurn = false
+  const order = mockCreateOrder(o.itemId, o.pricePoint)
+  o.orderId = order.id
+  return o
+}
+
+export function mockRejectOffer(offerId: number): TradeOfferVO {
+  const o = findOffer(offerId)
+  o.status = 'REJECTED'
+  o.myTurn = false
+  return o
+}
+
+export function mockCancelOffer(offerId: number): TradeOfferVO {
+  const o = findOffer(offerId)
+  o.status = 'CANCELED'
+  o.myTurn = false
+  return o
+}
+
+export function mockListMyOffers(): TradeOfferVO[] {
+  return [...offers]
 }
 
 // ─────────────────────────────────────────────

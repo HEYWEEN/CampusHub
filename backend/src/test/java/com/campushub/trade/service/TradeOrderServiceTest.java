@@ -128,6 +128,36 @@ class TradeOrderServiceTest {
         assertEquals(1, orderRepo.count());
     }
 
+    @Test
+    void cancelOrder_refundsAndReopensItem() {
+        seedBalance(210L, 100);
+        TradeItemVO item = createItem(110L, "可取消", 30);
+        TradeOrderCreateDTO dto = new TradeOrderCreateDTO();
+        dto.setItemId(item.id());
+        dto.setNegotiatedPricePoint(30);
+        TradeOrderVO order = orderService.createOrder(210L, dto);
+
+        orderService.cancelOrder(210L, order.id());
+
+        assertTrue(recordRepo.existsByBizId("trade:" + order.id() + ":cancel_unfreeze"));
+        assertEquals(TradeItemStatus.ON_SALE, itemRepo.findById(item.id()).orElseThrow().getStatus());
+    }
+
+    @Test
+    void cancelOrder_completed_returns422() {
+        seedBalance(220L, 100);
+        TradeItemVO item = createItem(120L, "已完成", 20);
+        TradeOrderCreateDTO dto = new TradeOrderCreateDTO();
+        dto.setItemId(item.id());
+        dto.setNegotiatedPricePoint(20);
+        TradeOrderVO order = orderService.createOrder(220L, dto);
+        orderService.confirmOrder(220L, order.id());   // buyer
+        orderService.confirmOrder(120L, order.id());   // seller → COMPLETED
+
+        BizException ex = assertThrows(BizException.class, () -> orderService.cancelOrder(220L, order.id()));
+        assertEquals(422, ex.getHttpStatus());
+    }
+
     private void seedBalance(long userId, int balance) {
         CreditAccount acct = new CreditAccount(userId);
         acct.deposit(balance);

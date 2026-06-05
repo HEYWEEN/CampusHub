@@ -20,6 +20,12 @@ const TYPE_LABEL: Record<string, { label: string; tone: string }> = {
   REPORT_ACTION:        { label: '处罚',  tone: 'expired' },
   ACCOUNT_BAN:          { label: '账号',  tone: 'expired' },
   ROLE_CHANGE:          { label: '权限',  tone: 'progress' },
+  TRADE_OFFER_NEW:       { label: '议价',  tone: 'pending' },
+  TRADE_OFFER_COUNTERED: { label: '议价',  tone: 'pending' },
+  TRADE_OFFER_ACCEPTED:  { label: '成交',  tone: 'done' },
+  TRADE_OFFER_REJECTED:  { label: '议价',  tone: 'canceled' },
+  TRADE_OFFER_CANCELED:  { label: '议价',  tone: 'canceled' },
+  TRADE_ORDER_CANCELED:  { label: '订单',  tone: 'canceled' },
 }
 
 const FALLBACK_META = { label: '通知', tone: 'canceled' }

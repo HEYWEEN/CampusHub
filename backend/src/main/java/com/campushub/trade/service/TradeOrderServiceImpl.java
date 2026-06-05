@@ -18,6 +18,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class TradeOrderServiceImpl implements TradeOrderService {
 
@@ -111,6 +113,35 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         orderRepo.save(order);
+        return toVo(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TradeOrderVO> myOrders(long userId) {
+        return orderRepo.findByBuyerIdOrSellerIdOrderByCreatedAtDesc(userId, userId).stream()
+                .map(TradeOrderServiceImpl::toVo)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public TradeOrderVO cancelOrder(long userId, long orderId) {
+        TradeOrder order = requireAccessibleOrder(userId, orderId);
+        if (order.getStatus() == TradeOrderStatus.COMPLETED) {
+            throw new BizException(TradeErrorCode.ORDER_ALREADY_CONFIRMED, "订单已完成，无法取消", 422);
+        }
+        if (order.getStatus() == TradeOrderStatus.CANCELED) {
+            return toVo(order);   // 幂等
+        }
+        order.setStatus(TradeOrderStatus.CANCELED);
+        orderRepo.save(order);     // @Version 防与并发 confirm→COMPLETED 的竞态
+        // 商品回 ON_SALE（乐观锁，若已被改动则容忍 0 行）
+        itemRepo.findById(order.getItemId()).ifPresent(item ->
+                itemRepo.updateStatusIfMatch(item.getId(), TradeItemStatus.IN_TRADE,
+                        TradeItemStatus.ON_SALE, item.getVersion()));
+        // 退还买家押金；bizKey 与完成态 :unfreeze 区分（订单 COMPLETED⊕CANCELED 互斥 → 退款恰一次）
+        creditApi.unfreeze(order.getBuyerId(), order.getFreezePoint(), "trade:" + orderId + ":cancel_unfreeze");
         return toVo(order);
     }
 

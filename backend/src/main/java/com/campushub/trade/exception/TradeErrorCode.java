@@ -13,4 +13,8 @@ public final class TradeErrorCode {
     public static final int ITEM_STATUS_INVALID = 5004;
     public static final int ORDER_ALREADY_CONFIRMED = 5005;
     public static final int ORDER_NOT_PARTICIPANT = 5006;
+    public static final int OFFER_NOT_PARTICIPANT = 5007;
+    public static final int OFFER_ALREADY_ACTIVE = 5008;
+    public static final int OFFER_NOT_PENDING = 5009;
+    public static final int OFFER_NOT_YOUR_TURN = 5010;
 }

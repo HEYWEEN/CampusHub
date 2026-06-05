@@ -115,3 +115,103 @@
   color: var(--muted);
 }
 .trade-meta-val { color: var(--ink); font-weight: 500; }
+
+/* ─── 出价砍价内联表单（详情页） ─── */
+.trade-offer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+.trade-offer-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.trade-offer-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ink);
+  outline: none;
+}
+.trade-offer-input:focus { border-color: var(--accent); }
+.trade-offer-unit { font-size: 13px; color: var(--muted); flex: 0 0 auto; }
+.trade-offer-actions { display: flex; gap: 10px; }
+.trade-offer-actions .action-btn { flex: 1; }
+
+/* ─── 我的交易（MyTradesPage） ─── */
+.trade-mine-section {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 28px 0 12px;
+}
+.trade-mine-list { list-style: none; margin: 0; padding: 0; }
+.trade-mine-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.trade-mine-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.trade-mine-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trade-mine-title:hover { color: var(--accent); }
+.trade-mine-sub { font-size: 13px; color: var(--muted); }
+.trade-mine-sub b { color: var(--accent); font-weight: 600; }
+.trade-mine-time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.trade-mine-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.trade-mine-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.trade-mine-hint { font-size: 11.5px; color: var(--muted); }
+.trade-mine-counter { grid-column: 1 / -1; }
+
+.mini-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.mini-btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+.mini-btn:disabled { opacity: .45; cursor: default; }
+.mini-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mini-btn-primary:hover:not(:disabled) { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+
+@media (max-width: 720px) {
+  .trade-mine-card { grid-template-columns: 1fr; }
+  .trade-mine-right { align-items: flex-start; }
+}

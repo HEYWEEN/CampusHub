@@ -41,3 +41,61 @@ export interface TradeSearchParams {
   status?: TradeItemStatus
   q?: string
 }
+
+// ==================== 订单 ====================
+
+// 对齐后端 TradeOrderStatus enum
+export type TradeOrderStatus =
+  | 'IN_TRADE' | 'BUYER_CONFIRMED' | 'SELLER_CONFIRMED' | 'COMPLETED' | 'CANCELED'
+
+// 对齐后端 TradeOrderVO record
+export interface TradeOrderVO {
+  id: number
+  itemId: number
+  buyerId: number
+  sellerId: number
+  status: TradeOrderStatus
+  negotiatedPricePoint: number
+  freezePoint: number
+  buyerConfirmed: boolean
+  sellerConfirmed: boolean
+  createdAt: string
+}
+
+export interface TradeOrderCreateDTO {
+  itemId: number
+  negotiatedPricePoint: number
+}
+
+// ==================== 砍价 ====================
+
+// 对齐后端 TradeOfferStatus enum
+export type TradeOfferStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELED'
+export type AwaitingRole = 'BUYER' | 'SELLER'
+
+// 对齐后端 TradeOfferVO record
+export interface TradeOfferVO {
+  id: number
+  itemId: number
+  itemTitle: string
+  itemPricePoint: number
+  buyer: PublicUserVO
+  seller: PublicUserVO
+  pricePoint: number
+  status: TradeOfferStatus
+  awaitingRole: AwaitingRole
+  isBuyer: boolean       // 当前用户是买家
+  myTurn: boolean        // 当前用户是该回合方（能 同意/还价/拒绝）
+  orderId: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TradeOfferCreateDTO {
+  itemId: number
+  pricePoint: number
+}
+
+export interface TradeOfferPriceDTO {
+  pricePoint: number
+}
