@@ -5,8 +5,13 @@ import type { TokenPair } from '../types/api'
  * 鉴权 API — 对应 openapi.yaml /api/auth/*
  */
 
+/** 发送验证码响应：registered=该手机号是否已注册（前端据此决定是否展示「设置密码」）。 */
+export interface SmsCodeSendVO {
+  registered: boolean
+}
+
 export const sendSmsCode = (phone: string) =>
-  apiPost<void>('/api/auth/sms-codes', { phone })
+  apiPost<SmsCodeSendVO>('/api/auth/sms-codes', { phone })
 
 export const loginByCode = (phone: string, code: string) =>
   apiPost<TokenPair>('/api/auth/token', { phone, smsCode: code })

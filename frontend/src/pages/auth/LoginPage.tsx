@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [codeSent, setCodeSent] = useState(false)
+  const [registered, setRegistered] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sentCountdown, setSentCountdown] = useState(0)
@@ -35,6 +36,7 @@ export default function LoginPage() {
     setCode('')
     setPassword('')
     setCodeSent(false)
+    setRegistered(false)
   }
 
   const navigateAfter = (tokens: TokenPair) => {
@@ -48,7 +50,10 @@ export default function LoginPage() {
     }
     setError('')
     try {
-      await sendSmsCode(phone)
+      const { registered: isReg } = await sendSmsCode(phone)
+      setRegistered(isReg)
+      // 已注册账号若残留了密码输入，清掉（不会再展示设密框）
+      if (isReg) setPassword('')
       setCodeSent(true)
       setSentCountdown(60)
       if (timerRef.current) window.clearInterval(timerRef.current)
@@ -200,8 +205,13 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* 发送验证码后才出现：可选设置登录密码 */}
-              {codeSent && (
+              {/* 已注册账号：提示直接用验证码登录，不再显示设密框 */}
+              {codeSent && registered && (
+                <div className="login-field-hint">该手机号已注册，输入验证码即可登录。</div>
+              )}
+
+              {/* 发送验证码后、且该手机号未注册时才出现：可选设置登录密码 */}
+              {codeSent && !registered && (
                 <div className="login-field">
                   <input
                     type="password"

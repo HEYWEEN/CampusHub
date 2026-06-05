@@ -9,6 +9,7 @@ import com.campushub.auth.dto.VerificationSubmitDTO;
 import com.campushub.auth.service.AuthService;
 import com.campushub.auth.service.SmsCodeService;
 import com.campushub.auth.service.VerificationService;
+import com.campushub.auth.vo.SmsCodeSendVO;
 import com.campushub.auth.vo.TokenPairVO;
 import com.campushub.auth.vo.VerificationStatusVO;
 import com.campushub.common.response.ApiResponse;
@@ -49,11 +50,11 @@ public class AuthController {
      * 限流：手机 60s≤1 / 24h≤20，IP 60s≤5 / 24h≤200；超限 429。
      */
     @PostMapping("/sms-codes")
-    public ApiResponse<Void> sendSmsCode(@Valid @RequestBody SmsCodeSendDTO dto,
-                                          HttpServletRequest request) {
+    public ApiResponse<SmsCodeSendVO> sendSmsCode(@Valid @RequestBody SmsCodeSendDTO dto,
+                                                  HttpServletRequest request) {
         String ip = IpUtil.resolve(request);
-        smsCodeService.send(dto.getPhone(), dto.sceneOrDefault(), ip);
-        return ApiResponse.success();
+        boolean registered = smsCodeService.send(dto.getPhone(), dto.sceneOrDefault(), ip);
+        return ApiResponse.success(new SmsCodeSendVO(registered));
     }
 
     /**
