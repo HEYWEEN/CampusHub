@@ -50,6 +50,8 @@ export default function AgentWidget() {
   const [closing, setClosing] = useState(false)
   const [input, setInput] = useState('')
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
+  // 流式打字机：拿到完整 reply 后逐字显示（后端非 SSE，前端模拟流式）
+  const [stream, setStream] = useState<{ full: string; shown: number; actions?: AgentAction[] } | null>(null)
   const [convId, setConvId] = useState<number | null>(null)
   const [pos, setPos] = useState(loadPos)
   const [expr, setExpr] = useState<'open' | 'blink' | 'wink' | 'happy'>('open')
@@ -108,10 +110,36 @@ export default function AgentWidget() {
       // 发出首条消息后已是真实会话，清除「新对话」标记（刷新可正常续聊）
       localStorage.removeItem(FRESH_KEY)
       setConvId(resp.conversationId)
-      setMsgs((p) => [...p, { role: 'assistant', content: resp.reply, actions: resp.actions }])
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      if (reduce || !resp.reply) {
+        // 无障碍：直接落地，不做逐字动画
+        setMsgs((p) => [...p, { role: 'assistant', content: resp.reply, actions: resp.actions }])
+      } else {
+        setStream({ full: resp.reply, shown: 0, actions: resp.actions })
+      }
     },
     onError: () => setMsgs((p) => [...p, { role: 'assistant', content: '出错了，请稍后再试 🥲' }]),
   })
+
+  // 打字机推进：每 tick 揭示一批字符；完成后落地为正式消息（带 actions）
+  useEffect(() => {
+    if (!stream) return
+    if (stream.shown >= stream.full.length) {
+      setMsgs((p) => [...p, { role: 'assistant', content: stream.full, actions: stream.actions }])
+      setStream(null)
+      return
+    }
+    const step = Math.max(1, Math.round(stream.full.length / 80)) // 总时长 ~固定，长文更快
+    const t = setTimeout(() => {
+      setStream((s) => (s ? { ...s, shown: Math.min(s.full.length, s.shown + step) } : s))
+    }, 18)
+    return () => clearTimeout(t)
+  }, [stream])
+
+  // 流式过程中跟随滚动到底
+  useEffect(() => {
+    if (stream) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
+  }, [stream])
 
   // 关闭：先播退场动画，动画结束后（onAnimationEnd）再真正卸载面板。
   // reduced-motion 下退场动画被禁用、animationend 不会触发，直接卸载。
@@ -123,7 +151,7 @@ export default function AgentWidget() {
   }
 
   const newChat = () => {
-    if (send.isPending) return
+    if (send.isPending || stream) return
     localStorage.setItem(FRESH_KEY, '1')
     setMsgs([GREETING])
     setConvId(null)
@@ -158,7 +186,7 @@ export default function AgentWidget() {
 
   const submit = () => {
     const text = input.trim()
-    if (!text || send.isPending) return
+    if (!text || send.isPending || stream) return
     setMsgs((p) => [...p, { role: 'user', content: text }])
     setInput('')
     send.mutate(text)
@@ -237,7 +265,21 @@ export default function AgentWidget() {
                 ))}
               </div>
             ))}
-            {send.isPending && <div className="agent-row assistant"><div className="agent-bubble agent-typing">···</div></div>}
+            {send.isPending && (
+              <div className="agent-row assistant">
+                <div className="agent-bubble agent-typing" aria-label="正在思考">
+                  <span className="agent-dot" /><span className="agent-dot" /><span className="agent-dot" />
+                </div>
+              </div>
+            )}
+            {stream && (
+              <div className="agent-row assistant">
+                <div
+                  className="agent-bubble agent-md is-streaming"
+                  dangerouslySetInnerHTML={{ __html: miniMarkdown(stream.full.slice(0, stream.shown) + '▍') }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="agent-input-bar">
@@ -248,7 +290,7 @@ export default function AgentWidget() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') submit() }}
             />
-            <button type="button" className="agent-send" onClick={submit} disabled={send.isPending || !input.trim()}>发送</button>
+            <button type="button" className="agent-send" onClick={submit} disabled={send.isPending || !!stream || !input.trim()}>发送</button>
           </div>
         </div>
       )}
