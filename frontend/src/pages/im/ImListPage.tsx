@@ -2,12 +2,15 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { listConversations } from '../../api/im'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import { SafetyCard } from '../../components/HallWidgets'
 import { formatRelativeTime } from '../../utils/format'
+import '../tasks/Tasks.css'
 import './Im.css'
 
 function preview(text: string | null, type: string | null): string {
   if (text == null) return '开始聊天吧'
   if (type === 'IMAGE') return '[图片]'
+  if (type === 'ORDER') return '[订单卡片]'
   return text
 }
 
@@ -32,22 +35,29 @@ export default function ImListPage() {
       )}
 
       {data && data.length > 0 && (
-        <ul className="im-conv-list">
-          {data.map((c) => (
-            <li key={c.conversationId}>
-              <Link to={`/app/im/${c.conversationId}`} className="im-conv-row">
-                <div className="im-conv-head">
-                  <PublicUserCard user={c.peer} size="sm" />
-                  <span className="im-conv-time">{formatRelativeTime(c.lastMsgAt)}</span>
-                </div>
-                <div className="im-conv-bottom">
-                  <span className="im-conv-preview">{preview(c.lastMessage, c.lastContentType)}</span>
-                  {c.unreadCount > 0 && <span className="im-unread-dot">{c.unreadCount > 99 ? '99+' : c.unreadCount}</span>}
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="hall-grid">
+          <div className="hall-main">
+            <ul className="im-conv-list">
+              {data.map((c) => (
+                <li key={c.conversationId}>
+                  <Link to={`/app/im/${c.conversationId}`} className="im-conv-row">
+                    <div className="im-conv-head">
+                      <PublicUserCard user={c.peer} size="sm" />
+                      <span className="im-conv-time">{formatRelativeTime(c.lastMsgAt)}</span>
+                    </div>
+                    <div className="im-conv-bottom">
+                      <span className="im-conv-preview">{preview(c.lastMessage, c.lastContentType)}</span>
+                      {c.unreadCount > 0 && <span className="im-unread-dot">{c.unreadCount > 99 ? '99+' : c.unreadCount}</span>}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <aside className="hall-aside">
+            <SafetyCard />
+          </aside>
+        </div>
       )}
     </div>
   )

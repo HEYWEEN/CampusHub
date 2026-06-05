@@ -3,18 +3,24 @@
  * ============================================================ */
 
 /* ─── 会话列表 ─── */
-.im-conv-list { list-style: none; margin: 0; padding: 0; max-width: 640px; }
+.im-conv-list { list-style: none; margin: 0; padding: 0; }
 .im-conv-row {
   display: block;
-  padding: 16px 18px;
+  position: relative;
+  padding: 18px 20px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--cream);
+  box-shadow: var(--shadow-sm);
   text-decoration: none;
   margin-bottom: 12px;
-  transition: transform .25s ease, box-shadow .25s ease;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
 }
-.im-conv-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.im-conv-row:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-soft);
+}
 .im-conv-head {
   display: flex;
   align-items: center;
@@ -58,14 +64,16 @@
 .im-chat {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px);
+  /* 精确填满 .app-main 上下内边距间的视口（112 + 96），避免整页溢出滚动把头部顶出去 */
+  height: calc(100vh - 208px);
   max-width: 760px;
 }
 .im-chat-head {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding-bottom: 14px;
+  flex: 0 0 auto;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
 .im-chat-head .detail-back { margin: 0; }
@@ -73,10 +81,10 @@
 .im-msg-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 4px;
+  padding: 24px 4px 10px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .im-msg-system {
@@ -94,38 +102,114 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
-  max-width: 72%;
+  gap: 4px;
+  max-width: 68%;
 }
 .im-msg-row.mine { align-self: flex-end; align-items: flex-end; }
 
 .im-bubble {
-  padding: 10px 14px;
-  border-radius: 16px;
-  background: var(--cream);
-  border: 1px solid var(--line);
+  padding: 11px 15px;
+  border-radius: 18px 18px 18px 5px;   /* 对方：左下收角 */
+  background: #fff;
+  box-shadow: var(--shadow-sm);
   font-size: 14.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--ink);
   word-break: break-word;
 }
 .im-msg-row.mine .im-bubble {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--cream);
+  border-radius: 18px 18px 5px 18px;   /* 我方：右下收角 */
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(226, 90, 60, .26);
 }
 .im-bubble-img {
   display: block;
   max-width: 220px;
   max-height: 220px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
-.im-msg-time { font-size: 11px; color: var(--muted); padding: 0 4px; }
+.im-msg-row:has(.im-bubble-img) .im-bubble { padding: 4px; }
+
+.im-msg-time {
+  font-size: 10.5px;
+  color: var(--muted);
+  padding: 0 6px;
+  letter-spacing: .02em;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.im-msg-row:hover .im-msg-time { opacity: .65; }
+.im-msg-row:last-child .im-msg-time { opacity: .5; }   /* 最新一条常驻显示时间 */
+
+/* ─── 订单卡片消息 ─── */
+.im-order-card {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  grid-template-areas: 'cover body' 'go go';
+  gap: 4px 12px;
+  width: 260px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.im-order-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent-soft); }
+.im-order-cover {
+  grid-area: cover;
+  width: 54px; height: 54px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--bg-2);
+}
+.im-order-cover-ph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.im-order-body { grid-area: body; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.im-order-kind {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.im-order-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.im-order-price { font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--accent); }
+.im-order-go {
+  grid-area: go;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--muted);
+  text-align: right;
+}
 
 /* ─── 输入栏 ─── */
 .im-composer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;       /* textarea 增高时按钮/选图贴底 */
   gap: 12px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
@@ -133,15 +217,19 @@
 .im-composer .image-uploader { flex: 0 0 auto; }
 .im-input {
   flex: 1;
-  height: 46px;
-  padding: 0 18px;
+  min-height: 46px;
+  max-height: 140px;
+  padding: 12px 18px;
   background: var(--cream);
   border: 1.5px solid var(--line);
-  border-radius: 9999px;
+  border-radius: 22px;
   font-family: var(--font-body);
   font-size: 14.5px;
+  line-height: 1.5;
   color: var(--ink);
   outline: none;
+  resize: none;
+  overflow-y: auto;
 }
 .im-input:focus { border-color: var(--ink); background: #fff; }
 .im-send-btn {
