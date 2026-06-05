@@ -47,6 +47,7 @@ export default function AgentWidget() {
   const accessToken = useAuthStore((s) => s.accessToken)
 
   const [open, setOpen] = useState(false)
+  const [closing, setClosing] = useState(false)
   const [input, setInput] = useState('')
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
   const [convId, setConvId] = useState<number | null>(null)
@@ -112,6 +113,15 @@ export default function AgentWidget() {
     onError: () => setMsgs((p) => [...p, { role: 'assistant', content: '出错了，请稍后再试 🥲' }]),
   })
 
+  // 关闭：先播退场动画，动画结束后（onAnimationEnd）再真正卸载面板。
+  // reduced-motion 下退场动画被禁用、animationend 不会触发，直接卸载。
+  const requestClose = () => {
+    if (closing) return
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduce) { setOpen(false); return }
+    setClosing(true)
+  }
+
   const newChat = () => {
     if (send.isPending) return
     localStorage.setItem(FRESH_KEY, '1')
@@ -139,8 +149,10 @@ export default function AgentWidget() {
     drag.current = null
     if (moved) {
       try { localStorage.setItem(POS_KEY, JSON.stringify(pos)) } catch { /* ignore */ }
+    } else if (open) {
+      requestClose()
     } else {
-      setOpen((o) => !o)
+      setOpen(true)
     }
   }
 
@@ -177,13 +189,22 @@ export default function AgentWidget() {
         </svg>
       </button>
 
-      {open && (
-        <div className="agent-panel">
+      {(open || closing) && (
+        <div
+          className={`agent-panel${closing ? ' is-closing' : ''}`}
+          onAnimationEnd={(e) => {
+            // 仅处理退场动画结束；入场 agent-pop 结束时 closing 为 false
+            if (closing && e.animationName === 'agent-pop-out') {
+              setClosing(false)
+              setOpen(false)
+            }
+          }}
+        >
           <div className="agent-panel-head">
             <span className="agent-panel-title">校园助手</span>
             <div className="agent-panel-tools">
               <button type="button" className="agent-newchat" onClick={newChat} title="开启新对话">+ 新对话</button>
-              <button type="button" className="agent-panel-close" onClick={() => setOpen(false)} aria-label="关闭">×</button>
+              <button type="button" className="agent-panel-close" onClick={requestClose} aria-label="关闭">×</button>
             </div>
           </div>
 

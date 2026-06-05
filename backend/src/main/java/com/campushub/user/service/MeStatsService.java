@@ -1,8 +1,10 @@
 package com.campushub.user.service;
 
+import com.campushub.common.PublicUserVO;
 import com.campushub.credit.repository.TaskReviewRepository;
 import com.campushub.task.repository.TaskRepository;
 import com.campushub.user.vo.MeStatsVO;
+import com.campushub.user.vo.PublicUserStatsVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,5 +46,26 @@ public class MeStatsService {
 
         return new MeStatsVO(published, accepted, reviews,
                 publishedInProgress, acceptedInProgress, goodRate);
+    }
+
+    /**
+     * 公开主页三项统计（GET /api/users/{id}/public/stats）。
+     *
+     * 与 {@link #getMyStats} 不同：这里按主页主人的隐私开关逐项 mask——
+     * 被隐藏的项返回 null（前端渲染「已隐藏」），且不发起对应查询。
+     * 「查看公开主页」本质是预览外人所见，故自己看自己也同样受隐私开关约束。
+     */
+    @Transactional(readOnly = true)
+    public PublicUserStatsVO getPublicStats(PublicUserVO user, long userId,
+                                            boolean hidePublished,
+                                            boolean hideAccepted,
+                                            boolean hideReviews) {
+        Integer published = hidePublished ? null
+                : (int) taskRepo.countByPublisherIdAndDeletedAtIsNull(userId);
+        Integer accepted = hideAccepted ? null
+                : (int) taskRepo.countByAssigneeIdAndDeletedAtIsNull(userId);
+        Integer reviews = hideReviews ? null
+                : (int) reviewRepo.countByRevieweeId(userId);
+        return new PublicUserStatsVO(user, published, accepted, reviews);
     }
 }

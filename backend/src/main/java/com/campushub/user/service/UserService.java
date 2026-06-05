@@ -70,6 +70,33 @@ public class UserService implements UserApi {
         );
     }
 
+    /**
+     * 公开主页 + 主人的三项隐私开关，一次读取供 /public/stats 编排。
+     * counts 的真实聚合在 {@link MeStatsService}（user 模块不反向依赖 task/credit repo）。
+     */
+    public record PublicStatsContext(PublicUserVO user,
+                                     boolean hidePublished,
+                                     boolean hideAccepted,
+                                     boolean hideReviews) {}
+
+    @Transactional(readOnly = true)
+    public PublicStatsContext getPublicStatsContext(long userId) {
+        AuthUser u = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
+        UserProfile p = profileRepo.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("用户资料缺失: " + userId));
+        PublicUserVO vo = new PublicUserVO(
+                u.getId(),
+                p.getNickname(),
+                p.getAvatarUrl(),
+                u.getVerifyStatus() == VerifyStatus.APPROVED ? VERIFIED_TAG : null
+        );
+        return new PublicStatsContext(vo,
+                p.isHidePublishHistory(),
+                p.isHideAcceptHistory(),
+                p.isHideCourseReviews());
+    }
+
     @Override
     @Transactional(readOnly = true)
     public VerifyStatus getVerifyStatus(long userId) {

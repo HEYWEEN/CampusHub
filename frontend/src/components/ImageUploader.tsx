@@ -20,6 +20,7 @@ export type ImageUploaderProps =
       onChange: (url: string | null) => void
       label?: string
       hint?: string
+      required?: boolean
     }
   | {
       multiple: true
@@ -28,6 +29,7 @@ export type ImageUploaderProps =
       maxCount?: number
       label?: string
       hint?: string
+      required?: boolean
     }
 
 export default function ImageUploader(props: ImageUploaderProps) {
@@ -81,7 +83,12 @@ export default function ImageUploader(props: ImageUploaderProps) {
 
   return (
     <div className="image-uploader">
-      {props.label && <div className="image-uploader-label">{props.label}</div>}
+      {(props.label || props.required) && (
+        <div className="image-uploader-label">
+          {props.label}
+          {props.required && <span className="required" aria-hidden>*</span>}
+        </div>
+      )}
 
       <div className="image-uploader-grid">
         {list.map((url) => (

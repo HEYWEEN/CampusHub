@@ -16,7 +16,7 @@ export interface PublicUserVO {
 export interface PrivacySettings {
   hidePublishHistory: boolean    // 默认 true（隐藏发布历史）
   hideAcceptHistory: boolean     // 默认 true（隐藏接单记录）
-  hideCourseReviews: boolean     // 默认 true（隐藏课程评价）
+  hideCourseReviews: boolean     // 默认 true（隐藏「收到的评价」=订单互评；字段名为历史遗留）
 }
 
 // UserMeVO 把 PrivacySettings 三项字段展平在顶层（对齐后端扁平结构）

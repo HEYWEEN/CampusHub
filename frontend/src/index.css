@@ -17,6 +17,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   /* HomePage 是长滚动 landing，不再 hide overflow */
+
+  /* 全局禁止浏览器机械合成斜体/粗体。
+   * 中文字体（Noto Serif/Sans SC）未加载 italic 字形，遇到 font-style:italic
+   * 会被强行倾斜 → 很丑；禁用后中文保持端正，而拉丁文（Instrument Serif / Inter
+   * 有真 italic 字形，如 hero "last step"）仍正常斜体。
+   * 各权重已实打实加载，禁用 weight 合成无副作用。 */
+  font-synthesis: none;
 }
 
 h1, h2, h3, h4, h5, h6, p, ul, ol, figure {
@@ -45,6 +52,9 @@ input, textarea, select {
 #root {
   min-height: 100vh;
 }
+
+/* 必填标记（全站共用，不依赖 .form-label 作用域） */
+.required { color: var(--accent); margin-left: 2px; font-weight: 600; }
 
 /* ============================================================
  * ImageUploader 组件样式（全站共用）

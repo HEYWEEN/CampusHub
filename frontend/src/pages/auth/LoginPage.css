@@ -356,3 +356,101 @@
 .login-flip:hover {
   color: var(--accent);
 }
+
+/* ============================================================
+ * VerifyPage 专用：表单列布局 + 审核状态卡片 + 次级按钮
+ * ============================================================ */
+
+/* 表单用 flex 纵向排列，避免 inline-level 的 .login-error / .login-submit
+ * 因默认行内流而并排错位（点击提交报错时尤为明显） */
+.verify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 520px;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.verify-form .login-submit {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.verify-error-slot {
+  min-height: 18px;
+}
+
+/* 紧凑款按钮：卡片内 / 次级操作，避免大号 CTA 过于笨重 */
+.login-submit.is-compact {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 14px;
+  gap: 8px;
+}
+
+/* 次级按钮：描边款，用于「先逛逛」等非主操作 */
+.login-submit.is-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+.login-submit.is-secondary:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+/* 审核状态卡片 */
+.verify-state-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  max-width: 520px;
+  width: 100%;
+  margin-top: 32px;
+  padding: 24px;
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  background: var(--cream);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.verify-state-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: var(--accent-soft);
+}
+
+.verify-state-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.verify-state-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+
+.verify-state-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 8px 0 0;
+}
+
+.verify-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}

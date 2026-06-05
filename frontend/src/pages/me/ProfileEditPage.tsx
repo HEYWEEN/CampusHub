@@ -11,7 +11,7 @@ import './User.css'
 const PRIVACY_LABELS: { key: keyof PrivacySettings; label: string; desc: string }[] = [
   { key: 'hidePublishHistory', label: '隐藏我发布的任务', desc: '公开主页不显示发布历史列表' },
   { key: 'hideAcceptHistory',  label: '隐藏我接的任务',   desc: '公开主页不显示接单记录' },
-  { key: 'hideCourseReviews',  label: '隐藏我的课程评价', desc: '我的课评在评价区匿名展示' },
+  { key: 'hideCourseReviews',  label: '隐藏我收到的评价', desc: '公开主页不显示收到的评价数' },
 ]
 
 export default function ProfileEditPage() {
@@ -57,6 +57,8 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
       await profileM.mutateAsync({ nickname: nickname.trim(), avatarUrl: avatarUrl.trim() || undefined })
       await privacyM.mutateAsync(privacy)
       qc.invalidateQueries({ queryKey: ['me'] })
+      // 资料/隐私改动会影响公开主页（昵称、头像、三项统计的隐藏状态），一并失效缓存
+      qc.invalidateQueries({ queryKey: ['public-user'] })
       setSavedAt(Date.now())
     } catch (err) {
       setError(err instanceof BizError ? err.message : '保存失败')

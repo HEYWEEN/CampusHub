@@ -19,7 +19,9 @@ export default function AppLayout() {
     <div className="app-layout">
       <AppHeader />
       <main className="app-main">
-        <Outlet />
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
       <AgentWidget />
     </div>

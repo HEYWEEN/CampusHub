@@ -639,14 +639,15 @@ export interface PublicUserStats {
 
 export function mockGetPublicStats(userId: string): PublicUserStats {
   const user = mockGetPublicUser(userId)
-  // 自己看自己 → 全部显示
-  // 看他人 → 受对方隐私开关
+  // 「查看公开主页」= 预览外人所见，自己看自己也受隐私开关约束（与后端一致）。
   if (userId === me.userId) {
     return {
       user,
-      publishedCount: tasks.filter((t) => t.publisher.userId === userId).length,
-      acceptedCount: tasks.filter((t) => t.assignee?.userId === userId).length,
-      reviewsCount: 12,
+      publishedCount: me.hidePublishHistory ? null
+        : tasks.filter((t) => t.publisher.userId === userId).length,
+      acceptedCount: me.hideAcceptHistory ? null
+        : tasks.filter((t) => t.assignee?.userId === userId).length,
+      reviewsCount: me.hideCourseReviews ? null : 12,
     }
   }
   // mock：假设其他用户隐私设置与 me 相同（全部 hide）

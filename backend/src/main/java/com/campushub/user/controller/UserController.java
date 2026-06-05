@@ -94,11 +94,15 @@ public class UserController {
 
     /**
      * 公开主页 + 三项可隐藏统计（schema_audit A-10 修复）。
-     * 当前 MVP：counts 全返 null（前端按"已隐藏"渲染），后续补真实跨模块聚合。
+     * 真实跨模块聚合（task / review）+ 按主页主人的隐私开关逐项 mask：
+     * 被隐藏的项返回 null（前端渲染「已隐藏」）。「查看公开主页」即预览外人所见，
+     * 故自己看自己同样受隐私开关约束。
      */
     @GetMapping("/{userId}/public/stats")
     public ApiResponse<PublicUserStatsVO> getPublicStats(@PathVariable long userId) {
-        PublicUserVO user = userService.getPublicUser(userId);
-        return ApiResponse.success(new PublicUserStatsVO(user, null, null, null));
+        UserService.PublicStatsContext ctx = userService.getPublicStatsContext(userId);
+        return ApiResponse.success(meStatsService.getPublicStats(
+                ctx.user(), userId,
+                ctx.hidePublished(), ctx.hideAccepted(), ctx.hideReviews()));
     }
 }

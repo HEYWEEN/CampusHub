@@ -90,7 +90,7 @@ export default function PublicUserPage() {
             count={acceptedCount}
           />
           <PublicStatRow
-            label={<>课程<span className="it"> 评价</span></>}
+            label={<>收到的<span className="it"> 评价</span></>}
             count={reviewsCount}
           />
 

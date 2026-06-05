@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getMe } from '../../api/user'
 import './AdminLayout.css'
@@ -12,6 +12,7 @@ const ADMIN_NAV = [
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { data: me, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => getMe(), staleTime: 60_000 })
 
   if (isLoading) return <div className="admin-shell"><div className="admin-loading">加载中…</div></div>
@@ -45,7 +46,9 @@ export default function AdminLayout() {
         <button type="button" className="admin-exit" onClick={() => navigate('/app/tasks')}>← 回到 App</button>
       </aside>
       <main className="admin-main">
-        <Outlet />
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

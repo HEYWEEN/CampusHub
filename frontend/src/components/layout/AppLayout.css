@@ -213,6 +213,21 @@
   margin: 0 auto;
 }
 
+/* ---------- 路由切换入场动画 ----------
+ * 由 AppLayout / AdminLayout 用 key={pathname} 包裹 Outlet 实现：每次切页重挂载 → 重播。
+ * fill-mode 用 backwards 而非 forwards/both：动画结束后不保留 transform，
+ * 避免给页面内 position:fixed/sticky 元素创建 containing block 而永久错位。 */
+.page-enter {
+  animation: page-enter .42s cubic-bezier(.2, .7, .2, 1) backwards;
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}
+
 /* ---------- Page section header（每个 app 页面顶部用） ---------- */
 .page-head {
   display: flex; align-items: end; justify-content: space-between;
