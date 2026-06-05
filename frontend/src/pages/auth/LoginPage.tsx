@@ -1,38 +1,43 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/auth'
-import { loginByCode, loginByPassword, register, sendSmsCode } from '../../api/auth'
+import { loginByCode, loginByPassword, sendSmsCode } from '../../api/auth'
+import { changePassword } from '../../api/user'
 import { BizError, type TokenPair } from '../../types/api'
 import './LoginPage.css'
 
 /** 后端 AuthErrorCode.PASSWORD_NOT_SET —— 验证码-only 用户尝试密码登录。 */
 const PASSWORD_NOT_SET = 2005
 
-type Mode = 'password' | 'code' | 'setpw'
+type Mode = 'code' | 'password'
 
 const PHONE_RE = /^1[3-9]\d{9}$/
+const PW_RE = /^(?=.*[A-Za-z])(?=.*\d)[\x21-\x7E]{8,32}$/
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
 
-  const [mode, setMode] = useState<Mode>('password')
+  // 默认验证码登录（更直观、未注册可自动注册）
+  const [mode, setMode] = useState<Mode>('code')
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
+  const [codeSent, setCodeSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sentCountdown, setSentCountdown] = useState(0)
+  const timerRef = useRef<number | null>(null)
 
   const switchMode = (next: Mode) => {
     setMode(next)
     setError('')
     setCode('')
     setPassword('')
+    setCodeSent(false)
   }
 
-  const finishLogin = (tokens: TokenPair) => {
-    login(tokens)
+  const navigateAfter = (tokens: TokenPair) => {
     navigate(tokens.verifyStatus === 'guest' ? '/verify' : '/app/tasks', { replace: true })
   }
 
@@ -44,11 +49,13 @@ export default function LoginPage() {
     setError('')
     try {
       await sendSmsCode(phone)
+      setCodeSent(true)
       setSentCountdown(60)
-      const id = window.setInterval(() => {
+      if (timerRef.current) window.clearInterval(timerRef.current)
+      timerRef.current = window.setInterval(() => {
         setSentCountdown((n) => {
           if (n <= 1) {
-            window.clearInterval(id)
+            if (timerRef.current) window.clearInterval(timerRef.current)
             return 0
           }
           return n - 1
@@ -59,47 +66,50 @@ export default function LoginPage() {
     }
   }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    // 内置超级管理员用 phone 标识 "admin" 密码登录；其余一律要求 11 位手机号
-    const phoneOk = PHONE_RE.test(phone) || (mode === 'password' && phone === 'admin')
-    if (!phoneOk) {
-      setError('请输入有效的 11 位手机号')
-      return
-    }
-    if (mode === 'code' && !code) {
+  const submitCode = async () => {
+    if (!code) {
       setError('请填写验证码')
       return
     }
-    if (mode === 'password' && !password) {
-      setError('请填写密码')
+    const wantPassword = password.trim().length > 0
+    if (wantPassword && !PW_RE.test(password)) {
+      setError('密码需 8–32 位，且同时包含字母和数字')
       return
     }
-    if (mode === 'setpw') {
-      if (!code) {
-        setError('请填写验证码')
-        return
-      }
-      if (!/^(?=.*[A-Za-z])(?=.*\d)[\x21-\x7E]{8,32}$/.test(password)) {
-        setError('密码需 8–32 位，且同时包含字母和数字')
-        return
-      }
-    }
-
     setLoading(true)
     setError('')
     try {
-      if (mode === 'password') {
-        finishLogin(await loginByPassword(phone, password))
-      } else if (mode === 'code') {
-        finishLogin(await loginByCode(phone, code))
-      } else {
-        finishLogin(await register(phone, code, password))
+      // 1) 验证码登录：新号自动注册（无密码），并消费一次验证码
+      const tokens = await loginByCode(phone, code)
+      login(tokens)
+      // 2) 若填了密码 → 设为登录密码（无密码账号免原密码；已有密码者会失败，已登录故忽略）
+      if (wantPassword) {
+        try {
+          await changePassword(password)
+        } catch { /* 已有密码用户：忽略，登录本身已成功 */ }
       }
+      navigateAfter(tokens)
     } catch (err) {
-      if (mode === 'password' && err instanceof BizError && err.code === PASSWORD_NOT_SET) {
-        // 验证码-only 用户：引导去设置密码
-        setError('该账号还没有设置密码，点下方「设置密码」补设后即可使用')
+      setError(err instanceof BizError ? err.message : '操作失败，请重试')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const submitPassword = async () => {
+    if (!password) {
+      setError('请填写密码')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const tokens = await loginByPassword(phone, password)
+      login(tokens)
+      navigateAfter(tokens)
+    } catch (err) {
+      if (err instanceof BizError && err.code === PASSWORD_NOT_SET) {
+        setError('该账号还没有设置密码，请改用验证码登录')
       } else {
         setError(err instanceof BizError ? err.message : '操作失败，请重试')
       }
@@ -108,15 +118,17 @@ export default function LoginPage() {
     }
   }
 
-  const eyebrow =
-    mode === 'password' ? '密码登录' : mode === 'code' ? '验证码登录 · 自动注册' : '设置登录密码'
-  const title = mode === 'setpw' ? '设置密码' : '登录'
-  const sub =
-    mode === 'password'
-      ? '用学生手机号 + 密码登录。'
-      : mode === 'code'
-        ? '用学生手机号一键登录，若未注册则会一键注册。'
-        : '验证手机号后设置登录密码，之后即可用密码登录。'
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    // 内置超级管理员用 phone="admin" 走密码登录；其余一律 11 位手机号
+    const phoneOk = PHONE_RE.test(phone) || (mode === 'password' && phone === 'admin')
+    if (!phoneOk) {
+      setError('请输入有效的 11 位手机号')
+      return
+    }
+    if (mode === 'code') submitCode()
+    else submitPassword()
+  }
 
   return (
     <main className="login-page">
@@ -133,36 +145,16 @@ export default function LoginPage() {
       <section className="login-hero">
         <div className="login-eyebrow">
           <span className="pulse" />
-          <span>{eyebrow}</span>
+          <span>{mode === 'code' ? '验证码登录 · 未注册自动注册' : '密码登录'}</span>
           <span className="ln" />
         </div>
 
-        <h1 className="login-title">{title}</h1>
-        <p className="login-sub">{sub}</p>
-
-        {/* 登录方式切换（设置密码模式下隐藏） */}
-        {mode !== 'setpw' && (
-          <div className="login-tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'password'}
-              className={`login-tab${mode === 'password' ? ' active' : ''}`}
-              onClick={() => switchMode('password')}
-            >
-              密码登录
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'code'}
-              className={`login-tab${mode === 'code' ? ' active' : ''}`}
-              onClick={() => switchMode('code')}
-            >
-              验证码登录
-            </button>
-          </div>
-        )}
+        <h1 className="login-title">登录</h1>
+        <p className="login-sub">
+          {mode === 'code'
+            ? '用学生手机号 + 短信验证码登录；新用户将自动注册。'
+            : '用学生手机号 + 密码登录。'}
+        </p>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
           <div className="login-field">
@@ -181,48 +173,68 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* 验证码行：验证码登录 / 设置密码 模式需要 */}
-          {(mode === 'code' || mode === 'setpw') && (
-            <div className="login-field-row">
-              <input
-                type="text"
-                className="login-input"
-                placeholder="请输入验证码"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value)
-                  if (error) setError('')
-                }}
-                maxLength={6}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                aria-label="验证码"
-              />
-              <button
-                type="button"
-                className="login-code-btn"
-                onClick={handleGetCode}
-                disabled={sentCountdown > 0}
-              >
-                {sentCountdown > 0 ? `${sentCountdown} s` : '获取验证码'}
-              </button>
-            </div>
-          )}
+          {mode === 'code' ? (
+            <>
+              <div className="login-field-row">
+                <input
+                  type="text"
+                  className="login-input"
+                  placeholder="请输入验证码"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value)
+                    if (error) setError('')
+                  }}
+                  maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label="验证码"
+                />
+                <button
+                  type="button"
+                  className="login-code-btn"
+                  onClick={handleGetCode}
+                  disabled={sentCountdown > 0}
+                >
+                  {sentCountdown > 0 ? `${sentCountdown} s` : '获取验证码'}
+                </button>
+              </div>
 
-          {/* 密码行：密码登录 / 设置密码 模式需要 */}
-          {(mode === 'password' || mode === 'setpw') && (
+              {/* 发送验证码后才出现：可选设置登录密码 */}
+              {codeSent && (
+                <div className="login-field">
+                  <input
+                    type="password"
+                    className="login-input"
+                    placeholder="设置登录密码（可选）"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (error) setError('')
+                    }}
+                    maxLength={32}
+                    autoComplete="new-password"
+                    aria-label="设置登录密码（可选）"
+                  />
+                  <div className="login-field-hint">
+                    8–32 位、字母+数字。留空则仅用验证码登录，可日后在「我的」里补设。
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
             <div className="login-field">
               <input
                 type="password"
                 className="login-input"
-                placeholder={mode === 'setpw' ? '设置密码（8–32 位，字母+数字）' : '请输入密码'}
+                placeholder="请输入密码"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
                   if (error) setError('')
                 }}
                 maxLength={32}
-                autoComplete={mode === 'setpw' ? 'new-password' : 'current-password'}
+                autoComplete="current-password"
                 aria-label="密码"
               />
             </div>
@@ -233,35 +245,23 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" className="login-submit" disabled={loading}>
-            <span>
-              {loading
-                ? '处理中…'
-                : mode === 'setpw'
-                  ? '设置并登录'
-                  : '立即登录'}
-            </span>
+            <span>{loading ? '处理中…' : '登录'}</span>
             <span aria-hidden className="login-arrow">↗</span>
           </button>
         </form>
 
-        {/* 底部辅助链接 */}
-        {mode === 'setpw' ? (
-          <p className="login-tip">
-            已有密码？
-            <button type="button" className="login-flip login-linkbtn" onClick={() => switchMode('password')}>
-              <span>返回登录</span>
-              <span aria-hidden>→</span>
-            </button>
-          </p>
-        ) : (
-          <p className="login-tip">
-            还没有密码？
-            <button type="button" className="login-flip login-linkbtn" onClick={() => switchMode('setpw')}>
-              <span>设置密码</span>
-              <span aria-hidden>→</span>
-            </button>
-          </p>
-        )}
+        {/* 切换登录方式 */}
+        <p className="login-tip">
+          {mode === 'code' ? '已设置过密码？' : '没有密码或想自动注册？'}
+          <button
+            type="button"
+            className="login-flip login-linkbtn"
+            onClick={() => switchMode(mode === 'code' ? 'password' : 'code')}
+          >
+            <span>{mode === 'code' ? '改用密码登录' : '改用验证码登录'}</span>
+            <span aria-hidden>→</span>
+          </button>
+        </p>
 
         {import.meta.env.DEV && (
           <button

@@ -276,6 +276,15 @@
   opacity: 0.5;
 }
 
+.login-field-hint {
+  margin-top: 8px;
+  padding: 0 6px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 .login-error-slot {
   min-height: 18px;
   margin: -2px 0;
