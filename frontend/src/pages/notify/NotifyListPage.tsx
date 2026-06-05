@@ -7,15 +7,22 @@ import '../tasks/Tasks.css'
 
 type Tab = 'all' | 'unread' | 'read'
 
+// 与后端 appendLetter 实际下发的 type 一一对应（task / auth / credit / team / report / admin）
 const TYPE_LABEL: Record<string, { label: string; tone: string }> = {
-  TASK_ACCEPTED:  { label: '任务',  tone: 'pending' },
-  TASK_PROOF:     { label: '凭证',  tone: 'wait' },
-  TASK_REMINDER:  { label: '提醒',  tone: 'expired' },
-  CREDIT_SETTLE:  { label: '积分',  tone: 'done' },
-  CREDIT_FREEZE:  { label: '积分',  tone: 'progress' },
-  REVIEW:         { label: '评价',  tone: 'done' },
-  SYSTEM:         { label: '系统',  tone: 'canceled' },
+  TASK_ACCEPTED:        { label: '接单',  tone: 'pending' },
+  TASK_COMPLETED:       { label: '完成',  tone: 'done' },
+  TASK_CANCELED:        { label: '取消',  tone: 'canceled' },
+  TASK_EXPIRED:         { label: '过期',  tone: 'expired' },
+  VERIFY_RESULT:        { label: '认证',  tone: 'progress' },
+  CREDIT_APPEAL_RESULT: { label: '申诉',  tone: 'wait' },
+  TEAM_APPLY_RESULT:    { label: '组队',  tone: 'progress' },
+  REPORT_RESULT:        { label: '举报',  tone: 'wait' },
+  REPORT_ACTION:        { label: '处罚',  tone: 'expired' },
+  ACCOUNT_BAN:          { label: '账号',  tone: 'expired' },
+  ROLE_CHANGE:          { label: '权限',  tone: 'progress' },
 }
+
+const FALLBACK_META = { label: '通知', tone: 'canceled' }
 
 export default function NotifyListPage() {
   const [tab, setTab] = useState<Tab>('all')
@@ -84,7 +91,7 @@ export default function NotifyListPage() {
       {data && data.length > 0 && (
         <ul className="notify-list">
           {data.map((n) => {
-            const meta = TYPE_LABEL[n.type] ?? { label: n.type, tone: 'canceled' }
+            const meta = TYPE_LABEL[n.type] ?? FALLBACK_META
             const unread = !n.readAt
             return (
               <li

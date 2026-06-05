@@ -41,8 +41,8 @@
 
 .notify-item {
   display: grid;
-  grid-template-columns: 80px 1fr 110px;
-  gap: 24px;
+  grid-template-columns: 64px minmax(0, 1fr) 96px;
+  gap: 20px;
   align-items: start;
   padding: 22px 6px;
   border-bottom: 1px solid var(--line);
@@ -57,8 +57,12 @@
 }
 
 .notify-type {
-  margin-top: 4px;
+  margin-top: 5px;
   justify-self: start;
+  max-width: 100%;
+  /* 兜底：未来出现未映射 type 时也不会撑爆列、压到标题上 */
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .notify-text {
