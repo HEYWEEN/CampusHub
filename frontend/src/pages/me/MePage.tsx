@@ -157,7 +157,7 @@ export default function MePage() {
               <div className="credit-stat">
                 <div className="credit-stat-num is-frozen">{frozen}</div>
                 <div className="credit-stat-label">冻结积分</div>
-                <div className="credit-stat-sub">{frozen > 0 ? `${frozen} 笔占用` : '无冻结'}</div>
+                <div className="credit-stat-sub">{frozen > 0 ? '交易押金占用中' : '无冻结'}</div>
               </div>
               <div className="credit-stat">
                 <div className="credit-stat-num">
