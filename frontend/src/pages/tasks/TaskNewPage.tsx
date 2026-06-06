@@ -95,7 +95,7 @@ export default function TaskNewPage({ tutor = false }: { tutor?: boolean }) {
       <div className="form-page">
         <div className="form-page-head">
           <h1 className="page-title">
-            {isTutor ? <>发布<span className="it">辅导需求</span>。</> : <>发布<span className="it">新任务</span>。</>}
+            {isTutor ? <>发布<span className="it">辅导需求</span></> : <>发布<span className="it">新任务</span></>}
           </h1>
           <p className="form-page-sub">
             {isTutor ? '说清课程和时间，约位靠谱的学长学姐。' : '把需求说清楚，靠谱的同学会来接单。'}

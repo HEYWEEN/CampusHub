@@ -64,7 +64,7 @@ export default function TeamNewPage() {
     <div className="wrap">
       <div className="form-page">
         <div className="form-page-head">
-          <h1 className="page-title">发布<span className="it">组队</span>。</h1>
+          <h1 className="page-title">发布<span className="it">组队</span></h1>
           <p className="form-page-sub">说清要什么人、要几个人，让对口的同学找上门。</p>
         </div>
 

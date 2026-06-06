@@ -24,7 +24,7 @@ export default function ImListPage() {
   return (
     <div className="wrap">
       <div className="page-head">
-        <h1 className="page-title">消<span className="it">息</span>。</h1>
+        <h1 className="page-title">消<span className="it">息</span></h1>
         <div className="page-sub">私信中心 · 任务 / 二手 / 组队 沟通</div>
       </div>
 

@@ -29,7 +29,7 @@ export default function MyTasksPage() {
     <div className="wrap">
       <div className="page-head">
         <h1 className="page-title">
-          我的<span className="it">任务</span>。
+          我的<span className="it">任务</span>
         </h1>
         <div className="page-sub">发布的 · 接的</div>
       </div>

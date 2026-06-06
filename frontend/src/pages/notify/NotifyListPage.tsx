@@ -76,7 +76,7 @@ export default function NotifyListPage() {
     <div className="wrap">
       <div className="page-head">
         <h1 className="page-title">
-          有新<span className="it">消息</span>。
+          我的<span className="it">消息</span>
         </h1>
         <div className="page-sub">站内通知 · 任务 · 积分 · 系统</div>
       </div>

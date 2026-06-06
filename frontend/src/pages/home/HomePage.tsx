@@ -123,7 +123,7 @@ const TILES: {
       to: '/app/team',
       num: '04',
       cn: '组队',
-      desc: '比赛 / 课设 / 毕设\n找到你的队友',
+      desc: '比赛 / 课设 / 毕设\n一起组队搞定',
       illo: '/illustrations/catching-up.png',
       icon: 'team',
     },

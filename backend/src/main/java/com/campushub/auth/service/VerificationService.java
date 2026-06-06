@@ -158,27 +158,6 @@ public class VerificationService {
         return toVO(ver, fromJsonArray(ver.getAttachmentSha256Json()));
     }
 
-    /**
-     * dev-only：把当前用户最新一条 PENDING verification 改成 APPROVED，
-     * 同时 auth_user.verify_status 升为 APPROVED。
-     * 给 dev/demo 模式下没有管理员审批端的场景兜底。
-     * 由 DevAuthController（@Profile("!prod")）调用，不暴露到生产。
-     */
-    @Transactional
-    public VerificationStatusVO devApproveMine(long userId) {
-        AuthVerification ver = verRepo.findTopByUserIdOrderByCreatedAtDesc(userId)
-                .orElseThrow(() -> new NotFoundException("尚未提交学生证认证"));
-        ver.approve();
-        verRepo.save(ver);
-
-        AuthUser user = userRepo.findById(userId)
-                .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
-        user.setVerifyStatus(VerifyStatus.APPROVED);
-        userRepo.save(user);
-
-        return toVO(ver, fromJsonArray(ver.getAttachmentSha256Json()));
-    }
-
     private VerificationStatusVO toVO(AuthVerification ver, List<String> urls) {
         return new VerificationStatusVO(
                 ver.getId(), ver.getStatus(), ver.getRejectReason(),

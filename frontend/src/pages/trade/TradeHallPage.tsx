@@ -75,7 +75,7 @@ export default function TradeHallPage() {
         <section className="hall-hero">
           <div className="hall-hero-lead">
             <h1 className="page-title">
-              宿舍里的<span className="it">好东西</span>。
+              闲置<span className="it">好物</span>
             </h1>
             <p className="hall-hero-sub">同校面交、积分结算，把闲置流转给需要的人。</p>
             <div className="hall-cta">

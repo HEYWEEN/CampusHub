@@ -58,7 +58,7 @@ export default function TradeNewPage() {
       <div className="form-page">
         <div className="form-page-head">
           <h1 className="page-title">
-            挂个<span className="it">出售</span>。
+            挂个<span className="it">出售</span>
           </h1>
           <p className="form-page-sub">拍清楚、写明白，闲置更快出手。</p>
         </div>

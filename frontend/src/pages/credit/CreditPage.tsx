@@ -42,7 +42,7 @@ export default function CreditPage() {
     <div className="wrap">
       <div className="page-head">
         <h1 className="page-title">
-          信用 · <span className="it">积分</span>。
+          信用 · <span className="it">积分</span>
         </h1>
         <div className="page-sub">信用账户 · 积分流水 · 申诉</div>
       </div>

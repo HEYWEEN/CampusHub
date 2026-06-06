@@ -75,7 +75,7 @@ function ProfileEditForm({ me }: { me: UserMeVO }) {
 
       <div className="page-head">
         <h1 className="page-title">
-          编辑我的<span className="it">资料</span>。
+          编辑我的<span className="it">资料</span>
         </h1>
         <div className="page-sub">个人信息 · 隐私</div>
       </div>

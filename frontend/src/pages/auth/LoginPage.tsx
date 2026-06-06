@@ -272,25 +272,6 @@ export default function LoginPage() {
             <span aria-hidden>→</span>
           </button>
         </p>
-
-        {import.meta.env.DEV && (
-          <button
-            type="button"
-            onClick={() => {
-              login({
-                userId: 'u1',
-                accessToken: 'dev-fake-token',
-                refreshToken: 'dev-fake-refresh',
-                verifyStatus: 'approved',
-              })
-              navigate('/app/tasks', { replace: true })
-            }}
-            className="ghost-link"
-            style={{ alignSelf: 'flex-start', marginTop: 24, color: 'var(--muted)' }}
-          >
-            [DEV] 跳过登录，直接进入 App <span aria-hidden>→</span>
-          </button>
-        )}
       </section>
     </main>
   )

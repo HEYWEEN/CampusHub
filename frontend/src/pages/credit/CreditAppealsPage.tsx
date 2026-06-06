@@ -39,7 +39,7 @@ export default function CreditAppealsPage() {
   return (
     <div className="wrap">
       <div className="page-head">
-        <h1 className="page-title">差评<span className="it">申诉</span>。</h1>
+        <h1 className="page-title">差评<span className="it">申诉</span></h1>
         <div className="page-sub">7 日内 · 同评价 ≤ 3 次 · 管理员裁决</div>
       </div>
 

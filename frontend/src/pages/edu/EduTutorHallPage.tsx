@@ -76,7 +76,7 @@ export default function EduTutorHallPage() {
         <section className="hall-hero">
           <div className="hall-hero-lead">
             <h1 className="page-title">
-              找位<span className="it">学长 / 学姐</span>。
+              学业<span className="it">辅导</span>
             </h1>
             <p className="hall-hero-sub">课程对口、信用透明，约一次靠谱的学业辅导。</p>
             <div className="hall-cta">

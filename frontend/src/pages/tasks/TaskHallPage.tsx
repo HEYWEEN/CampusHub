@@ -99,7 +99,7 @@ export default function TaskHallPage() {
         <section className="hall-hero">
           <div className="hall-hero-lead">
             <h1 className="page-title">
-              找点<span className="it">事</span>做。
+              校园<span className="it">互助</span>
             </h1>
             <p className="hall-hero-sub">发现校园里的需求，帮助同学，也让你的时间更有价值。</p>
             <div className="hall-cta">

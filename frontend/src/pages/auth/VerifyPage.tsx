@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  devApproveVerification,
   submitVerification,
   type VerifySubmitDTO,
 } from '../../api/auth'
@@ -31,20 +30,6 @@ export default function VerifyPage() {
     },
     onError: (err) => setError(err instanceof BizError ? err.message : '提交失败'),
   })
-
-  const devApproveM = useMutation({
-    mutationFn: () => devApproveVerification(),
-    onSuccess: () => {
-      setVerifyStatus('approved')
-      qc.invalidateQueries({ queryKey: ['me'] })
-      navigate('/app/me')
-    },
-    onError: (err) => setError(err instanceof BizError ? err.message : '一键通过失败'),
-  })
-
-  // dev 模式下：用户已提交（status=pending）后显示"模拟通过"按钮
-  const isDev = import.meta.env.DEV
-  const canDevApprove = isDev && verifyStatus === 'pending'
 
   // 已提交待审 / 已通过时不再显示填写表单，只展示状态卡片
   const isPending = verifyStatus === 'pending'
@@ -208,34 +193,6 @@ export default function VerifyPage() {
           </form>
         )}
 
-        {/* DEV-only：admin 模块未实现，提供一键自批通过让 dev 能继续测后续流程 */}
-        {canDevApprove && (
-          <div
-            style={{
-              marginTop: 24,
-              maxWidth: 520,
-              padding: 16,
-              border: '1px dashed var(--line)',
-              borderRadius: 12,
-              background: 'var(--accent-softer)',
-            }}
-          >
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-2)', marginBottom: 8 }}>
-              [DEV] admin 模块未实现，无管理员可审批。你可以模拟一次审核通过：
-            </div>
-            <button
-              type="button"
-              onClick={() => devApproveM.mutate()}
-              disabled={devApproveM.isPending}
-              className="login-submit is-compact"
-            >
-              <span>{devApproveM.isPending ? '处理中…' : '[DEV] 模拟管理员通过 → APPROVED'}</span>
-              <span aria-hidden className="login-arrow">↗</span>
-            </button>
-          </div>
-        )}
-
-        {/* 待审/已通过状态下 error 仍可能来自 dev 一键通过失败 */}
         {!showForm && error && (
           <div className="login-error" style={{ marginTop: 16, maxWidth: 520 }}>{error}</div>
         )}

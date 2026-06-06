@@ -56,7 +56,7 @@ export default function MyTradesPage() {
   return (
     <div className="wrap">
       <div className="page-head">
-        <h1 className="page-title">我的<span className="it">交易</span>。</h1>
+        <h1 className="page-title">我的<span className="it">交易</span></h1>
         <div className="page-sub">砍价 · 订单 · 确认收货</div>
       </div>
 

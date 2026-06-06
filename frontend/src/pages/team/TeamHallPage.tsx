@@ -74,7 +74,7 @@ export default function TeamHallPage() {
         <section className="hall-hero">
           <div className="hall-hero-lead">
             <h1 className="page-title">
-              找几个<span className="it">队友</span>。
+              组队<span className="it">招募</span>
             </h1>
             <p className="hall-hero-sub">比赛、课设、跑步…说清要什么人，组一支靠谱的队。</p>
             <div className="hall-cta">
