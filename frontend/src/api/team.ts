@@ -8,6 +8,7 @@ import type {
 } from '../types/team'
 import {
   mockApplyTeam,
+  mockCloseRecruit,
   mockCreateRecruit,
   mockGetRecruit,
   mockListApplications,
@@ -55,5 +56,12 @@ export const reviewApplication = (applicationId: number | string, approve: boole
   withMock<void>(
     () => apiPatch(`/api/team/applications/${applicationId}`, { approve }),
     () => mockReviewApplication(),
+    'team',
+  )
+
+export const closeRecruit = (id: number | string) =>
+  withMock<void>(
+    () => apiPatch(`/api/team/recruits/${id}/close`),
+    () => mockCloseRecruit(Number(id)),
     'team',
   )

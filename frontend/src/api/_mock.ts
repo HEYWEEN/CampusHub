@@ -867,6 +867,12 @@ export function mockReviewApplication(): void {
   // no-op
 }
 
+export function mockCloseRecruit(id: number): void {
+  const r = teamRecruits.find((x) => x.recruitId === id)
+  if (!r) throw new BizError(404, '组队帖不存在', 404)
+  r.status = 'CLOSED'
+}
+
 // ───── im 私信 mock ─────
 const imConversations: ImConversationVO[] = [
   { conversationId: 1, peer: users.u4, lastMessage: '好的，明天图书馆见～', lastContentType: 'TEXT', lastMsgAt: minutesAgo(8), unreadCount: 2 },

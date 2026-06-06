@@ -75,6 +75,8 @@ export const router = createBrowserRouter([
       // 教育 ✅ FE-E
       { path: 'edu/tutor',     element: <EduTutorHallPage /> },
       { path: 'edu/tutor/new', element: <EduTutorNewPage /> },
+      // 辅导本质是 TUTOR 任务，复用任务详情页；走自己的 URL 让顶栏高亮“辅导”而非“任务”
+      { path: 'edu/tutor/:id', element: <TaskDetailPage /> },
       {
         path: 'edu/resources',
         element: (

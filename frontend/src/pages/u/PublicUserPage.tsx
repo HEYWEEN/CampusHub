@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getPublicStats } from '../../api/user'
 import { startConversation } from '../../api/im'
+import ReportButton from '../../components/domain/ReportButton'
 import { useAuthStore } from '../../stores/auth'
 import '../me/User.css'
 import '../tasks/Tasks.css'
@@ -64,7 +65,12 @@ export default function PublicUserPage() {
               >
                 {startChat.isPending ? '打开中…' : '发起私信 →'}
               </button>
-              <button type="button" className="me-action-btn is-danger">举报这位用户</button>
+              <ReportButton
+                targetType="USER"
+                targetId={Number(user.userId)}
+                className="me-action-btn is-danger"
+                label="举报这位用户"
+              />
             </div>
           )}
           {isMe && (

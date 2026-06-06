@@ -26,4 +26,7 @@ public interface TeamService {
 
     /** 队长审核（同意/拒绝）。 */
     void review(long captainId, long applicationId, TeamApplicationReviewDTO dto);
+
+    /** 队长关闭招募：置为 CLOSED，停止接收新申请；保留帖子与申请历史。 */
+    void closeRecruit(long captainId, long recruitId);
 }

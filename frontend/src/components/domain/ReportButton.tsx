@@ -20,9 +20,15 @@ const REASONS: { value: string; label: string }[] = [
 export default function ReportButton({
   targetType,
   targetId,
+  className = 'report-link',
+  label = '举报',
 }: {
   targetType: ReportTargetType
   targetId: number
+  /** 触发按钮的样式类（默认内联文字链接） */
+  className?: string
+  /** 触发按钮文案 */
+  label?: string
 }) {
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
@@ -42,8 +48,8 @@ export default function ReportButton({
 
   return (
     <>
-      <button type="button" className="report-link" onClick={() => setOpen(true)}>
-        举报
+      <button type="button" className={className} onClick={() => setOpen(true)}>
+        {label}
       </button>
 
       {open && createPortal(

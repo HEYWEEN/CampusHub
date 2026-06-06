@@ -192,6 +192,22 @@ public class TeamServiceImpl implements TeamService {
         }
     }
 
+    // ==================== 队长关闭招募 ====================
+
+    @Override
+    @Transactional
+    public void closeRecruit(long captainId, long recruitId) {
+        TeamRecruit r = findRecruit(recruitId);
+        if (r.getCreatorId() != captainId) {
+            throw new BizException(TeamErrorCode.NOT_CAPTAIN, "仅队长可关闭招募", 403);
+        }
+        if (r.getStatus() == TeamRecruitStatus.CLOSED) {
+            throw new BizException(TeamErrorCode.RECRUIT_CLOSED, "该组队已结束招募", 409);
+        }
+        r.setStatus(TeamRecruitStatus.CLOSED);
+        recruitRepo.save(r);
+    }
+
     // ==================== 内部 ====================
 
     private TeamRecruit findRecruit(long recruitId) {

@@ -9,8 +9,12 @@ import './Domain.css'
 export default function TaskCard({ task }: { task: TaskListItemVO }) {
   const dl = formatDeadline(task.deadlineAt)
   const openable = task.status === 'PENDING_ACCEPT'
+  // 辅导任务走辅导专属 URL，顶栏高亮“辅导”
+  const detailPath = task.taskType === 'TUTOR'
+    ? `/app/edu/tutor/${task.taskId}`
+    : `/app/tasks/${task.taskId}`
   return (
-    <Link to={`/app/tasks/${task.taskId}`} className="task-card">
+    <Link to={detailPath} className="task-card">
       <div className="task-card-head">
         <span className={`task-type task-type-${task.taskType.toLowerCase()}`}>
           {TASK_TYPE_LABEL[task.taskType]}

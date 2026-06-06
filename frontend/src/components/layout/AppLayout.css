@@ -139,13 +139,8 @@
   color: var(--accent);
 }
 .app-user-name { white-space: nowrap; }
-.app-user-caret {
-  color: var(--muted);
-  transition: transform .2s ease;
-}
-.app-user:hover .app-user-caret { transform: translateY(1px); color: var(--ink-2); }
 @media (max-width: 720px) {
-  .app-user-name, .app-user-caret { display: none; }
+  .app-user-name { display: none; }
   .app-user { padding: 2px; }
 }
 

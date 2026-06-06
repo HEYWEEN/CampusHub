@@ -73,4 +73,11 @@ public class TeamController {
         teamService.review(CurrentUserHolder.getUserId(), applicationId, dto);
         return ApiResponse.success();
     }
+
+    /** 队长关闭招募：置为 CLOSED，停止接收新申请。 */
+    @PatchMapping("/team/recruits/{id}/close")
+    public ApiResponse<Void> close(@PathVariable("id") long recruitId) {
+        teamService.closeRecruit(CurrentUserHolder.getUserId(), recruitId);
+        return ApiResponse.success();
+    }
 }

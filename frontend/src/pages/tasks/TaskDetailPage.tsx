@@ -85,10 +85,13 @@ export default function TaskDetailPage() {
     )
   }
 
+  // 辅导本质是 TUTOR 类型的任务，复用本页；文案按类型自适应，避免“点辅导落到任务”的违和感
+  const noun = task.taskType === 'TUTOR' ? '辅导' : '任务'
+
   return (
     <div className="wrap">
       <button onClick={() => navigate(-1)} className="detail-back">
-        <span aria-hidden>←</span> 返回任务大厅
+        <span aria-hidden>←</span> 返回{noun}大厅
       </button>
 
       <div className="detail-layout">
@@ -138,7 +141,7 @@ export default function TaskDetailPage() {
             </div>
           ) : (
             <div className={`timeline-terminal timeline-terminal-${task.status === 'CANCELED' ? 'canceled' : 'expired'}`}>
-              {task.status === 'CANCELED' ? '此任务已取消' : '此任务已超时'}
+              {task.status === 'CANCELED' ? `此${noun}已取消` : `此${noun}已超时`}
             </div>
           )}
         </div>
@@ -250,6 +253,7 @@ function ActionPanel(props: {
   actionError: Error | null
 }) {
   const { task, currentUserId } = props
+  const noun = task.taskType === 'TUTOR' ? '辅导' : '任务'
   const isPublisher = task.publisher.userId === currentUserId
   const isAcceptor  = task.assignee?.userId === currentUserId
   const [showProof, setShowProof] = useState(false)
@@ -262,7 +266,7 @@ function ActionPanel(props: {
   if (task.status === 'COMPLETED' || task.status === 'CANCELED' || task.status === 'EXPIRED') {
     return (
       <button className="action-btn action-btn-ghost" disabled>
-        任务已结束
+        {noun}已结束
       </button>
     )
   }
@@ -273,7 +277,7 @@ function ActionPanel(props: {
       return (
         <>
           <button onClick={props.onCancel} className="action-btn action-btn-ghost" disabled={props.cancelLoading}>
-            {props.cancelLoading ? '取消中…' : '取消任务'}
+            {props.cancelLoading ? '取消中…' : `取消${noun}`}
           </button>
           <p className="action-hint">等待同学接单中</p>
           {props.actionError && <p className="action-hint is-error">{props.actionError.message}</p>}
@@ -381,5 +385,5 @@ function ActionPanel(props: {
     )
   }
 
-  return <button className="action-btn action-btn-ghost" disabled>任务进行中</button>
+  return <button className="action-btn action-btn-ghost" disabled>{noun}进行中</button>
 }

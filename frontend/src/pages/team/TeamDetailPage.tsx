@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { applyTeam, getRecruit, listApplications, reviewApplication } from '../../api/team'
+import { applyTeam, closeRecruit, getRecruit, listApplications, reviewApplication } from '../../api/team'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import { TEAM_STATUS_LABEL } from '../../utils/labels'
@@ -14,6 +14,7 @@ export default function TeamDetailPage() {
   const qc = useQueryClient()
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [confirmClose, setConfirmClose] = useState(false)
 
   const { data: recruit, isLoading, error: loadErr } = useQuery({
     queryKey: ['team', id],
@@ -40,6 +41,16 @@ export default function TeamDetailPage() {
       qc.invalidateQueries({ queryKey: ['team', id] })
     },
     onError: (e) => setError(e instanceof BizError ? e.message : '操作失败'),
+  })
+
+  const closeMut = useMutation({
+    mutationFn: () => closeRecruit(id),
+    onSuccess: () => {
+      setConfirmClose(false)
+      qc.invalidateQueries({ queryKey: ['team', id] })
+      qc.invalidateQueries({ queryKey: ['teams'] })
+    },
+    onError: (e) => setError(e instanceof BizError ? e.message : '关闭失败'),
   })
 
   if (isLoading) return <div className="wrap"><div className="task-loading">加载中…</div></div>
@@ -153,6 +164,35 @@ export default function TeamDetailPage() {
                     {applyMut.isPending ? '提交中…' : '申请加入'}
                   </button>
                 </div>
+              )}
+            </>
+          )}
+
+          {/* 队长视角：关闭招募 */}
+          {recruit.isCreator && (
+            <>
+              <div className="side-divider" />
+              {recruit.status === 'CLOSED' ? (
+                <div className="action-hint">该组队招募已关闭</div>
+              ) : confirmClose ? (
+                <div className="side-section">
+                  <div className="action-hint is-spaced">关闭后停止接收新申请，且无法重新开启。已通过的队友不受影响。</div>
+                  <button type="button" className="action-btn action-btn-ghost"
+                    disabled={closeMut.isPending}
+                    onClick={() => { setError(''); closeMut.mutate() }}>
+                    {closeMut.isPending ? '关闭中…' : '确认关闭招募'}
+                  </button>
+                  <button type="button" className="action-btn action-btn-ghost"
+                    disabled={closeMut.isPending}
+                    onClick={() => setConfirmClose(false)}>
+                    再想想
+                  </button>
+                </div>
+              ) : (
+                <button type="button" className="action-btn action-btn-ghost"
+                  onClick={() => setConfirmClose(true)}>
+                  关闭招募
+                </button>
               )}
             </>
           )}
