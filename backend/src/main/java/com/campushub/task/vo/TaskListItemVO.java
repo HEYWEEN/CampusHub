@@ -17,9 +17,15 @@ public record TaskListItemVO(
         Instant deadlineAt,
         String deliveryBuilding,
         PublicUserVO publisher,
+        PublicUserVO assignee,
         Instant createdAt
 ) {
+    /** 开放任务列表（推荐 / 检索无接单者语境）：assignee 置空。 */
     public static TaskListItemVO from(Task task, PublicUserVO publisher) {
+        return from(task, publisher, null);
+    }
+
+    public static TaskListItemVO from(Task task, PublicUserVO publisher, PublicUserVO assignee) {
         return new TaskListItemVO(
                 task.getId(),
                 task.getTitle(),
@@ -30,6 +36,7 @@ public record TaskListItemVO(
                 task.getDeadlineAt(),
                 task.getDeliveryBuilding(),
                 publisher,
+                assignee,
                 task.getCreatedAt()
         );
     }

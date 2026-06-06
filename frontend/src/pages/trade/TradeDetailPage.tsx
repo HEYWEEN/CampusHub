@@ -37,11 +37,10 @@ export default function TradeDetailPage() {
     qc.invalidateQueries({ queryKey: ['trade', 'my-offers'] })
     qc.invalidateQueries({ queryKey: ['item', id] })
   }
-  const sendOrder = useSendOrderCard()
-
   const [showOffer, setShowOffer] = useState(false)
   const [offerPrice, setOfferPrice] = useState('')
   const [actErr, setActErr] = useState('')
+  const sendOrder = useSendOrderCard((m) => setActErr(m))
 
   const buyMut = useMutation({
     mutationFn: (price: number) => createOrder(Number(id), price),
@@ -184,7 +183,7 @@ export default function TradeDetailPage() {
               <button
                 className="action-btn action-btn-ghost"
                 disabled={sendOrder.isPending}
-                onClick={() => sendOrder.mutate({
+                onClick={() => { setActErr(''); sendOrder.mutate({
                   peerId: item.seller.userId,
                   card: {
                     kind: 'TRADE',
@@ -193,7 +192,7 @@ export default function TradeDetailPage() {
                     cover: item.imageUrls[0] ?? null,
                     pricePoint: item.pricePoint,
                   },
-                })}
+                }) }}
               >
                 {sendOrder.isPending ? '发起中…' : '联系卖家 · 随便聊聊'}
               </button>

@@ -6,9 +6,17 @@ import { formatDeadline, formatRelativeTime } from '../../utils/format'
 import { TASK_TYPE_LABEL } from '../../utils/labels'
 import './Domain.css'
 
-export default function TaskCard({ task }: { task: TaskListItemVO }) {
+export default function TaskCard({
+  task,
+  context,
+}: {
+  task: TaskListItemVO
+  /** published：我发布的（展示接单者）；accepted/缺省：展示发布者 */
+  context?: 'published' | 'accepted'
+}) {
   const dl = formatDeadline(task.deadlineAt)
   const openable = task.status === 'PENDING_ACCEPT'
+  const showAssignee = context === 'published'
   // 辅导任务走辅导专属 URL，顶栏高亮“辅导”
   const detailPath = task.taskType === 'TUTOR'
     ? `/app/edu/tutor/${task.taskId}`
@@ -34,7 +42,18 @@ export default function TaskCard({ task }: { task: TaskListItemVO }) {
       </div>
 
       <div className="task-card-foot">
-        <PublicUserCard user={task.publisher} size="sm" />
+        {showAssignee ? (
+          task.assignee ? (
+            <span className="task-card-party">
+              <span className="task-card-party-label">接单者</span>
+              <PublicUserCard user={task.assignee} size="sm" />
+            </span>
+          ) : (
+            <span className="task-card-party task-card-party-empty">待接单</span>
+          )
+        ) : (
+          <PublicUserCard user={task.publisher} size="sm" />
+        )}
         <div className="task-card-foot-right">
           <span className="task-reward">
             <span className="task-reward-num">{task.rewardPoint}</span>

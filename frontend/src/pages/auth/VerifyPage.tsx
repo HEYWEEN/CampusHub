@@ -37,7 +37,7 @@ export default function VerifyPage() {
   const isRejected = verifyStatus === 'rejected'
   const showForm = !isPending && !isApproved
 
-  const goBrowse = () => navigate('/app/tasks')
+  const goBrowse = () => navigate('/')
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -74,7 +74,7 @@ export default function VerifyPage() {
           <span>CampusHub</span>
         </a>
         <button
-          onClick={() => navigate('/app/tasks')}
+          onClick={() => navigate('/')}
           className="ghost-link"
           style={{ border: 0, background: 'transparent', cursor: 'pointer' }}
         >

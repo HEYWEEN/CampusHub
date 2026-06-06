@@ -1,6 +1,6 @@
 import { apiGet, apiPost } from './client'
 import { type PageResponse } from '../types/api'
-import type { CreditAppealVO, CreditMeVO, CreditRecord, ReceivedReviewVO } from '../types/credit'
+import type { CreditAppealVO, CreditMeVO, CreditRecord, ReceivedReviewVO, ReviewResultVO } from '../types/credit'
 import {
   mockGetCredit,
   mockListCreditRecords,
@@ -29,6 +29,16 @@ export const listMyRecords = (page = 1, size = 20) =>
       const items = mockListCreditRecords()
       return { items, total: items.length, page, size }
     },
+  )
+
+// ───── 任务评价（CRD-02） ─────
+
+/** 提交对任务对方的评分。reviewer 取自登录态;同一任务重复提交后端返回 409。 */
+export const submitReview = (taskId: number, revieweeId: number, rating: number, comment: string) =>
+  withMock<ReviewResultVO>(
+    () => apiPost('/api/credit/reviews', { taskId, revieweeId, rating, comment }),
+    () => ({ reviewId: Date.now(), bothReviewed: false }),
+    'credit',
   )
 
 // ───── 信用申诉（F-CREDIT-05~07） ─────

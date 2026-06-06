@@ -47,6 +47,19 @@ const TYPE_LINK: Record<string, string> = {
 
 const FALLBACK_META = { label: '通知', tone: 'canceled' }
 
+/**
+ * 从 bizId 取业务实体 id。
+ * 后端格式 `TYPE:entityId:userId`（如 `TASK_COMPLETED:109:7002`）→ 取第 2 段；
+ * 历史/mock 格式 `t109` → 抽数字。无则 null。
+ */
+function bizEntityId(bizId?: string): string | null {
+  if (!bizId) return null
+  const parts = bizId.split(':')
+  const raw = parts.length >= 2 ? parts[1] : parts[0]
+  const digits = raw.replace(/\D/g, '')
+  return digits || null
+}
+
 export default function NotifyListPage() {
   const [tab, setTab] = useState<Tab>('all')
   const qc = useQueryClient()
@@ -117,7 +130,9 @@ export default function NotifyListPage() {
           {data.map((n) => {
             const meta = TYPE_LABEL[n.type] ?? FALLBACK_META
             const unread = !n.readAt
-            const link = TYPE_LINK[n.type]
+            // TASK_* 带 bizId 时直达任务详情（bizKey = TYPE:taskId:userId），否则回退静态映射
+            const taskId = n.type.startsWith('TASK_') ? bizEntityId(n.bizId) : null
+            const link = taskId ? `/app/tasks/${taskId}` : TYPE_LINK[n.type]
             const go = () => {
               if (!link) return
               if (unread) markM.mutate(n.id)

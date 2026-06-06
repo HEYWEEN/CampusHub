@@ -40,7 +40,7 @@ export default function LoginPage() {
   }
 
   const navigateAfter = (tokens: TokenPair) => {
-    navigate(tokens.verifyStatus === 'guest' ? '/verify' : '/app/tasks', { replace: true })
+    navigate(tokens.verifyStatus === 'guest' ? '/verify' : '/', { replace: true })
   }
 
   const handleGetCode = async () => {

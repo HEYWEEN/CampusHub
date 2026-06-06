@@ -41,7 +41,11 @@ public class TaskController {
         Page<Task> page = taskService.search(query);
         return ApiResponse.success(PageResponse.of(page, task -> {
             PublicUserVO pub = userApi.getPublicUser(task.getPublisherId());
-            return TaskListItemVO.from(task, pub);
+            // 「我发布的」tab 需展示谁接了单；有 assigneeId 才查（开放任务为 null）
+            PublicUserVO assignee = task.getAssigneeId() != null
+                    ? userApi.getPublicUser(task.getAssigneeId())
+                    : null;
+            return TaskListItemVO.from(task, pub, assignee);
         }));
     }
 

@@ -219,6 +219,21 @@ a.puc:hover .puc-name {
   gap: 14px;
 }
 
+/* 「我发布的」卡片：展示接单者 / 待接单 */
+.task-card-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.task-card-party-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.task-card-party-empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* 组队卡：技能标签 chips + 人数 */
 .team-tags {
   display: flex;

@@ -25,6 +25,7 @@ export interface TaskListItemVO {
   deadlineAt: string             // ISO 8601
   deliveryBuilding: string       // 原前端 building?，后端必返
   publisher: PublicUserVO
+  assignee?: PublicUserVO | null // 接单者（开放任务为 null；「我发布的」tab 展示用）
   createdAt: string
 }
 
@@ -32,6 +33,7 @@ export interface TaskListItemVO {
 export interface TaskDetailVO extends TaskListItemVO {
   pickupHint: string             // 取件位置
   assignee?: PublicUserVO | null // 原前端 acceptor
+  proofText?: string | null      // 接单者提交凭证时的「完成说明」
   attachmentUrls: string[]       // 原前端 attachments(TaskAttachment[])
   version: number                // 乐观锁（accept/cancel 需传）
   canAccept: boolean             // 后端推导：当前用户能否接单

@@ -65,7 +65,7 @@ export default function MyTasksPage() {
       {!isLoading && filtered.length > 0 && (
         <div className="tasks-grid">
           {filtered.map((t) => (
-            <TaskCard key={t.taskId} task={t} />
+            <TaskCard key={t.taskId} task={t} context={tab} />
           ))}
         </div>
       )}

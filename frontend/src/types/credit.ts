@@ -19,6 +19,12 @@ export interface CreditAppealVO {
   createdAt: string
 }
 
+// 对齐后端 ReviewResultVO（提交评价响应）
+export interface ReviewResultVO {
+  reviewId: number
+  bothReviewed: boolean   // 双方都已互评 → 各 +1 信用分
+}
+
 // 对齐后端 ReceivedReviewVO（申诉入口）
 export interface ReceivedReviewVO {
   reviewId: number

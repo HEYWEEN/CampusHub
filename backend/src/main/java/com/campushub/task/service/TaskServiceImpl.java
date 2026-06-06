@@ -312,6 +312,7 @@ public class TaskServiceImpl implements TaskService, TaskApi {
             }
         }
 
+        task.setProofText(text);
         taskRepo.save(task);
         return new TaskProofVO(taskId, task.getStatus(), text, urls);
     }

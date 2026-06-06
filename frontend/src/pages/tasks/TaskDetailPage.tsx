@@ -13,6 +13,7 @@ import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import type { TaskDetailVO, TaskStatus } from '../../types/task'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import ReviewModal from '../../components/domain/ReviewModal'
 import { useSendOrderCard } from '../../components/domain/useSendOrderCard'
 import ReportButton from '../../components/domain/ReportButton'
 import TaskStatusBadge from '../../components/domain/TaskStatusBadge'
@@ -67,7 +68,10 @@ export default function TaskDetailPage() {
     mutationFn: () => confirmTask(id),
     onSuccess: invalidateAll,
   })
-  const sendOrder = useSendOrderCard()
+  const [sendErr, setSendErr] = useState('')
+  const sendOrder = useSendOrderCard((m) => setSendErr(m))
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [reviewDone, setReviewDone] = useState(false)
 
   if (isLoading) {
     return (
@@ -88,6 +92,18 @@ export default function TaskDetailPage() {
   // 辅导本质是 TUTOR 类型的任务，复用本页；文案按类型自适应，避免“点辅导落到任务”的违和感
   const noun = task.taskType === 'TUTOR' ? '辅导' : '任务'
 
+  // 任务完成后，参与双方可互评：发布者评接单者，接单者评发布者
+  const isPublisherView = task.publisher.userId === currentUserId
+  const isAssigneeView = task.assignee?.userId === currentUserId
+  const reviewTarget =
+    task.status === 'COMPLETED'
+      ? isPublisherView
+        ? task.assignee
+        : isAssigneeView
+          ? task.publisher
+          : null
+      : null
+
   return (
     <div className="wrap">
       <button onClick={() => navigate(-1)} className="detail-back">
@@ -106,6 +122,14 @@ export default function TaskDetailPage() {
 
           <h1 className="detail-title">{task.title}</h1>
           <p className="detail-desc">{task.remark}</p>
+
+          {/* 完成说明（接单者提交凭证时填写的备注） */}
+          {task.proofText && (
+            <div className="detail-proof">
+              <div className="detail-proof-title">完成说明</div>
+              <p className="detail-proof-note">{task.proofText}</p>
+            </div>
+          )}
 
           {/* 凭证 — TODO: 后端 TaskDetailVO.attachmentUrls 不带 kind 分类，
               凭证 vs 详情图无法区分；等 P1/P2 阶段补 TaskAttachmentVO 后再恢复 */}
@@ -156,7 +180,7 @@ export default function TaskDetailPage() {
                 type="button"
                 className="side-im-btn"
                 disabled={sendOrder.isPending}
-                onClick={() => sendOrder.mutate({
+                onClick={() => { setSendErr(''); sendOrder.mutate({
                   peerId: task.publisher.userId,
                   card: {
                     kind: 'TASK',
@@ -165,11 +189,12 @@ export default function TaskDetailPage() {
                     cover: task.attachmentUrls?.[0] ?? null,
                     pricePoint: task.rewardPoint,
                   },
-                })}
+                }) }}
               >
                 {sendOrder.isPending ? '发起中…' : '私信 TA · 聊这单 →'}
               </button>
             )}
+            {sendErr && <p className="action-hint is-error">{sendErr}</p>}
           </div>
 
           {task.assignee && (
@@ -228,6 +253,25 @@ export default function TaskDetailPage() {
             actionError={acceptM.error || cancelM.error || confirmM.error}
           />
 
+          {reviewTarget && (
+            <div className="side-section">
+              {reviewDone ? (
+                <p className="action-hint">已提交评价，感谢反馈 🙌</p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="action-btn action-btn-primary"
+                    onClick={() => setReviewOpen(true)}
+                  >
+                    评价{reviewTarget.nickname ? ` ${reviewTarget.nickname}` : '对方'}
+                  </button>
+                  <p className="action-hint">{noun}已完成，给对方一个评价吧</p>
+                </>
+              )}
+            </div>
+          )}
+
           {!task.isPublisher && (
             <div className="side-report">
               <ReportButton targetType="TASK" targetId={Number(task.taskId)} />
@@ -235,6 +279,17 @@ export default function TaskDetailPage() {
           )}
         </aside>
       </div>
+
+      {reviewTarget && (
+        <ReviewModal
+          open={reviewOpen}
+          onClose={() => setReviewOpen(false)}
+          taskId={Number(task.taskId)}
+          revieweeId={Number(reviewTarget.userId)}
+          revieweeName={reviewTarget.nickname || '对方'}
+          onSuccess={() => setReviewDone(true)}
+        />
+      )}
     </div>
   )
 }

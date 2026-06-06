@@ -57,6 +57,10 @@ public class Task {
     @Column(name = "remark", length = 500)
     private String remark;
 
+    /** 接单者提交凭证时填写的「完成说明」，发布者确认时可见。 */
+    @Column(name = "proof_text", length = 500)
+    private String proofText;
+
     @Version
     @Column(name = "version", nullable = false)
     private Integer version = 0;
@@ -123,6 +127,8 @@ public class Task {
     public void setDeliveryBuilding(String v) { this.deliveryBuilding = v; touch(); }
     public String getRemark() { return remark; }
     public void setRemark(String v) { this.remark = v; touch(); }
+    public String getProofText() { return proofText; }
+    public void setProofText(String v) { this.proofText = v; touch(); }
     public Integer getVersion() { return version; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
