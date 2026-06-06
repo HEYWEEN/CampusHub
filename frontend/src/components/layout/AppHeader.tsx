@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../../stores/auth'
@@ -6,6 +6,7 @@ import { useNotifyStore } from '../../stores/notify'
 import { getUnreadCount } from '../../api/notify'
 import { getUnread as getImUnread } from '../../api/im'
 import { getMe } from '../../api/user'
+import HelpModal from './HelpModal'
 
 const NAV = [
   { to: '/',              label: '首页', end: true },
@@ -25,6 +26,7 @@ export default function AppHeader() {
   const navigate = useNavigate()
   const accessToken = useAuthStore((s) => s.accessToken)
   const isLoggedIn = !!accessToken
+  const [helpOpen, setHelpOpen] = useState(false)
   const unread = useNotifyStore((s) => s.unreadCount)
   const setUnread = useNotifyStore((s) => s.setUnread)
 
@@ -91,6 +93,13 @@ export default function AppHeader() {
           </nav>
 
           <div className="app-header-right">
+            <button type="button" className="app-icon-btn" aria-label="使用说明" onClick={() => setHelpOpen(true)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 1.8-2.6 2.2-2.6 4" />
+                <path d="M12 17.5h.01" />
+              </svg>
+            </button>
             {(me?.role === 'ADMIN' || me?.role === 'SUPER_ADMIN') && (
               <Link to="/admin" className="app-admin-link">管理后台</Link>
             )}
@@ -123,10 +132,21 @@ export default function AppHeader() {
           </div>
         </>
       ) : (
-        <Link to="/login" className="app-pill">
-          登录使用 <span className="arr">→</span>
-        </Link>
+        <div className="app-header-right">
+          <button type="button" className="app-icon-btn" aria-label="使用说明" onClick={() => setHelpOpen(true)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.2 9a2.8 2.8 0 0 1 5.4 1c0 1.8-2.6 2.2-2.6 4" />
+              <path d="M12 17.5h.01" />
+            </svg>
+          </button>
+          <Link to="/login" className="app-pill">
+            登录使用 <span className="arr">→</span>
+          </Link>
+        </div>
       )}
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </header>
   )
 }

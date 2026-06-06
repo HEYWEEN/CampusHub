@@ -5,8 +5,55 @@ import AppHeader from '../../components/layout/AppHeader'
 import AgentWidget from '../../components/agent/AgentWidget'
 import TaskCard from '../../components/domain/TaskCard'
 import { getRecommendedTasks } from '../../api/recommend'
+import { listNotifications } from '../../api/notify'
 import { useAuthStore } from '../../stores/auth'
 import './HomePage.css'
+
+/* ─────────── 公告条：登录态拉最新站内信，未登录/空回退安全提示 ─────────── */
+const NOTICE_TAG: Record<string, string> = {
+  TRADE_OFFER_NEW: '议价', TRADE_OFFER_COUNTERED: '议价', TRADE_OFFER_ACCEPTED: '成交',
+  TRADE_OFFER_REJECTED: '议价', TRADE_OFFER_CANCELED: '议价', TRADE_ORDER_CANCELED: '订单',
+  TASK_ACCEPTED: '接单', TASK_COMPLETED: '完成', TASK_CANCELED: '取消', TASK_EXPIRED: '过期',
+  VERIFY_RESULT: '认证', CREDIT_APPEAL_RESULT: '申诉', TEAM_APPLY_RESULT: '组队',
+  REPORT_RESULT: '举报', REPORT_ACTION: '处罚', ACCOUNT_BAN: '账号', ROLE_CHANGE: '权限',
+}
+
+function fmtMD(iso: string): string {
+  const d = new Date(iso)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+
+function HomeNotice() {
+  const isLoggedIn = !!useAuthStore((s) => s.accessToken)
+  const { data } = useQuery({
+    queryKey: ['notify', 'home-latest'],
+    queryFn: () => listNotifications('all'),
+    enabled: isLoggedIn,
+    staleTime: 60_000,
+  })
+  const latest = isLoggedIn ? data?.[0] : undefined
+
+  return (
+    <section className="home-notice rise" data-rise data-delay="200">
+      <span className="notice-icon" aria-hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z" />
+          <path d="M16 8a5 5 0 0 1 0 8" />
+          <path d="M19 5a8 8 0 0 1 0 14" />
+        </svg>
+      </span>
+      <span className="notice-label">{latest ? '消息' : '公告'}</span>
+      <span className="notice-sep" />
+      <span className="notice-tag">【{latest ? (NOTICE_TAG[latest.type] ?? '通知') : '重要'}】</span>
+      <span className="notice-text">{latest ? latest.title : '关于谨防校园诈骗的提醒'}</span>
+      <span className="notice-date mono">{latest ? fmtMD(latest.createdAt) : '05-26'}</span>
+      <Link to="/app/notify" className="notice-more">
+        查看全部 <span aria-hidden>→</span>
+      </Link>
+    </section>
+  )
+}
 
 /* ─────────── 为你推荐（仅登录态；空/未登录自隐藏） ─────────── */
 function HomeRecommend() {
@@ -339,25 +386,8 @@ export default function HomePage() {
         {/* ─────────── 为你推荐（P2 智能匹配，登录可见） ─────────── */}
         <HomeRecommend />
 
-        {/* ─────────── 公告条 ─────────── */}
-        {/* TODO: F-NOTICE-01 - 接 /api/announcements/latest 拉真实数据 */}
-        <section className="home-notice rise" data-rise data-delay="200">
-          <span className="notice-icon" aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z" />
-              <path d="M16 8a5 5 0 0 1 0 8" />
-              <path d="M19 5a8 8 0 0 1 0 14" />
-            </svg>
-          </span>
-          <span className="notice-label">公告</span>
-          <span className="notice-sep" />
-          <span className="notice-tag">【重要】</span>
-          <span className="notice-text">关于谨防校园诈骗的提醒</span>
-          <span className="notice-date mono">05-26</span>
-          <Link to="/app/notify" className="notice-more">
-            查看全部 <span aria-hidden>→</span>
-          </Link>
-        </section>
+        {/* ─────────── 公告条（最新站内信 / 回退安全提示） ─────────── */}
+        <HomeNotice />
 
         {/* ─────────── 底部统计带 ─────────── */}
         <section className="home-stats rise" data-rise data-delay="240">
