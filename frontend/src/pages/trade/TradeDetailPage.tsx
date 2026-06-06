@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { getItem, createOrder, createOffer } from '../../api/trade'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getItem, createOrder, createOffer, listMyOffers } from '../../api/trade'
 import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import OfferActions from '../../components/domain/OfferActions'
 import { useSendOrderCard } from '../../components/domain/useSendOrderCard'
 import { formatRelativeTime } from '../../utils/format'
 import { TRADE_STATUS_LABEL } from '../../utils/labels'
@@ -21,6 +22,7 @@ const PICKUP_LABEL: Record<string, string> = {
 export default function TradeDetailPage() {
   const { id = '' } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const myId = useAuthStore((s) => s.userId) ?? MOCK_CURRENT_USER_ID
 
   const { data: item, isLoading, error } = useQuery({
@@ -28,6 +30,13 @@ export default function TradeDetailPage() {
     queryFn: () => getItem(id),
     enabled: !!id,
   })
+  // 本商品上「我参与的、进行中的」报价（卖家看到买家出价、买家看到自己出价）
+  const { data: myOffers } = useQuery({ queryKey: ['trade', 'my-offers'], queryFn: listMyOffers })
+  const itemOffers = (myOffers ?? []).filter((o) => o.itemId === Number(id) && o.status === 'PENDING')
+  const onOfferDone = () => {
+    qc.invalidateQueries({ queryKey: ['trade', 'my-offers'] })
+    qc.invalidateQueries({ queryKey: ['item', id] })
+  }
   const sendOrder = useSendOrderCard()
 
   const [showOffer, setShowOffer] = useState(false)
@@ -52,6 +61,7 @@ export default function TradeDetailPage() {
 
   const status = TRADE_STATUS_LABEL[item.status]
   const isSeller = item.seller.userId === myId
+  const myOffer = itemOffers.find((o) => o.isBuyer)   // 买家视角：我对本商品的进行中报价
 
   return (
     <div className="wrap">
@@ -100,9 +110,25 @@ export default function TradeDetailPage() {
 
           {/* 操作按钮 */}
           {isSeller ? (
-            <button className="action-btn action-btn-ghost" disabled>
-              这是你发布的商品
-            </button>
+            <>
+              <button className="action-btn action-btn-ghost" disabled>
+                这是你发布的商品
+              </button>
+              {itemOffers.length > 0 && (
+                <div className="trade-offers-box">
+                  <div className="trade-offers-title">收到的议价 · {itemOffers.length}</div>
+                  {itemOffers.map((o) => (
+                    <div key={o.id} className="trade-offer-item">
+                      <div className="trade-offer-item-info">
+                        <PublicUserCard user={o.buyer} size="sm" />
+                        <span className="trade-offer-item-price"><b>{o.pricePoint}</b> 积分</span>
+                      </div>
+                      <OfferActions offer={o} onDone={onOfferDone} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           ) : item.status === 'ON_SALE' ? (
             <>
               <button
@@ -113,7 +139,14 @@ export default function TradeDetailPage() {
                 {buyMut.isPending ? '下单中…' : `立即购买 · ${item.pricePoint} 积分`}
               </button>
 
-              {!showOffer ? (
+              {myOffer ? (
+                <div className="trade-offers-box">
+                  <div className="trade-offers-title">
+                    你的议价 · {myOffer.pricePoint} 积分（{myOffer.myTurn ? '轮到你' : '等待卖家回应'}）
+                  </div>
+                  <OfferActions offer={myOffer} onDone={onOfferDone} />
+                </div>
+              ) : !showOffer ? (
                 <button
                   className="action-btn action-btn-ghost"
                   onClick={() => { setActErr(''); setOfferPrice(String(item.pricePoint)); setShowOffer(true) }}

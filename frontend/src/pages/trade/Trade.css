@@ -215,3 +215,42 @@
   .trade-mine-card { grid-template-columns: 1fr; }
   .trade-mine-right { align-items: flex-start; }
 }
+
+/* ─── 详情页：议价盒子 + OfferActions ─── */
+.trade-offers-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+.trade-offers-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.trade-offer-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.trade-offer-item:last-child { padding-bottom: 0; border-bottom: 0; }
+.trade-offer-item-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.trade-offer-item-price { font-size: 14px; color: var(--ink); white-space: nowrap; }
+.trade-offer-item-price b { color: var(--accent); font-size: 16px; }
+
+/* OfferActions（共享组件）：按钮组靠左 + 还价表单限宽 */
+.offer-acts-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.offer-acts-wrap .trade-offer-form { width: 100%; max-width: 240px; }
+.trade-offer-item .offer-acts-wrap { align-items: flex-start; }

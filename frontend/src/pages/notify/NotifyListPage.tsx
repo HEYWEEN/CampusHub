@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { listNotifications, markAllAsRead, markAsRead } from '../../api/notify'
 import { formatRelativeTime } from '../../utils/format'
@@ -28,11 +29,28 @@ const TYPE_LABEL: Record<string, { label: string; tone: string }> = {
   TRADE_ORDER_CANCELED:  { label: '订单',  tone: 'canceled' },
 }
 
+// 点通知跳转目标（按 type）。没有的类型则不可点。
+const TYPE_LINK: Record<string, string> = {
+  TRADE_OFFER_NEW:       '/app/trade/mine',
+  TRADE_OFFER_COUNTERED: '/app/trade/mine',
+  TRADE_OFFER_ACCEPTED:  '/app/trade/mine',
+  TRADE_OFFER_REJECTED:  '/app/trade/mine',
+  TRADE_OFFER_CANCELED:  '/app/trade/mine',
+  TRADE_ORDER_CANCELED:  '/app/trade/mine',
+  TASK_ACCEPTED:         '/app/tasks/my',
+  TASK_COMPLETED:        '/app/tasks/my',
+  TASK_CANCELED:         '/app/tasks/my',
+  TASK_EXPIRED:          '/app/tasks/my',
+  TEAM_APPLY_RESULT:     '/app/team',
+  CREDIT_APPEAL_RESULT:  '/app/credit',
+}
+
 const FALLBACK_META = { label: '通知', tone: 'canceled' }
 
 export default function NotifyListPage() {
   const [tab, setTab] = useState<Tab>('all')
   const qc = useQueryClient()
+  const navigate = useNavigate()
 
   const { data, isLoading } = useQuery({
     queryKey: ['notify', tab],
@@ -99,13 +117,23 @@ export default function NotifyListPage() {
           {data.map((n) => {
             const meta = TYPE_LABEL[n.type] ?? FALLBACK_META
             const unread = !n.readAt
+            const link = TYPE_LINK[n.type]
+            const go = () => {
+              if (!link) return
+              if (unread) markM.mutate(n.id)
+              navigate(link)
+            }
             return (
               <li
                 key={n.id}
                 className={`notify-item${unread ? ' is-unread' : ''}`}
               >
                 <span className={`notify-type status-badge status-${meta.tone}`}>{meta.label}</span>
-                <div className="notify-text">
+                <div
+                  className={`notify-text${link ? ' is-clickable' : ''}`}
+                  onClick={link ? go : undefined}
+                  role={link ? 'link' : undefined}
+                >
                   <div className="notify-title">
                     {unread && <span className="notify-dot" aria-hidden />}
                     {n.title}

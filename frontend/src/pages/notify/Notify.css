@@ -139,3 +139,7 @@
   }
   .notify-action, .notify-action-done { justify-self: start; }
 }
+
+/* 可点击的通知（带跳转目标） */
+.notify-text.is-clickable { cursor: pointer; }
+.notify-text.is-clickable:hover .notify-title { color: var(--accent); }

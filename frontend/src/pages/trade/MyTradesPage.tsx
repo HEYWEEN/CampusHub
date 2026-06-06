@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   listMyOffers, listMyOrders,
-  acceptOffer, rejectOffer, cancelOffer, counterOffer,
   confirmOrder, cancelOrder,
 } from '../../api/trade'
 import { useAuthStore } from '../../stores/auth'
 import { MOCK_CURRENT_USER_ID } from '../../api/_mock'
 import type { TradeOfferStatus, TradeOrderStatus } from '../../types/trade'
+import OfferActions from '../../components/domain/OfferActions'
 import { formatRelativeTime } from '../../utils/format'
 import '../tasks/Tasks.css'
 import './Trade.css'
@@ -35,8 +35,6 @@ export default function MyTradesPage() {
   const myId = useAuthStore((s) => s.userId) ?? MOCK_CURRENT_USER_ID
   const meNum = Number(myId)
   const [tab, setTab] = useState<Tab>('buy')
-  const [counterId, setCounterId] = useState<number | null>(null)
-  const [counterPrice, setCounterPrice] = useState('')
 
   const { data: offers } = useQuery({ queryKey: ['trade', 'my-offers'], queryFn: listMyOffers })
   const { data: orders } = useQuery({ queryKey: ['trade', 'my-orders'], queryFn: listMyOrders })
@@ -47,17 +45,9 @@ export default function MyTradesPage() {
     qc.invalidateQueries({ queryKey: ['item'] })
   }
 
-  const acceptM = useMutation({ mutationFn: (id: number) => acceptOffer(id), onSuccess: invalidate })
-  const rejectM = useMutation({ mutationFn: (id: number) => rejectOffer(id), onSuccess: invalidate })
-  const cancelOfferM = useMutation({ mutationFn: (id: number) => cancelOffer(id), onSuccess: invalidate })
-  const counterM = useMutation({
-    mutationFn: ({ id, price }: { id: number; price: number }) => counterOffer(id, price),
-    onSuccess: () => { setCounterId(null); invalidate() },
-  })
   const confirmM = useMutation({ mutationFn: (id: number) => confirmOrder(id), onSuccess: invalidate })
   const cancelOrderM = useMutation({ mutationFn: (id: number) => cancelOrder(id), onSuccess: invalidate })
 
-  const offerBusy = acceptM.isPending || rejectM.isPending || cancelOfferM.isPending || counterM.isPending
   const orderBusy = confirmM.isPending || cancelOrderM.isPending
 
   const myOffers = (offers ?? []).filter((o) => (tab === 'buy' ? o.isBuyer : !o.isBuyer))
@@ -101,45 +91,11 @@ export default function MyTradesPage() {
                 </div>
                 <div className="trade-mine-right">
                   <span className={`status-badge status-${meta.tone}`}>{meta.text}</span>
-                  {o.status === 'PENDING' && (
-                    <div className="trade-mine-acts">
-                      {o.myTurn && (
-                        <>
-                          <button className="mini-btn mini-btn-primary" disabled={offerBusy}
-                            onClick={() => acceptM.mutate(o.id)}>同意</button>
-                          <button className="mini-btn" disabled={offerBusy}
-                            onClick={() => { setCounterId(o.id); setCounterPrice(String(o.pricePoint)) }}>还价</button>
-                          <button className="mini-btn" disabled={offerBusy}
-                            onClick={() => rejectM.mutate(o.id)}>拒绝</button>
-                        </>
-                      )}
-                      {o.isBuyer && (
-                        <button className="mini-btn" disabled={offerBusy}
-                          onClick={() => cancelOfferM.mutate(o.id)}>撤回</button>
-                      )}
-                    </div>
-                  )}
+                  {o.status === 'PENDING' && <OfferActions offer={o} onDone={invalidate} />}
                   {o.status === 'ACCEPTED' && o.orderId && (
                     <span className="trade-mine-hint">已生成订单，见下方</span>
                   )}
                 </div>
-                {counterId === o.id && (
-                  <div className="trade-offer-form trade-mine-counter">
-                    <div className="trade-offer-input-row">
-                      <input className="trade-offer-input" type="number" min={1}
-                        value={counterPrice} onChange={(e) => setCounterPrice(e.target.value)} placeholder="还价" />
-                      <span className="trade-offer-unit">积分</span>
-                    </div>
-                    <div className="trade-offer-actions">
-                      <button className="action-btn action-btn-primary"
-                        disabled={!Number(counterPrice) || counterM.isPending}
-                        onClick={() => counterM.mutate({ id: o.id, price: Number(counterPrice) })}>
-                        {counterM.isPending ? '提交中…' : '提交还价'}
-                      </button>
-                      <button className="action-btn action-btn-ghost" onClick={() => setCounterId(null)}>取消</button>
-                    </div>
-                  </div>
-                )}
               </li>
             )
           })}
