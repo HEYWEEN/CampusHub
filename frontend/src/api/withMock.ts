@@ -1,12 +1,18 @@
 import { BizError } from '../types/api'
 
 /**
- * dev 模式下，API 调用失败时自动回退到 mock；
- * 生产环境直接 throw，保证联调时能暴露真实错误。
+ * mock 回退「显式开关」，默认关闭（仅 dev 且 VITE_USE_MOCK=1 时启用）。
  *
- * 业务错码（400/403/409 等，httpStatus < 500）始终保留真实错误，
- * 不用 mock 掩盖；仅网络错或 5xx 才 fallback。
+ * 为何默认关：start.sh 并行拉起前后端，后端启动需 10~30s。若开着 mock，
+ * 用户在后端就绪前点进来 → 首批请求失败 → 回退假数据（张大锤）并被 React Query
+ * 当成功缓存 → 必须手动刷新才拿真数据。默认关后，后端没起来就抛真实错误，
+ * 交给 React Query 重试，后端一就绪自动恢复，无需刷新。
  *
+ * 想纯前端、无后端联调时：在 frontend/ 下设 VITE_USE_MOCK=1（如 .env.local）。
+ */
+const USE_MOCK = import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === '1'
+
+/**
  * @param tag 模块名，仅用于 dev 控制台提示（如 'credit' / 'trade'）。
  */
 export async function withMock<T>(
@@ -14,7 +20,7 @@ export async function withMock<T>(
   mock: () => T,
   tag = '',
 ): Promise<T> {
-  if (!import.meta.env.DEV) return real()
+  if (!USE_MOCK) return real()
   try {
     return await real()
   } catch (err) {
