@@ -44,14 +44,24 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  /* nju-gate.png 是白底图：正片叠底把白底融进米色背景，只留线稿（与首页 stats-illo 同款处理） */
+  /* nju-gate.png 是白底图：mix-blend-mode multiply 把白底融进米色背景，只留线稿。
+     但入场时 page-enter 动画会改 ancestor 的 opacity，multiply 对半透明背景合成不正确，
+     会先闪一下白底再融掉。→ 入场期间先隐藏插画，待 page-enter(.42s) 结束后再淡入，规避闪白。 */
   mix-blend-mode: multiply;
-  opacity: .9;
-  animation: meHeroFloat 6.5s ease-in-out infinite;
+  opacity: 0;
+  animation: meHeroFloat 6.5s ease-in-out infinite,
+             meIlloReveal .5s ease .45s forwards;
 }
 @keyframes meHeroFloat {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-7px); }
+}
+@keyframes meIlloReveal {
+  to { opacity: .9; }
+}
+/* 无障碍：关动效时 page-enter 也被禁用 → 无闪白，直接静态显示（避免停在 opacity:0） */
+@media (prefers-reduced-motion: reduce) {
+  .me-hero-illo { opacity: .9; animation: none; }
 }
 
 /* ─── MePage 双栏 ─── */
