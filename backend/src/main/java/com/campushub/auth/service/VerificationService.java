@@ -72,6 +72,12 @@ public class VerificationService {
     @Transactional
     public void adminApprove(long verificationId) {
         AuthVerification ver = requirePending(verificationId);
+        // 再次查重：防止两条同学号 PENDING 被先后通过（bug 14）
+        if (ver.getStudentNoHash() != null && verRepo.existsByStudentNoHashAndStatusAndUserIdNot(
+                ver.getStudentNoHash(), VerificationStatus.APPROVED, ver.getUserId())) {
+            throw new BizException(AuthErrorCode.STUDENT_NO_ALREADY_USED,
+                    "该学号已被其他账号认证，无法通过", 409);
+        }
         ver.approve();
         verRepo.save(ver);
         AuthUser user = userRepo.findById(ver.getUserId())
@@ -109,6 +115,11 @@ public class VerificationService {
         return "VERIFY_RESULT:" + ver.getId() + ":" + ver.getUserId();
     }
 
+    /** 学号规范化：去空白 + 大写，保证同一学号哈希一致（学号为字母数字）。 */
+    private String normalizeStudentNo(String studentNo) {
+        return studentNo == null ? "" : studentNo.trim().toUpperCase();
+    }
+
     private String safeDecrypt(String cipher) {
         if (cipher == null || cipher.isBlank()) return null;
         try {
@@ -126,10 +137,18 @@ public class VerificationService {
                     "已有待审认证，请等待管理员处理", 409);
         }
 
-        // 2. 直接保留 URL 列表（前端已通过 /api/uploads 上传到 ImageStorage）
+        // 2. 学号跨账号去重：同一学号若已被「他人」认证通过，拒绝提交（bug 14）
+        String studentNoHash = aes.hmacIndex(normalizeStudentNo(dto.getStudentNo()));
+        if (verRepo.existsByStudentNoHashAndStatusAndUserIdNot(
+                studentNoHash, VerificationStatus.APPROVED, userId)) {
+            throw new BizException(AuthErrorCode.STUDENT_NO_ALREADY_USED,
+                    "该学号已被其他账号认证", 409);
+        }
+
+        // 3. 直接保留 URL 列表（前端已通过 /api/uploads 上传到 ImageStorage）
         List<String> urls = List.copyOf(dto.getAttachmentUrls());
 
-        // 3. 加密敏感字段（idCard 可空）
+        // 4. 加密敏感字段（idCard 可空）
         String idCardCipher = (dto.getIdCard() == null || dto.getIdCard().isBlank())
                 ? null : aes.encrypt(dto.getIdCard());
 
@@ -140,9 +159,10 @@ public class VerificationService {
                 idCardCipher,
                 toJsonArray(urls)
         );
+        ver.setStudentNoHash(studentNoHash);
         verRepo.save(ver);
 
-        // 4. 同步 auth_user.verify_status → PENDING
+        // 5. 同步 auth_user.verify_status → PENDING
         AuthUser user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("用户不存在: " + userId));
         user.setVerifyStatus(VerifyStatus.PENDING);

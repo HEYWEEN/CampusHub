@@ -133,10 +133,10 @@ export default function NotifyListPage() {
             // TASK_* 带 bizId 时直达任务详情（bizKey = TYPE:taskId:userId），否则回退静态映射
             const taskId = n.type.startsWith('TASK_') ? bizEntityId(n.bizId) : null
             const link = taskId ? `/app/tasks/${taskId}` : TYPE_LINK[n.type]
+            // 点击通知即视为已读（bug 12）：先标已读，有跳转目标再跳转
             const go = () => {
-              if (!link) return
               if (unread) markM.mutate(n.id)
-              navigate(link)
+              if (link) navigate(link)
             }
             return (
               <li
@@ -145,9 +145,9 @@ export default function NotifyListPage() {
               >
                 <span className={`notify-type status-badge status-${meta.tone}`}>{meta.label}</span>
                 <div
-                  className={`notify-text${link ? ' is-clickable' : ''}`}
-                  onClick={link ? go : undefined}
-                  role={link ? 'link' : undefined}
+                  className="notify-text is-clickable"
+                  onClick={go}
+                  role={link ? 'link' : 'button'}
                 >
                   <div className="notify-title">
                     {unread && <span className="notify-dot" aria-hidden />}

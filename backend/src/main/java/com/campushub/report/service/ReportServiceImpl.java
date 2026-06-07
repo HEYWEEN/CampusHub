@@ -146,7 +146,8 @@ public class ReportServiceImpl implements ReportService {
                 if (penalty <= 0) {
                     throw new BizException(ReportErrorCode.INVALID_PENALTY, "扣分必须为正数", 400);
                 }
-                creditApi.deduct(c.getReportedUserId(), penalty, "REPORT_PENALTY",
+                // deduct 按「有符号 delta」处理：扣分须传负数，否则信用分会不降反升
+                creditApi.deduct(c.getReportedUserId(), -penalty, "REPORT_PENALTY",
                         "report:" + caseId + ":penalty");
                 c.resolve(ReportStatus.RESOLVED, adminId, type);
                 notify(c.getReporterId(), "REPORT_RESULT", "举报已处理",

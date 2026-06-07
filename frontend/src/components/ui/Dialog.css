@@ -1,0 +1,126 @@
+/* 应用内确认/输入弹窗 + 图片灯箱 —— 复用 design tokens，风格对齐 ReviewModal */
+
+.dlg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(26, 24, 21, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dlg-panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+}
+
+.dlg-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dlg-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0;
+}
+.dlg-close {
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.dlg-message {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.dlg-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 16px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.dlg-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.dlg-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.dlg-err {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.dlg-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+.dlg-actions .action-btn { flex: 1; height: 46px; font-size: 14px; }
+
+/* confirm 的危险态（封禁等）——本仓库无 action-btn-danger，这里补一个 */
+.dlg-actions .action-btn-danger {
+  background: var(--danger);
+  color: var(--cream);
+  border-color: var(--danger);
+}
+.dlg-actions .action-btn-danger:hover:not(:disabled) {
+  filter: brightness(0.93);
+  transform: translateY(-2px);
+}
+
+/* ---- 图片灯箱（点击缩略图看原图）---- */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(20, 18, 16, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  cursor: zoom-out;
+}
+.lightbox-img {
+  max-width: 92vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--cream);
+  font-size: 36px;
+  line-height: 1;
+  cursor: pointer;
+}

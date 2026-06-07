@@ -17,4 +17,7 @@ public interface AuthVerificationRepository extends JpaRepository<AuthVerificati
 
     /** admin 待审核队列（最早提交优先） */
     List<AuthVerification> findByStatusOrderByCreatedAtAsc(VerificationStatus status);
+
+    /** 是否已有「他人」用同一学号哈希处于指定状态（跨账号学号查重，bug 14） */
+    boolean existsByStudentNoHashAndStatusAndUserIdNot(String studentNoHash, VerificationStatus status, Long userId);
 }

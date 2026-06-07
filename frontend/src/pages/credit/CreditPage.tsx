@@ -87,7 +87,7 @@ export default function CreditPage() {
 
             <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <Link to="/app/credit/appeals" className="me-action-btn is-ghost" style={{ width: 'auto' }}>
-                我的申诉记录 →
+                收到的评价 / 申诉 →
               </Link>
               {!credit.canPublish && (
                 <span className="form-error" style={{ margin: 0 }}>

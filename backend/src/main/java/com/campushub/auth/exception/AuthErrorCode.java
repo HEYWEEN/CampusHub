@@ -25,4 +25,7 @@ public final class AuthErrorCode {
 
     /** 认证申请不存在 / 已处理（admin 审核） — 409 */
     public static final int VERIFICATION_NOT_PENDING = 2006;
+
+    /** 学号已被其他账号认证（跨账号去重） — 409 */
+    public static final int STUDENT_NO_ALREADY_USED = 2007;
 }

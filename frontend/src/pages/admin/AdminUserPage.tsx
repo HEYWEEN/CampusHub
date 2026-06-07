@@ -3,11 +3,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminSearchUsers, adminSetBan, adminSetRole } from '../../api/admin'
 import { getMe } from '../../api/user'
 import PublicUserCard from '../../components/domain/PublicUserCard'
+import Dialog, { type DialogField } from '../../components/ui/Dialog'
+
+interface DialogConfig {
+  title: string
+  message?: string
+  field?: DialogField
+  tone?: 'primary' | 'danger'
+  confirmText?: string
+  onConfirm: (value: string) => void
+}
 
 export default function AdminUserPage() {
   const qc = useQueryClient()
   const [q, setQ] = useState('')
   const [submitted, setSubmitted] = useState('')
+  const [dialog, setDialog] = useState<DialogConfig | null>(null)
 
   // 当前登录管理员：只有超级管理员才显示「设为/取消管理员」
   const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => getMe(), staleTime: 60_000 })
@@ -20,14 +31,44 @@ export default function AdminUserPage() {
   })
 
   const ban = useMutation({
-    mutationFn: ({ userId, banned }: { userId: number; banned: boolean }) =>
-      adminSetBan(userId, banned, banned ? (window.prompt('封禁理由（可选）') ?? undefined) : undefined),
+    mutationFn: ({ userId, banned, reason }: { userId: number; banned: boolean; reason?: string }) =>
+      adminSetBan(userId, banned, reason),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users', submitted] }),
   })
 
   const role = useMutation({
     mutationFn: ({ userId, admin }: { userId: number; admin: boolean }) => adminSetRole(userId, admin),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users', submitted] }),
+  })
+
+  // 封禁：输入理由即确认（bug 10）
+  const askBan = (userId: number, nickname: string) => setDialog({
+    title: `封禁 ${nickname}`,
+    message: '封禁后该用户无法登录使用，可随时解封。',
+    field: { type: 'textarea', placeholder: '封禁理由（可选）' },
+    tone: 'danger',
+    confirmText: '确认封禁',
+    onConfirm: (reason) => ban.mutate({ userId, banned: true, reason: reason || undefined }),
+  })
+  // 解封 / 设管理员 / 取消管理员：二次确认（bug 11）
+  const askUnban = (userId: number, nickname: string) => setDialog({
+    title: `解封 ${nickname}`,
+    message: '解封后该用户可恢复正常登录使用。',
+    confirmText: '确认解封',
+    onConfirm: () => ban.mutate({ userId, banned: false }),
+  })
+  const askSetAdmin = (userId: number, nickname: string) => setDialog({
+    title: `设为管理员`,
+    message: `确认将「${nickname}」设为管理员？对方将获得后台审核 / 仲裁权限。`,
+    confirmText: '确认设为管理员',
+    onConfirm: () => role.mutate({ userId, admin: true }),
+  })
+  const askRemoveAdmin = (userId: number, nickname: string) => setDialog({
+    title: `取消管理员`,
+    message: `确认取消「${nickname}」的管理员权限？`,
+    tone: 'danger',
+    confirmText: '确认取消',
+    onConfirm: () => role.mutate({ userId, admin: false }),
   })
 
   return (
@@ -55,25 +96,36 @@ export default function AdminUserPage() {
           <div className="admin-actions">
             {u.banned ? (
               <button type="button" className="action-btn action-btn-secondary" style={{ width: 'auto' }}
-                disabled={ban.isPending} onClick={() => ban.mutate({ userId: u.userId, banned: false })}>解封</button>
+                disabled={ban.isPending} onClick={() => askUnban(u.userId, u.nickname ?? `用户${u.userId}`)}>解封</button>
             ) : (
               <button type="button" className="action-btn action-btn-ghost" style={{ width: 'auto' }}
-                disabled={ban.isPending || u.role !== 'USER'} onClick={() => ban.mutate({ userId: u.userId, banned: true })}>封禁</button>
+                disabled={ban.isPending || u.role !== 'USER'} onClick={() => askBan(u.userId, u.nickname ?? `用户${u.userId}`)}>封禁</button>
             )}
 
             {/* 分派管理员：仅超级管理员可见，且不能动超级管理员自身 */}
             {isSuperAdmin && u.role !== 'SUPER_ADMIN' && String(u.userId) !== me?.userId && (
               u.role === 'ADMIN' ? (
                 <button type="button" className="action-btn action-btn-ghost" style={{ width: 'auto' }}
-                  disabled={role.isPending} onClick={() => role.mutate({ userId: u.userId, admin: false })}>取消管理员</button>
+                  disabled={role.isPending} onClick={() => askRemoveAdmin(u.userId, u.nickname ?? `用户${u.userId}`)}>取消管理员</button>
               ) : (
                 <button type="button" className="action-btn action-btn-secondary" style={{ width: 'auto' }}
-                  disabled={role.isPending} onClick={() => role.mutate({ userId: u.userId, admin: true })}>设为管理员</button>
+                  disabled={role.isPending} onClick={() => askSetAdmin(u.userId, u.nickname ?? `用户${u.userId}`)}>设为管理员</button>
               )
             )}
           </div>
         </div>
       ))}
+
+      <Dialog
+        open={!!dialog}
+        title={dialog?.title ?? ''}
+        message={dialog?.message}
+        field={dialog?.field}
+        tone={dialog?.tone}
+        confirmText={dialog?.confirmText}
+        onConfirm={(v) => { dialog?.onConfirm(v); setDialog(null) }}
+        onCancel={() => setDialog(null)}
+      />
     </div>
   )
 }

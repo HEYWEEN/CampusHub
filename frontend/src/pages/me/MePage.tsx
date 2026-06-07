@@ -202,7 +202,7 @@ export default function MePage() {
                 <span className="me-stat-label">我接过的任务</span>
                 <span className="me-stat-sub">进行中 {stats?.acceptedInProgress ?? 0}</span>
               </Link>
-              <Link to="/app/credit" className="me-stat-link">
+              <Link to="/app/credit/appeals" className="me-stat-link">
                 <span className="me-stat-num">{stats?.reviewsCount ?? '—'}</span>
                 <span className="me-stat-label">收到的评价</span>
                 <span className="me-stat-sub">

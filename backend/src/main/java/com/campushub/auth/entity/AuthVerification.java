@@ -51,6 +51,10 @@ public class AuthVerification {
     @Column(name = "student_no_cipher", length = 512)
     private String studentNoCipher;
 
+    /** 学号确定性索引（HMAC-SHA256），用于跨账号学号查重（学号密文随机 IV 无法直接比对） */
+    @Column(name = "student_no_hash", length = 64)
+    private String studentNoHash;
+
     /** AES-GCM(Base64) 身份证号（可选） */
     @Column(name = "id_card_cipher", length = 512)
     private String idCardCipher;
@@ -101,6 +105,8 @@ public class AuthVerification {
     public VerificationStatus getStatus() { return status; }
     public String getRealNameCipher() { return realNameCipher; }
     public String getStudentNoCipher() { return studentNoCipher; }
+    public String getStudentNoHash() { return studentNoHash; }
+    public void setStudentNoHash(String studentNoHash) { this.studentNoHash = studentNoHash; }
     public String getIdCardCipher() { return idCardCipher; }
     public String getRejectReason() { return rejectReason; }
     public String getAttachmentSha256Json() { return attachmentSha256Json; }

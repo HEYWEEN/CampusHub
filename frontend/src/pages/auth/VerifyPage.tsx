@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   submitVerification,
   type VerifySubmitDTO,
 } from '../../api/auth'
+import { getMe } from '../../api/user'
 import { useAuthStore } from '../../stores/auth'
 import { BizError } from '../../types/api'
 import ImageUploader from '../../components/ImageUploader'
@@ -13,8 +14,16 @@ import './LoginPage.css'
 export default function VerifyPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const verifyStatus = useAuthStore((s) => s.verifyStatus)
+  const storeStatus = useAuthStore((s) => s.verifyStatus)
   const setVerifyStatus = useAuthStore((s) => s.setVerifyStatus)
+
+  // 以后端为准：管理员驳回后本地 store 不会更新，沿用旧 store 值会一直显示「审核中」、
+  // 藏起重新提交表单（bug 16）。这里拉 me.verifyStatus 驱动表单显隐，并回写 store 让顶栏一致。
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => getMe() })
+  const verifyStatus = me?.verifyStatus ?? storeStatus
+  useEffect(() => {
+    if (me?.verifyStatus && me.verifyStatus !== storeStatus) setVerifyStatus(me.verifyStatus)
+  }, [me?.verifyStatus, storeStatus, setVerifyStatus])
 
   const [realName, setRealName] = useState('')
   const [studentNo, setStudentNo] = useState('')

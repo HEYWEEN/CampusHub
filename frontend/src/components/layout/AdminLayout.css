@@ -79,6 +79,7 @@
 /* 管理端卡片内动作按钮：复用 .action-btn 但收小一号（全站 action-btn 高 56px 在此过大） */
 .admin-actions .action-btn { width: auto; height: 36px; padding: 0 16px; font-size: 13px; }
 .admin-thumbs { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-.admin-thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.admin-thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); cursor: zoom-in; transition: transform .15s ease; }
+.admin-thumbs img:hover { transform: scale(1.04); border-color: var(--accent); }
 .admin-search { display: flex; gap: 10px; margin-bottom: 20px; max-width: 460px; }
 .admin-empty { font-size: 14px; color: var(--muted); padding: 30px 0; font-family: var(--font-display); font-style: italic; }
