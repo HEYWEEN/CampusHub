@@ -188,7 +188,8 @@ class ReportServiceImplTest {
         service.decide(3L, 1L, decision(ReportDecisionType.PENALIZE, 10));
 
         assertEquals(ReportStatus.RESOLVED, c.getStatus());
-        verify(creditApi).deduct(eq(99L), eq(10), eq("REPORT_PENALTY"), contains("report:1:penalty"));
+        // 扣分须传负数（deduct 按有符号 delta 处理），否则信用分会不降反升
+        verify(creditApi).deduct(eq(99L), eq(-10), eq("REPORT_PENALTY"), contains("report:1:penalty"));
         verify(notifyApi).appendLetter(eq(99L), eq("REPORT_ACTION"), anyString(), contains("10"), anyString());
     }
 

@@ -42,13 +42,19 @@ export default function Dialog({
 }: DialogProps) {
   const [value, setValue] = useState(field?.initial ?? '')
   const [err, setErr] = useState('')
+  const [prevOpen, setPrevOpen] = useState(open)
   const inputRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null)
 
-  // 每次打开重置输入与错误，并聚焦
+  // 打开瞬间重置输入/错误：在渲染期按「prop 变化重置 state」的官方模式做，
+  // 不在 effect 里 setState（避免 react-hooks/set-state-in-effect 的级联渲染告警）。
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) { setValue(field?.initial ?? ''); setErr('') }
+  }
+
+  // effect 只做 DOM 副作用：聚焦 / ESC 关闭 / 锁滚动
   useEffect(() => {
     if (!open) return
-    setValue(field?.initial ?? '')
-    setErr('')
     const t = setTimeout(() => inputRef.current?.focus(), 0)
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
     document.addEventListener('keydown', onKey)
