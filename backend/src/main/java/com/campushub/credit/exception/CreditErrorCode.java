@@ -34,4 +34,10 @@ public final class CreditErrorCode {
 
     /** 申诉不存在 / 已处理 — 409 */
     public static final int APPEAL_NOT_PENDING = 10009;
+
+    /** 仅已撤销的评价可从「我收到的评价」删除 — 422 */
+    public static final int REVIEW_NOT_HIDABLE = 10010;
+
+    /** 待处理的申诉不可删除（处理完才能删） — 409 */
+    public static final int APPEAL_NOT_HIDABLE = 10011;
 }

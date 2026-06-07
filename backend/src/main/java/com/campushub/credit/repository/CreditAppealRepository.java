@@ -15,7 +15,8 @@ public interface CreditAppealRepository extends JpaRepository<CreditAppeal, Long
     /** 打码用：某评价是否有进行中的申诉。 */
     boolean existsByReviewIdAndStatus(Long reviewId, AppealStatus status);
 
-    List<CreditAppeal> findByAppellantIdOrderByCreatedAtDesc(Long appellantId);
+    /** 我的申诉列表 —— 排除本人已隐藏的。 */
+    List<CreditAppeal> findByAppellantIdAndHiddenFalseOrderByCreatedAtDesc(Long appellantId);
 
     /** admin 待审队列。 */
     List<CreditAppeal> findByStatusOrderByCreatedAtAsc(AppealStatus status);

@@ -72,7 +72,7 @@ public class AppealServiceImpl implements AppealService {
     @Override
     @Transactional(readOnly = true)
     public List<CreditAppealVO> listMyAppeals(long userId) {
-        return appealRepo.findByAppellantIdOrderByCreatedAtDesc(userId).stream()
+        return appealRepo.findByAppellantIdAndHiddenFalseOrderByCreatedAtDesc(userId).stream()
                 .map(a -> CreditAppealVO.from(a, reviewRepo.findById(a.getReviewId()).orElse(null), null))
                 .toList();
     }
@@ -81,7 +81,7 @@ public class AppealServiceImpl implements AppealService {
     @Transactional(readOnly = true)
     public List<ReceivedReviewVO> listReceivedReviews(long userId) {
         Instant windowStart = Instant.now().minus(Duration.ofDays(WINDOW_DAYS));
-        return reviewRepo.findByRevieweeIdOrderByCreatedAtDesc(userId).stream()
+        return reviewRepo.findByRevieweeIdAndHiddenByRevieweeFalseOrderByCreatedAtDesc(userId).stream()
                 .map(r -> {
                     boolean underAppeal = appealRepo.existsByReviewIdAndStatus(r.getId(), AppealStatus.PENDING);
                     boolean appealable = !r.isVoided()
@@ -91,6 +91,36 @@ public class AppealServiceImpl implements AppealService {
                     return ReceivedReviewVO.from(r, userApi.getPublicUser(r.getReviewerId()), underAppeal, appealable);
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void hideReceivedReview(long userId, long reviewId) {
+        TaskReview review = reviewRepo.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("评价不存在: " + reviewId));
+        if (review.getRevieweeId() != userId) {
+            throw new NotFoundException("评价不存在: " + reviewId);   // 非本人：当作不存在，不泄露
+        }
+        if (!review.isVoided()) {
+            throw new BizException(CreditErrorCode.REVIEW_NOT_HIDABLE, "仅已撤销的评价可删除", 422);
+        }
+        review.hideByReviewee();
+        reviewRepo.save(review);
+    }
+
+    @Override
+    @Transactional
+    public void hideAppeal(long userId, long appealId) {
+        CreditAppeal appeal = appealRepo.findById(appealId)
+                .orElseThrow(() -> new NotFoundException("申诉不存在: " + appealId));
+        if (appeal.getAppellantId() != userId) {
+            throw new NotFoundException("申诉不存在: " + appealId);    // 非本人：当作不存在
+        }
+        if (appeal.getStatus() == AppealStatus.PENDING) {
+            throw new BizException(CreditErrorCode.APPEAL_NOT_HIDABLE, "待处理的申诉不可删除", 409);
+        }
+        appeal.hide();
+        appealRepo.save(appeal);
     }
 
     @Override

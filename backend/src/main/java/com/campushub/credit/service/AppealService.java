@@ -16,6 +16,12 @@ public interface AppealService {
     /** 我收到的评价（带可申诉标记），作为申诉入口。 */
     List<ReceivedReviewVO> listReceivedReviews(long userId);
 
+    /** 用户从「我收到的评价」隐藏一条已撤销的差评（软删，仅本人视图）。 */
+    void hideReceivedReview(long userId, long reviewId);
+
+    /** 用户从「我的申诉」隐藏一条已处理的申诉记录（软删，仅本人视图）。 */
+    void hideAppeal(long userId, long appealId);
+
     /** admin：待处理申诉队列。 */
     List<CreditAppealVO> listPending();
 

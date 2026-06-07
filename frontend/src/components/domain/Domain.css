@@ -453,7 +453,6 @@ a.puc:hover .puc-name {
   color: var(--muted);
   margin: 12px 0 6px;
 }
-.report-select,
 .report-textarea {
   width: 100%;
   border: 1px solid var(--line);

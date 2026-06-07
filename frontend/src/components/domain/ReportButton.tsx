@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { submitReport } from '../../api/report'
 import type { ReportTargetType } from '../../types/report'
 import { BizError } from '../../types/api'
+import Select from '../Select'
 
 const REASONS: { value: string; label: string }[] = [
   { value: 'FRAUD', label: '欺诈 / 诈骗' },
@@ -58,11 +59,7 @@ export default function ReportButton({
             <h3 className="report-modal-title">举报该{targetType === 'USER' ? '用户' : targetType === 'TASK' ? '任务' : '商品'}</h3>
 
             <label className="report-field-label">违规类别</label>
-            <select className="report-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-              {REASONS.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
+            <Select value={category} options={REASONS} onChange={setCategory} ariaLabel="违规类别" />
 
             <label className="report-field-label">补充说明（可选）</label>
             <textarea

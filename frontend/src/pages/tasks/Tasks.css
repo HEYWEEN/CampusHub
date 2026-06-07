@@ -419,8 +419,10 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 5px rgba(226, 90, 60, 0.18);
 }
-.timeline-step.is-done + .timeline-step::before,
-.timeline-step.is-current::before {
+/* 连接线挂在「左侧圆点」的 ::before 上（left:50%→right:-50%，即离开本步、指向下一步）。
+   因此应由「本步是否完成」决定填充：完成的步骤，其离开线才点亮。
+   原规则按「前一个兄弟」判断 → 第一段（已发布→已接单，owner 是无前驱的首步）永不点亮。 */
+.timeline-step.is-done::before {
   background: var(--accent);
 }
 

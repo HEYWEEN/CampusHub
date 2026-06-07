@@ -52,6 +52,10 @@ public class TaskReview {
     @Column(name = "voided", nullable = false)
     private boolean voided = false;
 
+    /** 被评价人主动从「我收到的评价」隐藏（仅已撤销的差评可隐藏）。 */
+    @Column(name = "hidden_by_reviewee", nullable = false)
+    private boolean hiddenByReviewee = false;
+
     @Version
     @Column(name = "version", nullable = false)
     private Integer version = 0;
@@ -80,6 +84,8 @@ public class TaskReview {
     public String getComment() { return comment; }
     public boolean isVoided() { return voided; }
     public void markVoided() { this.voided = true; this.updatedAt = Instant.now(); }
+    public boolean isHiddenByReviewee() { return hiddenByReviewee; }
+    public void hideByReviewee() { this.hiddenByReviewee = true; this.updatedAt = Instant.now(); }
     public Integer getVersion() { return version; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

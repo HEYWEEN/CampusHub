@@ -34,15 +34,15 @@ public class MeStatsService {
     public MeStatsVO getMyStats(long userId) {
         long published = taskRepo.countByPublisherIdAndDeletedAtIsNull(userId);
         long accepted = taskRepo.countByAssigneeIdAndDeletedAtIsNull(userId);
-        long reviews = reviewRepo.countByRevieweeId(userId);
         long publishedInProgress = taskRepo.countPublishedInProgress(userId);
         long acceptedInProgress = taskRepo.countAcceptedInProgress(userId);
 
-        long validReviews = reviewRepo.countByRevieweeIdAndVoidedFalse(userId);
-        Integer goodRate = validReviews == 0 ? null
+        // 「收到的评价」与好评率口径一致：都排除已撤销（申诉成功）的差评
+        long reviews = reviewRepo.countByRevieweeIdAndVoidedFalse(userId);
+        Integer goodRate = reviews == 0 ? null
                 : Math.round(reviewRepo
                         .countByRevieweeIdAndRatingGreaterThanEqualAndVoidedFalse(userId, GOOD_RATING)
-                        * 100f / validReviews);
+                        * 100f / reviews);
 
         return new MeStatsVO(published, accepted, reviews,
                 publishedInProgress, acceptedInProgress, goodRate);
@@ -65,7 +65,7 @@ public class MeStatsService {
         Integer accepted = hideAccepted ? null
                 : (int) taskRepo.countByAssigneeIdAndDeletedAtIsNull(userId);
         Integer reviews = hideReviews ? null
-                : (int) reviewRepo.countByRevieweeId(userId);
+                : (int) reviewRepo.countByRevieweeIdAndVoidedFalse(userId);
         return new PublicUserStatsVO(user, published, accepted, reviews);
     }
 }

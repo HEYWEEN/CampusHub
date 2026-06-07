@@ -46,6 +46,10 @@ public class CreditAppeal {
     @Column(name = "resolve_note", length = 500)
     private String resolveNote;
 
+    /** 申诉人主动从「我的申诉」隐藏（仅已处理的申诉可隐藏）。 */
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden = false;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -76,5 +80,7 @@ public class CreditAppeal {
     public AppealStatus getStatus() { return status; }
     public Long getResolverId() { return resolverId; }
     public String getResolveNote() { return resolveNote; }
+    public boolean isHidden() { return hidden; }
+    public void hide() { this.hidden = true; this.updatedAt = Instant.now(); }
     public Instant getCreatedAt() { return createdAt; }
 }

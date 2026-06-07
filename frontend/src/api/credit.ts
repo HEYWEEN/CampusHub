@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './client'
+import { apiGet, apiPost, apiDelete } from './client'
 import { type PageResponse } from '../types/api'
 import type { CreditAppealVO, CreditMeVO, CreditRecord, ReceivedReviewVO, ReviewResultVO } from '../types/credit'
 import {
@@ -63,3 +63,11 @@ export const listMyAppeals = () =>
     () => mockListMyAppeals(),
     'credit',
   )
+
+/** 从「我收到的评价」删除一条已撤销的差评（软删，仅本人视图）。 */
+export const hideReceivedReview = (reviewId: number) =>
+  apiDelete<void>(`/api/credit/reviews/received/${reviewId}`)
+
+/** 从「我的申诉」删除一条已处理的申诉记录（软删，仅本人视图）。 */
+export const hideAppeal = (appealId: number) =>
+  apiDelete<void>(`/api/credit/appeals/${appealId}`)

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listMyAppeals, listReceivedReviews, submitAppeal } from '../../api/credit'
+import { hideAppeal, hideReceivedReview, listMyAppeals, listReceivedReviews, submitAppeal } from '../../api/credit'
 import type { CreditAppealStatus } from '../../types/credit'
 import { BizError } from '../../types/api'
 import PublicUserCard from '../../components/domain/PublicUserCard'
 import ImageUploader from '../../components/ImageUploader'
+import Dialog from '../../components/ui/Dialog'
 import { formatRelativeTime } from '../../utils/format'
 import '../tasks/Tasks.css'
 import './Credit.css'
@@ -21,6 +22,7 @@ export default function CreditAppealsPage() {
   const [reason, setReason] = useState('')
   const [evidence, setEvidence] = useState<string[]>([])
   const [error, setError] = useState('')
+  const [confirm, setConfirm] = useState<{ title: string; message: string; onOk: () => void } | null>(null)
 
   const { data: reviews } = useQuery({ queryKey: ['credit', 'received-reviews'], queryFn: () => listReceivedReviews() })
   const { data: appeals } = useQuery({ queryKey: ['credit', 'my-appeals'], queryFn: () => listMyAppeals() })
@@ -35,6 +37,17 @@ export default function CreditAppealsPage() {
     onError: (e) => setError(e instanceof BizError ? e.message : '提交失败'),
   })
   const setEvidenceUrls = (u: string[]) => setEvidence(u)
+
+  // 删除（软隐藏）已撤销的差评 / 已处理的申诉记录 —— 仅本人视图
+  const hideReviewM = useMutation({
+    mutationFn: (reviewId: number) => hideReceivedReview(reviewId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['credit', 'received-reviews'] }),
+  })
+  const hideAppealM = useMutation({
+    mutationFn: (appealId: number) => hideAppeal(appealId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['credit', 'my-appeals'] }),
+  })
+  const smallBtn = { width: 'auto', height: 34, padding: '0 16px', fontSize: 13 } as const
 
   return (
     <div className="wrap">
@@ -58,8 +71,18 @@ export default function CreditAppealsPage() {
               {r.voided && <span className="status-badge status-canceled">已撤销</span>}
               {r.underAppeal && <span className="status-badge status-pending">申诉中</span>}
               {r.appealable && openId !== r.reviewId && (
-                <button type="button" className="action-btn action-btn-secondary" style={{ width: 'auto', padding: '8px 18px' }}
+                <button type="button" className="action-btn action-btn-secondary" style={smallBtn}
                   onClick={() => { setOpenId(r.reviewId); setReason(''); setEvidence([]); setError('') }}>申诉这条</button>
+              )}
+              {/* 已撤销的差评可从自己列表里删掉 */}
+              {r.voided && (
+                <button type="button" className="action-btn action-btn-ghost" style={{ ...smallBtn, marginLeft: 'auto' }}
+                  disabled={hideReviewM.isPending}
+                  onClick={() => setConfirm({
+                    title: '删除这条评价',
+                    message: '该评价已撤销，删除后将从你的列表移除，不可恢复。',
+                    onOk: () => hideReviewM.mutate(r.reviewId),
+                  })}>删除</button>
               )}
             </div>
             {openId === r.reviewId && (
@@ -91,6 +114,16 @@ export default function CreditAppealsPage() {
               <div className="appeal-item-top">
                 <span className={`status-badge status-${st.tone}`}>{st.text}</span>
                 <span className="feed-time">{formatRelativeTime(a.createdAt)}</span>
+                {/* 已处理（非审核中）的申诉记录可删 */}
+                {a.status !== 'PENDING' && (
+                  <button type="button" className="action-btn action-btn-ghost" style={{ ...smallBtn, marginLeft: 8 }}
+                    disabled={hideAppealM.isPending}
+                    onClick={() => setConfirm({
+                      title: '删除申诉记录',
+                      message: '删除后将从你的列表移除，不可恢复。',
+                      onOk: () => hideAppealM.mutate(a.appealId),
+                    })}>删除</button>
+                )}
               </div>
               <p className="appeal-reason">「{a.reviewComment ?? '原评价'}」 → {a.reason}</p>
               {a.resolveNote && <p className="appeal-note">裁决：{a.resolveNote}</p>}
@@ -98,6 +131,16 @@ export default function CreditAppealsPage() {
           )
         })}
       </section>
+
+      <Dialog
+        open={!!confirm}
+        title={confirm?.title ?? ''}
+        message={confirm?.message}
+        tone="danger"
+        confirmText="确认删除"
+        onConfirm={() => { confirm?.onOk(); setConfirm(null) }}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   )
 }
