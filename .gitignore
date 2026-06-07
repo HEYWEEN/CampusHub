@@ -45,7 +45,8 @@ secrets.*
 *.key
 *.p12
 *.pfx
-backend/src/main/resources/application-local.*
+backend/src/main/resources/application-local.properties
+!backend/src/main/resources/application-local.properties.example
 backend/src/main/resources/application-secret.*
 
 # start.sh 运行时产物

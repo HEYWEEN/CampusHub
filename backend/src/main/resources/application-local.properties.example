@@ -1,0 +1,8 @@
+# 本地敏感配置模板 — 复制为 application-local.properties 后填写
+# cp application-local.properties.example application-local.properties
+
+spring.datasource.username=root
+spring.datasource.password=你的MySQL密码
+
+# DeepSeek AI 助手 key（留空则 agent 自动走规则降级，不调外部 API）
+campushub.deepseek.api-key=你的DeepSeekKey或留空
