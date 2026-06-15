@@ -8,7 +8,8 @@ SMS_CODE="123456"   # dev MockSmsSender 固定验证码
 
 jqv() { python3 -c "import sys,json;print(json.load(sys.stdin).get('data',{}).get('$1',''))" 2>/dev/null; }
 
-# 登录(首次自动建账) → 提交认证 → dev-approve → 补 100 启动积分 → 回显 token
+# 登录(首次自动建账,注册自动发 100 启动积分) → 提交学生证认证(PENDING) → 回显 token
+# 认证的「通过」交给后面的 approve_all_pending() 走真实管理员审核 API。
 prepare_user() {
   local phone="$1" name="$2"
   curl -s -X POST "$BASE/api/auth/sms-codes" -H 'Content-Type: application/json' \
@@ -20,9 +21,27 @@ prepare_user() {
   if [ -z "$tok" ]; then echo "  ⚠️ $phone 登录失败(可能被限流),跳过" >&2; return 1; fi
   curl -s -X POST "$BASE/api/auth/verifications" -H "Authorization: Bearer $tok" -H 'Content-Type: application/json' \
     -d "{\"realName\":\"$name\",\"studentNo\":\"$phone\",\"idCard\":\"320100200001010000\",\"attachmentUrls\":[\"/uploads/dev-id.png\"]}" >/dev/null || true
-  curl -s -X POST "$BASE/api/auth/verifications/me/dev-approve" -H "Authorization: Bearer $tok" >/dev/null || true
-  curl -s -X POST "$BASE/api/auth/credit/me/dev-signup-bonus" -H "Authorization: Bearer $tok" >/dev/null || true
   echo "$tok"
+}
+
+# 用内置超管(admin/admin123)走真实审核 API,把所有待审认证一次性通过。
+# 替代已删除的 dev-approve 后门;幂等(已通过的不在 pending 队列里)。
+approve_all_pending() {
+  local atok
+  atok=$(curl -s -X POST "$BASE/api/auth/token/password" -H 'Content-Type: application/json' \
+    -d '{"phone":"admin","password":"admin123"}' | jqv accessToken)
+  if [ -z "$atok" ]; then
+    echo "  ⚠️ admin 登录失败,学生认证未审核 → 账号无法发布/接单(请检查后端 AdminBootstrap)" >&2
+    return 1
+  fi
+  local ids
+  ids=$(curl -s "$BASE/api/admin/verifications" -H "Authorization: Bearer $atok" \
+    | python3 -c "import sys,json;d=json.load(sys.stdin).get('data') or [];[print(v['verificationId']) for v in d]" 2>/dev/null)
+  local n=0
+  for id in $ids; do
+    curl -s -X PATCH "$BASE/api/admin/verifications/$id/approve" -H "Authorization: Bearer $atok" >/dev/null && n=$((n+1))
+  done
+  echo "  ✓ 管理员审核通过 $n 个学生认证"
 }
 
 iso_in() { python3 -c "import sys,datetime;print((datetime.datetime.now().astimezone()+datetime.timedelta(hours=int(sys.argv[1]))).isoformat())" "$1"; }
@@ -45,6 +64,9 @@ echo "→ 准备测试用户..."
 T1=$(prepare_user 13900000001 "测试小明") || T1=""
 T2=$(prepare_user 13900000002 "测试小红") || T2=""
 T3=$(prepare_user 13900000003 "测试学长") || T3=""
+
+echo "→ 管理员审核学生认证..."
+approve_all_pending || true
 
 echo "→ 发布任务..."
 [ -n "$T1" ] && publish_task "$T1" ERRAND "帮取快递到紫金楼" 8 6 "菜鸟驿站" "紫金楼" "两个中等包裹,辛苦啦"
