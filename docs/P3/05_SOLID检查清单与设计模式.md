@@ -28,7 +28,7 @@
 | ② | 跨模块只注入 `CreditApi`、`UserApi`、`TaskApi`；本模块只访问本模块 `Repository` | **D** 依赖倒置 + P2 §2 不变量 |
 | ③ | 拆分 `UserApi`（公开资料查询）与 `AuthService`（认证票据），信用读写仅经 `CreditApi` | **I** 接口隔离 |
 | ④ | 任务状态转移抽取为 `TaskState` + `TaskStateContext`（State 模式） | **O** 开闭（新增状态少改主干） |
-| ⑤ | 信用扣分按 `reasonCode` 映射 `DeductStrategy`（Strategy 模式） | **O** 开闭 |
+| ⑤ | 信用扣分按 `reasonCode` 映射 `ScoreStrategy`/`ScoreRule`（Strategy 模式） | **O** 开闭 |
 | ⑥ | 只读侧写 `SearchService` → `TaskApi`，禁止 search 写他域表 | **D** + 模块分层 |
 | ⑦ | 事件监听类仅调用对应 `*Api` 或追加通知，不回写业务聚合 | **S** + 事务可预期 |
 
@@ -75,8 +75,8 @@
 | 维度 | 说明 |
 | :--- | :--- |
 | **场景** | P1 FR-CRED-01：多种扣分/惩戒原因（严重违规 −30、无故取消 −5、恶意差评核实 −10 等），规则可能独立演进；同一入口 `deduct(userId, delta, reasonCode, bizKey)` 需保持幂等与流水一致。 |
-| **角色类** | `DeductStrategy`（接口）、若干实现类（如 `SevereViolationDeductStrategy`、`TaskNoShowDeductStrategy`）、`DeductStrategyRegistry`（按 `reasonCode` 选择策略）；`CreditServiceImpl` 负责账户加载、事务、流水落库，策略负责「该原因下的额度校验与附加副作用（若有）」。 |
-| **为什么在这里使用** | 变化点在于「原因码对应的规则」，而非积分账户存储本身；策略类隔离规则，新增原因码可通过 **新增实现类 + 注册** 完成，减少修改核心 `deduct` 流程。 |
+| **角色类（实现对齐）** | `ScoreStrategy`（接口：`reasonCode()/delta()/description()`）、`ScoreRule`（enum，5 条规则实现该接口）、`ScoreStrategyRegistry`（按 `reasonCode` 查询策略）；`CreditServiceImpl` 负责账户加载、事务、流水落库，策略负责「该原因下的分值与说明」。原设计稿写的 `DeductStrategy`/若干独立 `*DeductStrategy` 实现类已合并为单一 enum 实现（规则集中、便于评审核对）。 |
+| **为什么在这里使用** | 变化点在于「原因码对应的规则」，而非积分账户存储本身；规则集中在 `ScoreRule` enum，新增原因码只需加一个枚举常量，减少修改核心 `deduct` 流程。 |
 | **如果不用会怎样** | `deduct` 内无限 `if-else`/`switch`，规则互耦；一次新增原因可能误改其他分支的幂等键或流水类型，测试组合爆炸；违反 **OCP**，也与团队对「原因码可配置扩展」的演进预期不符。 |
 
 ### 5.3 （可选对照）Observer — Spring `ApplicationEvent`

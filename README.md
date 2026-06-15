@@ -44,7 +44,7 @@
 
 ## 三、系统架构
 
-**模块化单体**：单一 Spring Boot 应用，内部按业务垂直切分为 13 个落地模块，强约束模块边界。
+**模块化单体**：单一 Spring Boot 应用，内部按业务垂直切分为 15 个落地模块（另含 `search` / `wall` 两个预留空包），强约束模块边界。
 
 ```
 com.campushub
@@ -71,7 +71,7 @@ com.campushub
 - **设计模式**：State（任务状态流转）、Strategy（信用分计算）、AttributeConverter（枚举 ↔ INT 列）。
 - **隐私黑名单**：VO 中禁出 `realName / studentNo / phone` 明文，前台只渲染 `PublicUserVO`。
 - **乐观锁 + 幂等**：交易 / 接单用 `@Version` + 条件更新防并发；积分 / 站内信用 `bizKey` 幂等。
-- **数据库**：Flyway 增量迁移（`V1`…`V17`），枚举列统一用 `INT`；启动 `validate` 校验实体与表一致。
+- **数据库**：Flyway 增量迁移（`V1`…`V20`），枚举列统一用 `INT`；启动 `validate` 校验实体与表一致。
 
 ---
 
@@ -190,7 +190,7 @@ CampusHub/
 │       ├── main/java/com/campushub/<module>/   # 每模块标准子包（见下）
 │       └── main/resources/db/
 │           ├── schema.sql                       # 全量 DDL 参考
-│           └── migration/V1..V17__*.sql         # Flyway 增量迁移
+│           └── migration/V1..V20__*.sql         # Flyway 增量迁移
 ├── docs/                        # P0–P4 全阶段交付物
 ├── demo/                        # 静态页面与设计稿
 ├── .github/workflows/main.yml   # GitHub Actions CI
@@ -217,7 +217,7 @@ CampusHub/
 
 ## 六、测试与 CI
 
-- **后端**：JUnit 5 + Mockito 单元测试 + `@SpringBootTest` 集成测试（H2 内存库），ArchUnit 守护模块边界；当前 **252 个测试全绿**。
+- **后端**：JUnit 5 + Mockito 单元测试 + `@SpringBootTest` 集成测试（H2 内存库），ArchUnit 守护模块边界；当前 **253 个测试全绿**。
 - **前端**：`tsc` 类型检查 + ESLint。
 - **CI**（`.github/workflows/main.yml`，push / PR 到 `main`/`dev` 触发）：
   - `frontend-check`：`npm ci` → `npm run lint` → `npm run build`

@@ -27,7 +27,7 @@
     - spring-boot-starter-test    （含 JUnit 5 + Mockito + AssertJ + Spring Test）
     - mysql-connector-j (runtime)
     - h2 (test scope)
-- 数据库：MySQL 8.x（30 张表，模块前缀强约束）
+- 数据库：MariaDB / MySQL 8.x（约 23 张表，模块前缀强约束；枚举列 INT，boolean 列 TINYINT）
 - 鉴权：JWT（HS256），有效期 2h，refresh token 7d
 - 构建：Maven（用 ./mvnw，无需本地装 Maven）
 - CI/CD：GitHub Actions（已有 main.yml）；P4 阶段可选迁移 GitLab CI/CD

@@ -38,11 +38,11 @@ paths:
               $ref: "#/components/schemas/SmsCodeSendRequest"
       responses:
         "200":
-          description: 业务成功（HTTP 200，`code`=0）
+          description: 业务成功（HTTP 200，`code`=0），data 含 registered 标志
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponseEmpty"
+                $ref: "#/components/schemas/ApiResponseSmsCodeSend"
         "400":
           $ref: "#/components/responses/BadRequest"
         "429":
@@ -172,8 +172,9 @@ paths:
         - name: status
           in: query
           schema:
-            type: integer
-          description: 任务状态 TINYINT 数值（待接单/进行中…由枚举表约定）
+            type: string
+            enum: [PENDING_ACCEPT, IN_PROGRESS, WAIT_CONFIRM, COMPLETED, CANCELED, EXPIRED]
+          description: 任务状态枚举名（前端传字符串，后端 TaskStatus 枚举；DB 内存为 INT）
         - name: minCredit
           in: query
           schema:
@@ -195,6 +196,18 @@ paths:
           schema:
             type: string
           description: 标题/备注关键词（走 search 模块，具体分词策略实现期定）
+        - name: publisherId
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: 「我的任务」过滤——仅看该用户发布的任务（通常传当前用户 id）
+        - name: assigneeId
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: 「我的任务」过滤——仅看该用户接的任务（通常传当前用户 id）
       responses:
         "200":
           content:
@@ -259,7 +272,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /api/trade/orders/{orderId}:
+  /api/trade/orders/{id}:
     get:
       tags: [trade]
       summary: 查看二手交易订单详情（F-TRADE-03/04）
@@ -270,7 +283,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: orderId
+        - name: id
           in: path
           required: true
           schema:
@@ -287,18 +300,17 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /api/tasks/{taskId}/reviews:
+  /api/credit/reviews:
     post:
       tags: [tasks]
       summary: 提交任务完成评价（星级 + 评语）
       description: |
-        典型时机：任务状态为 `COMPLETED` 后由发布者评价接单者。
-        差评触发信用规则时走 `CreditApi.deduct`（Strategy）与申诉流程（F-CREDIT-*），本接口仅收评价内容。
+        典型时机：任务状态为 `COMPLETED` 后双方互评。reviewer 取自登录态，不在请求体传。
+        差评触发信用规则时走 `CreditApi.deduct`（Strategy）与申诉流程（F-CREDIT-*）。
+        路径归属 credit 模块（实现：CreditReviewController）。
       operationId: submitTaskReview
       security:
         - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/TaskId"
       requestBody:
         required: true
         content:
@@ -479,7 +491,9 @@ components:
           type: string
           nullable: true
         verifiedTag:
-          type: boolean
+          type: string
+          nullable: true
+          description: 校园认证标签，已认证为 "校园已认证"，否则为 null（由 auth_user.verify_status==APPROVED 推导）
 
     TokenPair:
       type: object
@@ -506,6 +520,22 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/TokenPair"
+
+    SmsCodeSendVO:
+      type: object
+      required: [registered]
+      properties:
+        registered:
+          type: boolean
+          description: 该手机号是否已注册账号；前端据此决定验证码登录页是否展示「设置密码」。
+
+    ApiResponseSmsCodeSend:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponseEmpty"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/SmsCodeSendVO"
 
     SmsCodeSendRequest:
       type: object
@@ -569,6 +599,7 @@ components:
         rewardPoint:
           type: integer
           minimum: 1
+          maximum: 500
         deadlineAt:
           type: string
           format: date-time
@@ -603,17 +634,28 @@ components:
           format: int64
         title:
           type: string
+        remark:
+          type: string
+          nullable: true
         taskType:
           type: string
+          enum: [ERRAND, MUTUAL_HELP, TUTOR]
         status:
-          type: integer
+          type: string
+          enum: [PENDING_ACCEPT, IN_PROGRESS, WAIT_CONFIRM, COMPLETED, CANCELED, EXPIRED]
         rewardPoint:
           type: integer
         deadlineAt:
           type: string
           format: date-time
+        deliveryBuilding:
+          type: string
+          nullable: true
         publisher:
           $ref: "#/components/schemas/PublicUserVO"
+        assignee:
+          $ref: "#/components/schemas/PublicUserVO"
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -652,8 +694,10 @@ components:
           type: string
         taskType:
           type: string
+          enum: [ERRAND, MUTUAL_HELP, TUTOR]
         status:
-          type: integer
+          type: string
+          enum: [PENDING_ACCEPT, IN_PROGRESS, WAIT_CONFIRM, COMPLETED, CANCELED, EXPIRED]
         rewardPoint:
           type: integer
         deadlineAt:
@@ -665,8 +709,10 @@ components:
           type: string
         remark:
           type: string
-        version:
-          type: integer
+        proofText:
+          type: string
+          nullable: true
+          description: 接单方提交的完成说明（≤1000 字）
         publisher:
           $ref: "#/components/schemas/PublicUserVO"
         assignee:
@@ -676,6 +722,17 @@ components:
           type: array
           items:
             type: string
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        canAccept:
+          type: boolean
+          description: 当前登录用户是否可接此单
+        isPublisher:
+          type: boolean
+          description: 当前登录用户是否为发布者
 
     ApiResponseTaskDetail:
       allOf:
@@ -687,22 +744,32 @@ components:
 
     TradeOrderDetailVO:
       type: object
-      description: 买卖双方可见字段经 VO 裁剪；具体字段与 `trade` 模块对齐
+      description: 实现对应 TradeOrderVO（trade 模块）；buyer/seller 仅返回 id，前端按需再查 PublicUserVO
       properties:
-        orderId:
+        id:
           type: integer
           format: int64
         itemId:
           type: integer
           format: int64
-        status:
+        buyerId:
           type: integer
+          format: int64
+        sellerId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [IN_TRADE, BUYER_CONFIRMED, SELLER_CONFIRMED, COMPLETED, CANCELED]
+        negotiatedPricePoint:
+          type: integer
+          description: 议价成交价（积分）
         freezePoint:
           type: integer
-        buyer:
-          $ref: "#/components/schemas/PublicUserVO"
-        seller:
-          $ref: "#/components/schemas/PublicUserVO"
+        buyerConfirmed:
+          type: boolean
+        sellerConfirmed:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -717,8 +784,15 @@ components:
 
     TaskReviewRequest:
       type: object
-      required: [rating]
+      required: [taskId, revieweeId, rating]
+      description: 实现对应 ReviewSubmitDTO（credit 模块）
       properties:
+        taskId:
+          type: integer
+          format: int64
+        revieweeId:
+          type: integer
+          format: int64
         rating:
           type: integer
           minimum: 1
@@ -726,10 +800,6 @@ components:
         comment:
           type: string
           maxLength: 500
-        anonymous:
-          type: boolean
-          default: false
-          description: 若为 true，公开展示仍遵守匿名规约（与 edu 评价区分，本字段预留给产品确认）
 
     ApiResponseReviewId:
       allOf:
@@ -738,8 +808,11 @@ components:
           properties:
             data:
               type: object
-              required: [reviewId]
+              required: [reviewId, bothReviewed]
               properties:
                 reviewId:
                   type: integer
                   format: int64
+                bothReviewed:
+                  type: boolean
+                  description: 双方是否都已互评（true 时本次触发双方各 +1 信用分）
