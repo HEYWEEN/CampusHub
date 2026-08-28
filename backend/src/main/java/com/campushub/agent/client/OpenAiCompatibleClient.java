@@ -1,9 +1,9 @@
 package com.campushub.agent.client;
 
-import com.campushub.agent.config.DeepSeekProperties;
+import com.campushub.agent.config.AiProviderProperties.ActiveProvider;
 import com.campushub.agent.exception.AgentUnavailableException;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -15,47 +15,48 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DeepSeek（OpenAI 兼容）chat completions 客户端。仅暴露一个同步 {@link #chat} 方法，
- * 返回 assistant 消息（可能含 tool_calls）。任何异常归一为 {@link AgentUnavailableException}。
+ * OpenAI-compatible chat completions 客户端。支持 DeepSeek、OrcaRouter 等兼容 Provider，
+ * 返回 assistant 消息（可能含 tool_calls），并将调用异常统一为 {@link AgentUnavailableException}。
  */
 @Component
-public class DeepSeekClient {
+public class OpenAiCompatibleClient {
 
     private final RestClient restClient;
-    private final DeepSeekProperties props;
+    private final ActiveProvider provider;
 
-    public DeepSeekClient(@Qualifier("deepSeekRestClient") RestClient restClient, DeepSeekProperties props) {
+    public OpenAiCompatibleClient(
+            @Qualifier("openAiCompatibleRestClient") RestClient restClient,
+            ActiveProvider provider) {
         this.restClient = restClient;
-        this.props = props;
+        this.provider = provider;
     }
 
-    /**
-     * 调一次 chat completions。
-     *
-     * @param messages 完整对话（含 system / 历史 / 工具结果）
-     * @param tools    可用工具定义
-     * @return assistant 消息（content 或 toolCalls 二选一）
-     */
+    /** 调用一次 OpenAI Chat Completions。 */
     public ChatMessage chat(List<ChatMessage> messages, List<ToolDef> tools) {
-        if (!props.isEnabled()) {
-            throw new AgentUnavailableException("DeepSeek api-key 未配置");
+        if (!provider.isEnabled()) {
+            throw unavailable("api-key 未配置");
         }
         try {
-            ChatReq req = new ChatReq(props.getModel(), messages, tools, "auto", 0.3);
+            ChatReq req = new ChatReq(provider.model(), messages, tools, "auto", 0.3);
             ChatResp resp = restClient.post()
                     .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + props.getApiKey())
+                    .header("Authorization", "Bearer " + provider.apiKey())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(req)
                     .retrieve()
                     .body(ChatResp.class);
             if (resp == null || resp.choices() == null || resp.choices().isEmpty()) {
-                throw new AgentUnavailableException("DeepSeek 返回空 choices");
+                throw unavailable("返回空 choices");
             }
             return resp.choices().get(0).message();
         } catch (RestClientException e) {
-            throw new AgentUnavailableException("DeepSeek 调用失败: " + e.getMessage(), e);
+            throw new AgentUnavailableException(
+                    provider.displayName() + " 调用失败: " + e.getMessage(), e);
         }
+    }
+
+    private AgentUnavailableException unavailable(String detail) {
+        return new AgentUnavailableException(provider.displayName() + " " + detail);
     }
 
     // ==================== OpenAI 格式 DTO ====================
@@ -71,7 +72,6 @@ public class DeepSeekClient {
         public static ChatMessage system(String content) { return new ChatMessage("system", content, null, null); }
         public static ChatMessage user(String content) { return new ChatMessage("user", content, null, null); }
         public static ChatMessage assistant(String content) { return new ChatMessage("assistant", content, null, null); }
-        /** tool 执行结果消息（回填给模型）。 */
         public static ChatMessage tool(String toolCallId, String content) {
             return new ChatMessage("tool", content, null, toolCallId);
         }
@@ -79,18 +79,10 @@ public class DeepSeekClient {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ToolCall(
-            String id,
-            String type,
-            FunctionCall function
-    ) {}
+    public record ToolCall(String id, String type, FunctionCall function) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record FunctionCall(
-            String name,
-            /** 参数为 JSON 字符串（OpenAI 规范）。 */
-            String arguments
-    ) {}
+    public record FunctionCall(String name, String arguments) {}
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record ToolDef(String type, FunctionDef function) {

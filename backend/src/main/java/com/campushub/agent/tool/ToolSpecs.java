@@ -1,11 +1,11 @@
 package com.campushub.agent.tool;
 
-import com.campushub.agent.client.DeepSeekClient.ToolDef;
+import com.campushub.agent.client.OpenAiCompatibleClient.ToolDef;
 
 import java.util.List;
 import java.util.Map;
 
-/** 暴露给 DeepSeek 的工具定义（OpenAI function schema）。 */
+/** 暴露给 OpenAI-compatible Provider 的工具定义（function schema）。 */
 public final class ToolSpecs {
     private ToolSpecs() {}
 

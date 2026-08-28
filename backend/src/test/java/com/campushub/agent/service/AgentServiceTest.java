@@ -1,9 +1,9 @@
 package com.campushub.agent.service;
 
-import com.campushub.agent.client.DeepSeekClient;
-import com.campushub.agent.client.DeepSeekClient.ChatMessage;
-import com.campushub.agent.client.DeepSeekClient.FunctionCall;
-import com.campushub.agent.client.DeepSeekClient.ToolCall;
+import com.campushub.agent.client.OpenAiCompatibleClient;
+import com.campushub.agent.client.OpenAiCompatibleClient.ChatMessage;
+import com.campushub.agent.client.OpenAiCompatibleClient.FunctionCall;
+import com.campushub.agent.client.OpenAiCompatibleClient.ToolCall;
 import com.campushub.agent.entity.AgentConversation;
 import com.campushub.agent.entity.AgentMessage;
 import com.campushub.agent.entity.AgentRole;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AgentServiceTest {
 
-    @Mock DeepSeekClient deepSeek;
+    @Mock OpenAiCompatibleClient llmClient;
     @Mock ToolExecutor toolExecutor;
     @Mock AgentConversationRepository convRepo;
     @Mock AgentMessageRepository msgRepo;
@@ -49,7 +49,7 @@ class AgentServiceTest {
 
     @BeforeEach
     void setup() {
-        service = new AgentService(deepSeek, toolExecutor, convRepo, msgRepo, json);
+        service = new AgentService(llmClient, toolExecutor, convRepo, msgRepo, json);
         AgentConversation conv = new AgentConversation(USER, "对话");
         ReflectionTestUtils.setField(conv, "id", 7L);
         when(convRepo.findFirstByUserIdOrderByUpdatedAtDesc(USER)).thenReturn(Optional.of(conv));
@@ -72,7 +72,7 @@ class AgentServiceTest {
 
     @Test
     void chat_toolCallThenFinalText_collectsActionAndPersists() {
-        when(deepSeek.chat(anyList(), anyList()))
+        when(llmClient.chat(anyList(), anyList()))
                 .thenReturn(toolCallMsg(), ChatMessage.assistant("帮你找到了这些单"));
         when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any(), anyLong()))
                 .thenReturn(new ToolResult("found 2", AgentAction.taskResults(List.of())));
@@ -89,7 +89,7 @@ class AgentServiceTest {
 
     @Test
     void chat_noToolCall_returnsPlainText() {
-        when(deepSeek.chat(anyList(), anyList())).thenReturn(ChatMessage.assistant("你好呀"));
+        when(llmClient.chat(anyList(), anyList())).thenReturn(ChatMessage.assistant("你好呀"));
         AgentChatResponse resp = service.chat(USER, null, "你好");
         assertEquals("你好呀", resp.reply());
         assertTrue(resp.actions().isEmpty());
@@ -98,7 +98,7 @@ class AgentServiceTest {
 
     @Test
     void chat_apiDown_findIntent_fallsBackToRuleSearch() {
-        when(deepSeek.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
+        when(llmClient.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
         when(toolExecutor.execute(eq(ToolSpecs.SEARCH_TASKS), any(), anyLong()))
                 .thenReturn(new ToolResult("recent", AgentAction.taskResults(List.of())));
 
@@ -110,7 +110,7 @@ class AgentServiceTest {
 
     @Test
     void chat_apiDown_postIntent_returnsGuidanceNoSearch() {
-        when(deepSeek.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
+        when(llmClient.chat(anyList(), anyList())).thenThrow(new AgentUnavailableException("no key"));
         AgentChatResponse resp = service.chat(USER, null, "帮我发布一个跑腿任务");
         assertTrue(resp.reply().contains("发布"));
         assertTrue(resp.actions().isEmpty());

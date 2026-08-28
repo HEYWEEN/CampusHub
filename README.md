@@ -22,7 +22,7 @@
 | 🔔 **站内信** | 事件驱动、模板化推送；通知可点击跳转到对应页 |
 | ⭐ **信用体系** | 信用分 0~120（**Strategy 模式**按场景计算）；评价；差评申诉与仲裁 |
 | 🎯 **智能匹配** | 规则加权打分推荐（类型 / 位置 / 发布者信用 / 悬赏 / 新鲜度 / 紧急度），新用户冷启动权重自动重分配 |
-| 🐾 **校园助手** | DeepSeek 驱动的 AI 对话，工具调用实现"找任务 / 生成发单草稿 / 搜二手 / 找组队"，前端模拟流式输出 |
+| 🐾 **校园助手** | OpenAI-compatible 多 Provider AI 对话（DeepSeek 默认、OrcaRouter 可选），工具调用实现"找任务 / 生成发单草稿 / 搜二手 / 找组队"，前端模拟流式输出 |
 | 🛡️ **管理后台** | 用户封禁 / 解封、管理员角色分派、学生证认证审核、举报仲裁 |
 | 📣 **举报** | 举报受理 + 仲裁处理（驳回 / 警告 / 扣信用分） |
 
@@ -37,7 +37,7 @@
 | 前端 | React 19 · TypeScript 5.9 · Vite 8 · React Router 7 · TanStack Query 5 · Zustand 5 · Axios |
 | 后端 | Java 17 · Spring Boot 3.5.3 · Spring Data JPA · Bean Validation · jjwt 0.12（自研 JWT 鉴权，未用 Spring Security） |
 | 数据库 | MySQL 8 · Flyway 迁移（`ddl-auto=validate`，schema 由迁移管控）；单测用 H2 内存库 |
-| AI | DeepSeek Chat（OpenAI 兼容）· 函数调用（tool use） |
+| AI | OpenAI-compatible Chat Completions · DeepSeek / OrcaRouter · 函数调用（tool use） |
 | 工程 | GitHub Actions CI · ESLint 9 · JUnit 5 · Mockito · ArchUnit · Maven Wrapper |
 
 ---
@@ -58,7 +58,7 @@ com.campushub
 ├── notify                     站内信（事件监听 + 模板）
 ├── credit                     信用分(Strategy) / 评价 / 申诉
 ├── recommend                  智能匹配打分
-├── agent                      AI 校园助手（DeepSeek + 工具）
+├── agent                      AI 校园助手（OpenAI-compatible Provider + 工具）
 ├── report / admin             举报 / 管理后台
 └── (search / wall)            预留包
 ```
@@ -122,7 +122,20 @@ com.campushub
 | `.env.prod`（根目录） | 服务器 | `.env.prod.example` | ❌ | **部署人**：填 `DB_USERNAME` / `DB_PASSWORD` 等 |
 | `frontend/.env.production` | 服务器 | `frontend/.env.production.example` | ❌ | **部署人**：填 `VITE_API_BASE_URL` |
 
-> AI 校园助手需要 DeepSeek API Key（配置项 `campushub.deepseek.*`）；未配置时助手自动降级为规则兜底，不影响其余功能。
+AI 校园助手默认使用 DeepSeek，也可选择 [OrcaRouter](https://www.orcarouter.ai/)；两者均走 OpenAI-compatible Chat Completions，未配置当前 Provider 的 API Key 时会自动降级为规则兜底，不影响其余功能。
+
+```bash
+# DeepSeek（默认）
+AI_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your-key
+
+# 或切换到 OrcaRouter
+AI_PROVIDER=orcarouter
+ORCAROUTER_API_KEY=your-key
+ORCAROUTER_MODEL=orcarouter/auto  # 可替换为 OrcaRouter 模型目录中的具体模型 ID
+```
+
+本地开发也可在 `application-local.properties` 中设置 `campushub.ai.provider`，并填写对应的 `campushub.deepseek.api-key` 或 `campushub.orcarouter.api-key`。OrcaRouter 的 Base URL 默认为官方 OpenAI-compatible 端点 `https://api.orcarouter.ai/v1`。
 
 首次需先建库（local 模式 `start.sh` 会主动提示）：
 
@@ -217,7 +230,7 @@ CampusHub/
 
 ## 六、测试与 CI
 
-- **后端**：JUnit 5 + Mockito 单元测试 + `@SpringBootTest` 集成测试（H2 内存库），ArchUnit 守护模块边界；当前 **253 个测试全绿**。
+- **后端**：JUnit 5 + Mockito 单元测试 + `@SpringBootTest` 集成测试（H2 内存库），ArchUnit 守护模块边界；当前 **258 个测试全绿**。
 - **前端**：`tsc` 类型检查 + ESLint。
 - **CI**（`.github/workflows/main.yml`，push / PR 到 `main`/`dev` 触发）：
   - `frontend-check`：`npm ci` → `npm run lint` → `npm run build`

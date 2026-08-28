@@ -4,5 +4,9 @@
 spring.datasource.username=root
 spring.datasource.password=你的MySQL密码
 
-# DeepSeek AI 助手 key（留空则 agent 自动走规则降级，不调外部 API）
+# AI 助手 Provider：deepseek（默认）或 orcarouter
+campushub.ai.provider=deepseek
+
+# 只需填写当前 Provider 对应的 key；留空则 agent 自动走规则降级
 campushub.deepseek.api-key=你的DeepSeekKey或留空
+campushub.orcarouter.api-key=你的OrcaRouterKey或留空

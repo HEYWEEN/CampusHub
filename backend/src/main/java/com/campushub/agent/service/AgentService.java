@@ -1,8 +1,8 @@
 package com.campushub.agent.service;
 
-import com.campushub.agent.client.DeepSeekClient;
-import com.campushub.agent.client.DeepSeekClient.ChatMessage;
-import com.campushub.agent.client.DeepSeekClient.ToolCall;
+import com.campushub.agent.client.OpenAiCompatibleClient;
+import com.campushub.agent.client.OpenAiCompatibleClient.ChatMessage;
+import com.campushub.agent.client.OpenAiCompatibleClient.ToolCall;
 import com.campushub.agent.entity.AgentConversation;
 import com.campushub.agent.entity.AgentMessage;
 import com.campushub.agent.entity.AgentRole;
@@ -40,16 +40,16 @@ public class AgentService {
     private static final int MAX_TOOL_ROUNDS = 3;
     private static final ZoneId ZONE = ZoneId.of("Asia/Shanghai");
 
-    private final DeepSeekClient deepSeek;
+    private final OpenAiCompatibleClient llmClient;
     private final ToolExecutor toolExecutor;
     private final AgentConversationRepository convRepo;
     private final AgentMessageRepository msgRepo;
     private final ObjectMapper json;
 
-    public AgentService(DeepSeekClient deepSeek, ToolExecutor toolExecutor,
+    public AgentService(OpenAiCompatibleClient llmClient, ToolExecutor toolExecutor,
                         AgentConversationRepository convRepo, AgentMessageRepository msgRepo,
                         ObjectMapper json) {
-        this.deepSeek = deepSeek;
+        this.llmClient = llmClient;
         this.toolExecutor = toolExecutor;
         this.convRepo = convRepo;
         this.msgRepo = msgRepo;
@@ -104,7 +104,7 @@ public class AgentService {
         }
 
         for (int round = 0; round < MAX_TOOL_ROUNDS; round++) {
-            ChatMessage out = deepSeek.chat(msgs, ToolSpecs.all());
+            ChatMessage out = llmClient.chat(msgs, ToolSpecs.all());
             if (out.toolCalls() == null || out.toolCalls().isEmpty()) {
                 return nz(out.content());
             }
@@ -116,7 +116,7 @@ public class AgentService {
             }
         }
         // 工具轮次用尽 → 不带工具收个尾
-        return nz(deepSeek.chat(msgs, List.of()).content());
+        return nz(llmClient.chat(msgs, List.of()).content());
     }
 
     private String systemPrompt() {
@@ -151,7 +151,7 @@ public class AgentService {
         }
     }
 
-    // ==================== 规则降级（DeepSeek 不可用） ====================
+    // ==================== 规则降级（当前 AI Provider 不可用） ====================
 
     private String ruleFallback(String userMessage, List<AgentAction> actions, long userId) {
         String m = userMessage == null ? "" : userMessage;
